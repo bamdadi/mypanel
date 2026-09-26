@@ -1,0 +1,2364 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>پنل مدیریت کارکرد پرسنل</title>
+<script src="users.js"></script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👔</text></svg>">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+<script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+
+/* 🎨 متغیرهای ۵ تم پنل کارفرما (متفاوت از کارمند) */
+:root{
+  --bg:#07141e;--bg2:#0a1c2b;--card:#0f2437;--card2:#153048;--text:#e0f2f7;
+  --muted:#7a9dad;--accent:#0ea5e9;--accent2:#38bdf8;
+  --accent3:#06b6d4;
+  --border:rgba(14,165,233,.25);--holiday:rgba(14,165,233,.08);
+  --danger:#ef4444;--success:#10b981;--info:#3b82f6;--warn:#f59e0b;
+  --shadow:0 12px 40px rgba(0,0,0,.5);
+  --glow:0 0 24px rgba(14,165,233,.35);
+}
+[data-theme="royal-purple"]{
+  --bg:#0d0620;--bg2:#150a2e;--card:#1e1142;--card2:#2a1854;--text:#ede9fe;
+  --muted:#a78bfa;--accent:#a855f7;--accent2:#c084fc;--accent3:#8b5cf6;
+  --border:rgba(168,85,247,.30);--holiday:rgba(168,85,247,.08);
+  --glow:0 0 24px rgba(168,85,247,.35);
+}
+[data-theme="emerald"]{
+  --bg:#031a14;--bg2:#062b1f;--card:#0a3d2c;--card2:#0e5239;--text:#d1fae5;
+  --muted:#6ee7b7;--accent:#10b981;--accent2:#34d399;--accent3:#059669;
+  --border:rgba(16,185,129,.30);--holiday:rgba(16,185,129,.08);
+  --glow:0 0 24px rgba(16,185,129,.35);
+}
+[data-theme="crimson"]{
+  --bg:#1a0505;--bg2:#2b0a0a;--card:#3d0f0f;--card2:#521616;--text:#fee2e2;
+  --muted:#fca5a5;--accent:#ef4444;--accent2:#f87171;--accent3:#dc2626;
+  --border:rgba(239,68,68,.30);--holiday:rgba(239,68,68,.08);
+  --glow:0 0 24px rgba(239,68,68,.35);
+}
+[data-theme="light-manager"]{
+  --bg:#f0f4f8;--bg2:#ffffff;--card:#ffffff;--card2:#f1f5f9;--text:#0f172a;
+  --muted:#64748b;--accent:#0284c7;--accent2:#0ea5e9;--accent3:#06b6d4;
+  --border:rgba(2,132,199,.25);--holiday:rgba(2,132,199,.06);
+  --shadow:0 8px 24px rgba(0,0,0,.10);
+  --glow:0 0 20px rgba(2,132,199,.20);
+}
+
+html,body{height:100%}
+body{
+  font-family:Vazirmatn,system-ui,sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;transition:background .35s,color .35s;overflow-x:hidden;
+}
+
+/* ✨ ذرات پس‌زمینه */
+#particles{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.5;transition:opacity .4s}
+#particles.off{opacity:0}
+.particle{
+  position:absolute;width:4px;height:4px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 12px var(--accent);
+  animation:float-particle linear infinite;
+}
+@keyframes float-particle{
+  0%{transform:translate(0,0) scale(1);opacity:0}
+  10%{opacity:.7}
+  90%{opacity:.5}
+  100%{transform:translate(var(--dx,30px),-100vh) scale(.3);opacity:0}
+}
+
+/* 🎯 Splash */
+#splash{
+  position:fixed;inset:0;z-index:9999;
+  background:linear-gradient(135deg,var(--bg),var(--bg2));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  transition:opacity .6s,visibility .6s;
+}
+#splash.hide{opacity:0;visibility:hidden;pointer-events:none}
+.splash-logo{font-size:80px;animation:splash-spin 2s ease-in-out infinite}
+@keyframes splash-spin{
+  0%,100%{transform:scale(1) rotate(0);filter:drop-shadow(0 0 20px var(--accent))}
+  50%{transform:scale(1.15) rotate(-5deg);filter:drop-shadow(0 0 40px var(--accent))}
+}
+.splash-title{font-size:22px;font-weight:800;color:var(--accent);letter-spacing:1.5px}
+.splash-sub{font-size:13px;color:var(--muted)}
+.splash-bar{width:280px;height:5px;background:var(--card2);border-radius:3px;overflow:hidden}
+.splash-bar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent3));background-size:200% 100%;animation:splash-fill 1.8s ease-out forwards,splash-shine 2s linear infinite}
+@keyframes splash-fill{to{width:100%}}
+@keyframes splash-shine{0%{background-position:100% 0}100%{background-position:-100% 0}}
+
+a{color:var(--accent);text-decoration:none}
+button,input,select,textarea{font-family:inherit;color:inherit}
+input,select,textarea{
+  background:var(--card2);border:1px solid var(--border);border-radius:10px;
+  padding:9px 12px;font-size:14px;outline:none;transition:.2s;width:100%;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(14,165,233,.15)}
+button{cursor:pointer;border:none;border-radius:10px;transition:.2s;font-weight:600;position:relative;overflow:hidden}
+button:active{transform:scale(.97)}
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.5);transform:scale(0);animation:ripple-anim .6s linear;pointer-events:none}
+@keyframes ripple-anim{to{transform:scale(4);opacity:0}}
+
+/* 🏗️ Layout: Sidebar + Main */
+.layout{display:flex;min-height:100vh;transition:.3s}
+
+/* 🎨 Sidebar */
+.sidebar{
+  width:260px;flex-shrink:0;
+  background:linear-gradient(180deg,var(--card),var(--card2));
+  border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  transition:width .3s ease,transform .3s ease;
+  position:sticky;top:0;height:100vh;overflow-y:auto;overflow-x:hidden;
+  z-index:100;
+}
+.sidebar::-webkit-scrollbar{width:6px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.sidebar.collapsed{width:72px}
+.sidebar-head{
+  padding:20px 18px;display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.sidebar-logo{
+  width:44px;height:44px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--accent3));
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+  box-shadow:0 6px 20px rgba(14,165,233,.35);
+}
+.sidebar-title{
+  font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;
+  opacity:1;transition:opacity .2s;
+}
+.sidebar.collapsed .sidebar-title{opacity:0;width:0}
+.sidebar-sub{font-size:11px;color:var(--muted);margin-top:3px;white-space:nowrap}
+.sidebar.collapsed .sidebar-sub{display:none}
+.sidebar-toggle{
+  position:absolute;top:26px;left:-14px;width:28px;height:28px;border-radius:50%;
+  background:var(--accent);color:#000;font-size:14px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 14px rgba(14,165,233,.5);cursor:pointer;z-index:10;
+  border:2px solid var(--card);
+}
+.sidebar-nav{padding:14px 10px;flex:1;display:flex;flex-direction:column;gap:4px}
+.nav-item{
+  display:flex;align-items:center;gap:12px;padding:12px 14px;
+  background:transparent;color:var(--text);border:none;border-radius:10px;
+  font-size:13px;font-weight:600;cursor:pointer;transition:.2s;
+  position:relative;overflow:hidden;text-align:right;width:100%;
+}
+.nav-item:hover{background:var(--card2)}
+.nav-item.active{
+  background:linear-gradient(135deg,var(--accent),var(--accent3));
+  color:#fff;box-shadow:0 4px 14px rgba(14,165,233,.35);
+}
+.nav-item.active .nav-icon{transform:scale(1.15)}
+.nav-icon{font-size:20px;flex-shrink:0;transition:transform .2s;width:24px;text-align:center}
+.nav-text{white-space:nowrap;overflow:hidden;opacity:1;transition:opacity .2s}
+.sidebar.collapsed .nav-text{opacity:0;width:0}
+.sidebar.collapsed .nav-item{justify-content:center;padding:14px 8px}
+.sidebar-foot{
+  padding:14px;border-top:1px solid var(--border);
+  font-size:11px;color:var(--muted);text-align:center;
+}
+.sidebar.collapsed .sidebar-foot{font-size:9px}
+
+/* 🖥️ Main */
+.main{flex:1;min-width:0;padding:18px;overflow-x:hidden}
+
+/* Topbar */
+.topbar{
+  display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;
+  background:linear-gradient(135deg,var(--card),var(--card2));
+  border:1px solid var(--border);border-radius:18px;padding:16px 22px;
+  box-shadow:var(--shadow);margin-bottom:16px;position:relative;overflow:hidden;
+}
+.topbar::before{
+  content:"";position:absolute;top:0;right:0;height:100%;width:5px;
+  background:linear-gradient(180deg,var(--accent),var(--accent3),transparent);
+}
+.topbar-info{display:flex;align-items:center;gap:14px}
+.topbar-avatar{
+  width:52px;height:52px;border-radius:14px;
+  background:linear-gradient(135deg,var(--accent),var(--accent3));
+  display:flex;align-items:center;justify-content:center;font-size:24px;
+  box-shadow:0 6px 20px rgba(14,165,233,.4);
+}
+.topbar-name{font-size:17px;font-weight:800}
+.topbar-role{font-size:12px;color:var(--muted);margin-top:3px}
+.clock-box{text-align:left}
+.clock-time{font-size:22px;font-weight:800;color:var(--accent);letter-spacing:1.5px;font-variant-numeric:tabular-nums}
+.clock-date{font-size:12px;color:var(--muted);margin-top:3px}
+
+/* 📊 KPIs */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:16px}
+.kpi{
+  background:linear-gradient(135deg,var(--card),var(--card2));
+  border:1px solid var(--border);border-radius:16px;padding:18px 20px;
+  position:relative;overflow:hidden;box-shadow:var(--shadow);
+  transition:.28s;cursor:pointer;
+}
+.kpi:hover{transform:translateY(-4px);box-shadow:0 20px 50px rgba(14,165,233,.25);border-color:var(--accent)}
+.kpi::before{
+  content:"";position:absolute;top:0;right:0;width:100%;height:4px;
+  background:linear-gradient(90deg,var(--accent),var(--accent3),transparent);
+}
+.kpi-icon{font-size:24px;opacity:.5;position:absolute;top:14px;left:14px}
+.kpi-label{font-size:12px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.kpi-value{font-size:28px;font-weight:800;color:var(--accent);letter-spacing:.5px;font-variant-numeric:tabular-nums}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:5px}
+.sparkline{height:32px;margin-top:10px;opacity:.9}
+.sparkline svg{width:100%;height:100%;overflow:visible;display:block}
+.sparkline path.line{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.sparkline path.area{fill:var(--accent);opacity:.15;stroke:none}
+
+/* 🎯 Panel */
+.panel{display:none;animation:fadeIn .4s}
+.panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.section{
+  background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:20px;margin-bottom:16px;box-shadow:var(--shadow);
+}
+.section-title{
+  font-size:16px;font-weight:800;color:var(--accent);margin-bottom:14px;
+  display:flex;align-items:center;gap:10px;padding-bottom:10px;border-bottom:1px dashed var(--border);
+}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+.row>*{flex:1;min-width:120px}
+.row .no-flex{flex:0 0 auto;min-width:auto}
+
+/* 🎨 Buttons */
+.btn{
+  background:linear-gradient(135deg,var(--accent),var(--accent3));
+  color:#fff;padding:10px 18px;font-size:13px;font-weight:700;
+  box-shadow:0 4px 14px rgba(14,165,233,.3);border-radius:10px;
+}
+.btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-ghost{background:var(--card2);color:var(--text);border:1px solid var(--border);box-shadow:none}
+.btn-ghost:hover{background:var(--holiday)}
+.btn-danger{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;box-shadow:0 4px 14px rgba(239,68,68,.3)}
+.btn-success{background:linear-gradient(135deg,#10b981,#059669);color:#fff}
+.btn-warn{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-icon{padding:8px 10px;min-width:auto}
+.btn-lg{padding:14px 24px;font-size:15px}
+
+/* 📤 Upload Area */
+.upload-area{
+  border:3px dashed var(--border);border-radius:18px;padding:44px 24px;text-align:center;
+  background:linear-gradient(135deg,var(--card),var(--card2));
+  cursor:pointer;transition:.28s;position:relative;overflow:hidden;
+}
+.upload-area:hover,.upload-area.drag{
+  border-color:var(--accent);background:var(--holiday);
+  box-shadow:0 0 0 4px rgba(14,165,233,.1),var(--glow);
+}
+.upload-area::before{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 50%,rgba(14,165,233,.08),transparent 70%);
+  pointer-events:none;
+}
+.upload-icon{font-size:64px;margin-bottom:14px;opacity:.85;display:block;animation:upload-bounce 2s ease-in-out infinite}
+@keyframes upload-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.upload-text{font-size:17px;font-weight:800;margin-bottom:6px;color:var(--text)}
+.upload-hint{font-size:13px;color:var(--muted)}
+.upload-badge{
+  display:inline-block;background:var(--accent);color:#fff;
+  padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;margin-top:10px;
+}
+.progress-bar{height:6px;background:var(--card2);border-radius:3px;overflow:hidden;margin-top:16px;display:none}
+.progress-bar.active{display:block}
+.progress-bar-fill{
+  height:100%;width:0;
+  background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent3));
+  background-size:200% 100%;transition:width .3s;
+  animation:splash-shine 2s linear infinite;
+}
+
+/* 🎯 Toolbar */
+.toolbar{
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:12px 18px;box-shadow:var(--shadow);margin-bottom:16px;
+  position:sticky;top:8px;z-index:50;
+}
+.toolbar .grow{flex:1;min-width:150px;max-width:280px}
+
+/* 📋 Employee Cards */
+.emp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.emp-card{
+  background:linear-gradient(135deg,var(--card),var(--card2));
+  border:1px solid var(--border);border-radius:16px;padding:18px;
+  box-shadow:var(--shadow);transition:.28s;cursor:pointer;position:relative;overflow:hidden;
+}
+.emp-card:hover{
+  transform:translateY(-5px);border-color:var(--accent);
+  box-shadow:0 20px 50px rgba(14,165,233,.25);
+}
+.emp-card::before{
+  content:"";position:absolute;top:0;right:0;width:100%;height:4px;
+  background:linear-gradient(90deg,var(--accent),var(--accent3),transparent);
+}
+.emp-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.emp-avatar-wrap{position:relative;width:58px;height:58px;flex-shrink:0}
+.emp-avatar-ring{
+  position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(var(--accent) var(--progress,0deg),var(--card2) 0deg);
+}
+.emp-avatar-ring::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--card)}
+.emp-avatar{
+  position:absolute;inset:7px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:800;font-size:18px;z-index:1;
+  background:linear-gradient(135deg,var(--accent),var(--accent3));
+  text-shadow:0 1px 3px rgba(0,0,0,.5);
+}
+.emp-info{flex:1;min-width:0}
+.emp-name{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.emp-meta{font-size:11px;color:var(--muted);margin-top:4px}
+.emp-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+.stat{
+  background:var(--card2);border-radius:10px;padding:9px 6px;text-align:center;
+  border:1px solid var(--border);transition:.2s;
+}
+.stat:hover{border-color:var(--accent)}
+.stat-label{font-size:10px;color:var(--muted);margin-bottom:4px}
+.stat-value{font-size:13px;font-weight:800}
+.stat.work .stat-value{color:var(--accent)}
+.stat.ot .stat-value{color:var(--success)}
+.stat.def .stat-value{color:var(--danger)}
+.emp-actions{display:flex;gap:6px}
+
+/* 📊 Table */
+.table-wrap{overflow-x:auto;border-radius:14px;border:1px solid var(--border);background:var(--card);box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:900px}
+thead th{
+  background:linear-gradient(135deg,var(--card2),var(--card));
+  color:var(--accent);padding:13px 10px;text-align:center;font-weight:800;
+  border-bottom:1px solid var(--border);font-size:12px;letter-spacing:.3px;
+}
+tbody td{padding:11px 10px;text-align:center;border-bottom:1px solid var(--border);transition:.2s}
+tbody tr:hover{background:var(--holiday)}
+tbody tr{cursor:pointer;transition:.2s}
+.emp-cell{display:flex;align-items:center;gap:10px;text-align:right}
+.emp-mini-avatar{
+  width:36px;height:36px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--accent3));
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:800;color:#fff;
+}
+td.ot-val{color:var(--success);font-weight:700}
+td.def-val{color:var(--danger);font-weight:700}
+td.work-val{color:var(--accent);font-weight:800}
+tr.sum-row td{
+  background:linear-gradient(135deg,var(--card2),var(--card));
+  font-weight:800;color:var(--accent);border-top:2px solid var(--accent);
+  font-size:14px;padding:14px 10px;
+}
+
+/* Chip */
+.chip{
+  display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;
+  background:var(--card2);border:1px solid var(--border);font-size:12px;
+  cursor:pointer;transition:.2s;font-weight:600;
+}
+.chip:hover{border-color:var(--accent);background:var(--holiday)}
+.chip.active{background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;border-color:transparent}
+
+/* Modal */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);
+  display:none;align-items:center;justify-content:center;z-index:500;padding:14px;
+}
+.modal-overlay.open{display:flex;animation:fadeIn .25s}
+.modal{
+  background:var(--card);border:1px solid var(--border);border-radius:18px;
+  padding:24px;max-width:1200px;width:100%;max-height:92vh;overflow-y:auto;
+  box-shadow:0 20px 60px rgba(0,0,0,.6);position:relative;
+  animation:slideUp .3s;
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.modal-close{
+  position:absolute;top:14px;left:14px;background:var(--card2);color:var(--muted);
+  font-size:20px;padding:6px 12px;line-height:1;border-radius:10px;
+  transition:.2s;border:1px solid var(--border);
+}
+.modal-close:hover{color:var(--danger);background:var(--card);border-color:var(--danger)}
+
+/* Timesheet header */
+.ts-header{
+  text-align:center;border-bottom:3px solid var(--accent);padding-bottom:16px;margin-bottom:20px;
+}
+.ts-header h2{color:var(--accent);font-size:22px;margin-bottom:8px;font-weight:800}
+.ts-header p{color:var(--muted);font-size:13px}
+.ts-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.ts-kpi{
+  padding:14px;border-radius:12px;text-align:center;background:var(--card2);
+  border-right:4px solid var(--accent);
+}
+.ts-kpi.success{border-color:var(--success)}
+.ts-kpi.danger{border-color:var(--danger)}
+.ts-kpi.info{border-color:var(--info)}
+.ts-kpi-label{font-size:11px;color:var(--muted);margin-bottom:6px}
+.ts-kpi-value{font-size:18px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.ts-kpi.success .ts-kpi-value{color:var(--success)}
+.ts-kpi.danger .ts-kpi-value{color:var(--danger)}
+.ts-kpi.info .ts-kpi-value{color:var(--info)}
+/* 🗓️ Month picker در مودال کارمند */
+.month-picker-bar{
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  background:linear-gradient(135deg,var(--card2),var(--card));
+  border:1px solid var(--border);border-radius:12px;
+  padding:12px 16px;margin-bottom:18px;
+}
+.month-picker-bar label{
+  font-size:13px;font-weight:700;color:var(--muted);
+  display:flex;align-items:center;gap:8px;
+}
+.month-picker-bar select{
+  background:var(--card);border:1px solid var(--accent);
+  border-radius:8px;padding:8px 14px;font-size:13px;
+  font-weight:700;color:var(--accent);cursor:pointer;
+  min-width:180px;width:auto;
+}
+.month-picker-bar select:focus{box-shadow:0 0 0 3px rgba(14,165,233,.2)}
+.month-picker-bar .nav-btn{
+  background:var(--card);color:var(--accent);
+  border:1px solid var(--border);padding:8px 12px;
+  border-radius:8px;font-size:14px;cursor:pointer;
+  transition:.2s;font-weight:800;
+}
+.month-picker-bar .nav-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.month-picker-bar .nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.month-picker-bar .nav-btn:disabled:hover{background:var(--card);color:var(--accent);border-color:var(--border)}
+.month-badge{
+  background:var(--accent);color:#fff;padding:4px 10px;
+  border-radius:20px;font-size:11px;font-weight:800;
+  margin-right:auto;
+}
+
+tr.holiday-row{background:var(--holiday)}
+tr.official-holiday{background:rgba(239,68,68,.10)!important}
+tr.official-holiday td{color:#ff8a80}
+
+/* Theme chips */
+.theme-grid{display:flex;flex-wrap:wrap;gap:10px}
+.theme-chip{
+  display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:22px;
+  background:var(--card2);border:2px solid var(--border);font-size:12px;cursor:pointer;
+  transition:.25s;font-weight:700;
+}
+.theme-chip:hover{transform:translateY(-2px);border-color:var(--accent)}
+.theme-chip.active{border-color:var(--accent);background:var(--holiday);box-shadow:var(--glow)}
+.theme-dot{width:16px;height:16px;border-radius:50%;box-shadow:0 0 10px currentColor}
+
+/* Empty state */
+.empty{text-align:center;padding:80px 24px;color:var(--muted)}
+.empty-icon{font-size:80px;margin-bottom:20px;opacity:.4;display:block}
+.empty-title{font-size:18px;font-weight:800;margin-bottom:8px;color:var(--text)}
+.empty-text{font-size:13px;line-height:2}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:var(--card);border:1px solid var(--accent);border-radius:14px;
+  padding:14px 24px;font-size:13px;font-weight:700;color:var(--text);
+  box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:600;
+  transition:.35s;opacity:0;max-width:90vw;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.success{border-color:var(--success);color:var(--success)}
+.toast.error{border-color:var(--danger);color:var(--danger)}
+
+.divider{height:1px;background:var(--border);margin:16px 0}
+
+/* 🔥 Mobile Bottom Nav */
+.mobile-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;
+  background:var(--card);border-top:1px solid var(--border);
+  padding:8px;z-index:100;justify-content:space-around;
+  box-shadow:0 -8px 24px rgba(0,0,0,.4);
+}
+.mobile-nav-btn{
+  flex:1;padding:10px 4px;background:transparent;color:var(--muted);
+  border:none;border-radius:10px;font-size:10px;font-weight:700;
+  display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;
+  transition:.2s;
+}
+.mobile-nav-btn.active{color:var(--accent);background:var(--holiday)}
+.mobile-nav-btn .mn-icon{font-size:20px}
+
+@media (max-width:900px){
+  .sidebar{position:fixed;right:0;top:0;bottom:0;transform:translateX(100%)}
+  .sidebar.open{transform:translateX(0)}
+  .sidebar-toggle{left:auto;right:-14px}
+  .main{padding:12px 12px 90px 12px}
+  .mobile-nav{display:flex}
+  .topbar{padding:12px 16px;border-radius:14px}
+  .clock-time{font-size:16px}
+  .kpi-value{font-size:22px}
+  .ts-kpis{grid-template-columns:repeat(2,1fr)}
+  .toolbar{padding:10px 12px;border-radius:12px;top:6px}
+  .toolbar .grow{max-width:100%;min-width:100%}
+  .section{padding:14px;border-radius:14px}
+  table{font-size:12px}
+  .modal{padding:16px;border-radius:14px}
+  .upload-area{padding:30px 16px}
+  .upload-icon{font-size:48px}
+  .emp-grid{grid-template-columns:1fr}
+  .theme-grid{justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<!-- 🎯 Splash Screen -->
+<div id="splash">
+  <div class="splash-logo">👔</div>
+  <div class="splash-title">پنل مدیریت کارکرد پرسنل</div>
+  <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+  <div class="splash-sub">در حال بارگذاری داده‌ها...</div>
+</div>
+
+<!-- ✨ ذرات متحرک -->
+<div id="particles"></div>
+
+<!-- 🏗️ Layout -->
+<div class="layout">
+
+  <!-- 🎨 Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-toggle" onclick="toggleSidebar()" id="sidebarToggle">◀</div>
+
+    <div class="sidebar-head">
+      <div class="sidebar-logo">👔</div>
+      <div>
+        <div class="sidebar-title">پنل مدیریت</div>
+        <div class="sidebar-sub" id="sidebarSub">کارفرما</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-panel="dashboard" onclick="switchPanel('dashboard')">
+        <span class="nav-icon">📊</span>
+        <span class="nav-text">داشبورد</span>
+      </button>
+      <button class="nav-item" data-panel="upload" onclick="switchPanel('upload')">
+        <span class="nav-icon">📥</span>
+        <span class="nav-text">دریافت گزارش‌ها</span>
+      </button>
+      <button class="nav-item" data-panel="employees" onclick="switchPanel('employees')">
+        <span class="nav-icon">👥</span>
+        <span class="nav-text">پرسنل</span>
+      </button>
+      <button class="nav-item" data-panel="analytics" onclick="switchPanel('analytics')">
+        <span class="nav-icon">📈</span>
+        <span class="nav-text">تحلیل‌ها</span>
+      </button>
+      <button class="nav-item" data-panel="settings" onclick="switchPanel('settings')">
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-text">تنظیمات</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-foot">
+      نسخه ۲.۰ | پنل کارفرما
+    </div>
+  </aside>
+
+  <!-- 🖥️ Main Content -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-info">
+        <div class="topbar-avatar">👔</div>
+        <div>
+          <div class="topbar-name" id="topbarName">پنل مدیریت کارفرما</div>
+          <div class="topbar-role" id="topbarRole">در انتظار دریافت گزارش‌ها…</div>
+        </div>
+      </div>
+      <div class="clock-box">
+        <div class="clock-time" id="topClock">--:--:--</div>
+        <div class="clock-date" id="topDate">---</div>
+      </div>
+    </div>
+
+    <!-- 📊 Panel: Dashboard -->
+    <div class="panel active" id="panel-dashboard">
+
+      <!-- KPIs کلی -->
+      <div class="kpis">
+        <div class="kpi" data-tip="تعداد کارمندانی که گزارش فرستاده‌اند">
+          <div class="kpi-icon">👥</div>
+          <div class="kpi-label">تعداد پرسنل</div>
+          <div class="kpi-value" id="kpiCount">0</div>
+          <div class="kpi-sub">نفر ثبت‌شده</div>
+        </div>
+        <div class="kpi" data-tip="مجموع ساعات کارکرد همه پرسنل">
+          <div class="kpi-icon">⏱️</div>
+          <div class="kpi-label">مجموع کارکرد</div>
+          <div class="kpi-value" id="kpiTotalWork">0:00</div>
+          <div class="kpi-sub">ساعت:دقیقه</div>
+          <div class="sparkline" id="sparkTotalWork"></div>
+        </div>
+        <div class="kpi" data-tip="مجموع ساعات اضافه‌کاری">
+          <div class="kpi-icon">➕</div>
+          <div class="kpi-label">مجموع اضافه‌کاری</div>
+          <div class="kpi-value" id="kpiTotalOT" style="color:var(--success)">0:00</div>
+          <div class="kpi-sub">ساعت:دقیقه</div>
+          <div class="sparkline" id="sparkTotalOT"></div>
+        </div>
+        <div class="kpi" data-tip="مجموع کسری کار">
+          <div class="kpi-icon">➖</div>
+          <div class="kpi-label">مجموع کسری</div>
+          <div class="kpi-value" id="kpiTotalDef" style="color:var(--danger)">0:00</div>
+          <div class="kpi-sub">ساعت:دقیقه</div>
+          <div class="sparkline" id="sparkTotalDef"></div>
+        </div>
+      </div>
+
+      <!-- پیشرفت کلی -->
+      <div class="section">
+        <div class="section-title">📊 پیشرفت کلی</div>
+        <div class="row" style="flex-direction:column;gap:14px;margin:0">
+          <div style="width:100%">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px">
+              <span style="color:var(--muted)">درصد پرسنل با کسری</span>
+              <strong style="color:var(--danger)" id="pctDeficit">0%</strong>
+            </div>
+            <div style="height:10px;background:var(--card2);border-radius:5px;overflow:hidden">
+              <div id="barDeficit" style="height:100%;width:0;background:linear-gradient(90deg,var(--danger),#f87171);transition:width 1s"></div>
+            </div>
+          </div>
+          <div style="width:100%">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px">
+              <span style="color:var(--muted)">درصد پرسنل با اضافه‌کاری</span>
+              <strong style="color:var(--success)" id="pctOT">0%</strong>
+            </div>
+            <div style="height:10px;background:var(--card2);border-radius:5px;overflow:hidden">
+              <div id="barOT" style="height:100%;width:0;background:linear-gradient(90deg,var(--success),#34d399);transition:width 1s"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 📌 لیست خلاصه پرسنل -->
+      <div class="section">
+        <div class="section-title">📋 خلاصه پرسنل</div>
+        <div id="dashboardEmpList"></div>
+      </div>
+    </div>
+
+    <!-- 📥 Panel: Upload -->
+    <div class="panel" id="panel-upload">
+      <div class="section">
+        <div class="section-title">📥 دریافت گزارش‌های پرسنل</div>
+        <div class="upload-area" id="uploadArea">
+          <span class="upload-icon">📤</span>
+          <div class="upload-text">فایل‌های JSON کارکنان را اینجا رها کنید</div>
+          <div class="upload-hint">یا کلیک کنید و یک یا چند فایل را انتخاب کنید</div>
+          <div class="upload-badge">Drag & Drop پشتیبانی می‌شود</div>
+          <input type="file" id="fileInput" accept=".json" multiple style="display:none">
+          <div class="progress-bar" id="progressBar"><div class="progress-bar-fill" id="progressFill"></div></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">🗂️ فایل‌های دریافتی اخیر</div>
+        <div id="recentFiles"></div>
+      </div>
+    </div>
+
+    <!-- 👥 Panel: Employees -->
+    <div class="panel" id="panel-employees">
+      <div class="toolbar">
+        <div class="chip active" onclick="setView('table',this)">📋 جدولی</div>
+        <div class="chip" onclick="setView('cards',this)">🔲 کارتی</div>
+        <div style="width:1px;height:24px;background:var(--border)"></div>
+        <input type="text" id="searchInput" placeholder="🔍 جستجوی نام…" class="grow" oninput="renderEmployees()">
+        <select id="monthSelect" style="max-width:190px" onchange="renderEmployees()">
+          <option value="">همه ماه‌ها</option>
+        </select>
+        <div style="flex:1"></div>
+        <button class="btn btn-success btn-sm" onclick="exportSummaryExcel()">📗 اکسل جمعی</button>
+        <button class="btn btn-warn btn-sm" onclick="exportSummaryPDF()">📕 PDF جمعی</button>
+        <button class="btn btn-info btn-sm" onclick="printAll()">🖨️ پرینت جمعی</button>
+      </div>
+
+      <div id="employeesContent"></div>
+    </div>
+
+    <!-- 📈 Panel: Analytics -->
+    <div class="panel" id="panel-analytics">
+      <div class="section">
+        <div class="section-title">🏆 برترین‌ها</div>
+        <div id="topPerformers"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">⚠️ نیازمند توجه</div>
+        <div id="needAttention"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">📊 توزیع ساعات کارکرد</div>
+        <div id="workDistribution"></div>
+      </div>
+    </div>
+
+    <!-- ⚙️ Panel: Settings -->
+    <div class="panel" id="panel-settings">
+      <div class="section">
+        <div class="section-title">🎨 تم پنل</div>
+        <div class="theme-grid">
+          <div class="theme-chip" data-theme-val="ocean-blue" onclick="setTheme('ocean-blue')">
+            <span class="theme-dot" style="background:#0ea5e9;color:#0ea5e9"></span> Ocean Blue
+          </div>
+          <div class="theme-chip" data-theme-val="royal-purple" onclick="setTheme('royal-purple')">
+            <span class="theme-dot" style="background:#a855f7;color:#a855f7"></span> Royal Purple
+          </div>
+          <div class="theme-chip" data-theme-val="emerald" onclick="setTheme('emerald')">
+            <span class="theme-dot" style="background:#10b981;color:#10b981"></span> Emerald
+          </div>
+          <div class="theme-chip" data-theme-val="crimson" onclick="setTheme('crimson')">
+            <span class="theme-dot" style="background:#ef4444;color:#ef4444"></span> Crimson
+          </div>
+          <div class="theme-chip" data-theme-val="light-manager" onclick="setTheme('light-manager')">
+            <span class="theme-dot" style="background:#0284c7;color:#0284c7"></span> روشن
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+            <input type="checkbox" id="particlesToggle" onchange="toggleParticles()" style="width:auto">
+            ✨ نمایش ذرات متحرک
+          </label>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">👤 اطلاعات کارفرما</div>
+        <div class="row">
+          <input id="employerName" placeholder="نام کارفرما / شرکت" style="min-width:220px">
+          <button class="btn" onclick="saveEmployerName()">ذخیره</button>
+        </div>
+      </div>
+<div class="section">
+  <div class="section-title">👤 حساب کاربری</div>
+  <div class="row">
+    <div style="flex:1">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px">کاربر فعلی:</div>
+      <div style="font-weight:800;color:var(--accent);font-size:15px" id="currentUserName">—</div>
+    </div>
+    <div style="flex:1">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px">نام کاربری:</div>
+      <div style="font-weight:700;font-size:14px" id="currentUserUsername">—</div>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="row">
+    <button class="btn btn-info no-flex" onclick="gotoChangePassword()">🔑 تغییر رمز عبور</button>
+    <button class="btn btn-danger no-flex" onclick="doLogout()">🚪 خروج از حساب</button>
+  </div>
+</div>
+      <div class="section">
+        <div class="section-title">💾 پشتیبان‌گیری پنل</div>
+        <div class="row">
+          <button class="btn btn-success no-flex" onclick="backupManager()">⬇️ دانلود پشتیبان پنل (JSON)</button>
+          <label class="btn btn-info no-flex" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">
+            ⬆️ بازیابی پنل
+            <input type="file" accept=".json" onchange="restoreManager(event)" style="display:none">
+          </label>
+          <button class="btn btn-danger no-flex" onclick="clearAll()">🔥 پاک کردن همه پرسنل</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">ℹ️ درباره پنل</div>
+        <p style="font-size:13px;color:var(--muted);line-height:2">
+          پنل مدیریت کارکرد پرسنل — نسخه ۲.۰<br>
+          این پنل برای دریافت گزارش‌های ماهانه پرسنل، مشاهده و تحلیل کارکرد، و خروجی‌گیری جمعی طراحی شده است.<br>
+          داده‌ها به صورت محلی روی همین دستگاه ذخیره می‌شوند.
+        </p>
+      </div>
+    </div>
+
+  </main>
+
+</div>
+
+<!-- 📱 Mobile Bottom Nav -->
+<nav class="mobile-nav" id="mobileNav">
+  <button class="mobile-nav-btn active" data-panel="dashboard" onclick="switchPanel('dashboard')">
+    <span class="mn-icon">📊</span>
+    داشبورد
+  </button>
+  <button class="mobile-nav-btn" data-panel="upload" onclick="switchPanel('upload')">
+    <span class="mn-icon">📥</span>
+    دریافت
+  </button>
+  <button class="mobile-nav-btn" data-panel="employees" onclick="switchPanel('employees')">
+    <span class="mn-icon">👥</span>
+    پرسنل
+  </button>
+  <button class="mobile-nav-btn" data-panel="analytics" onclick="switchPanel('analytics')">
+    <span class="mn-icon">📈</span>
+    تحلیل
+  </button>
+  <button class="mobile-nav-btn" data-panel="settings" onclick="switchPanel('settings')">
+    <span class="mn-icon">⚙️</span>
+    تنظیمات
+  </button>
+</nav>
+
+<!-- Modal: Employee Timesheet -->
+<div class="modal-overlay" id="empModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('empModal')">✕</button>
+    <div id="empModalBody"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+<script>
+  /* ============================================================
+   🔐 AUTH CHECK — چک لاگین کارفرما
+   ============================================================ */
+(function authGuard(){
+  const user = getCurrentUser();
+  
+  if(!user){
+    window.location.href = 'login.html';
+    return;
+  }
+  
+  if(mustChangePassword(user.username)){
+    window.location.href = 'change-pwd.html?force=1';
+    return;
+  }
+  
+  // اگه کاربر عادی وارد شد → بره پنل خودش
+  if(user.role !== 'admin'){
+    window.location.href = 'index.html';
+    return;
+  }
+})();
+
+/* ============================================================
+   JALALI DATE
+   ============================================================ */
+function nowJalali(){ const d = new Date(); const j = jalaali.toJalaali(d); return { jy: j.jy, jm: j.jm, jd: j.jd }; }
+function jalaliStr(d = new Date()){ const j = jalaali.toJalaali(d); return `${j.jy}/${String(j.jm).padStart(2,'0')}/${String(j.jd).padStart(2,'0')}`; }
+function jalaliPretty(d = new Date()){ const j = jalaali.toJalaali(d); const wd = (d.getDay() + 1) % 7; return `${JDAYS[wd]} ${j.jd} ${JMONTHS[j.jm-1]} ${j.jy}`; }
+function jalaliToDate(jstr){ const p = jstr.split('/').map(Number); const g = jalaali.toGregorian(p[0], p[1], p[2]); return new Date(g.gy, g.gm - 1, g.gd); }
+function dayOfWeekJ(jstr){ const d = jalaliToDate(jstr); return (d.getDay() + 1) % 7; }
+
+/* ============================================================
+   TIME UTILITIES
+   ============================================================ */
+function div(a,b){return Math.floor(a/b);}
+function toMin(hhmm){ if(!hhmm) return null; const [h,m]=hhmm.split(':').map(Number); return h*60+m; }
+function toHM(min){ if(min===null||min===undefined||isNaN(min)) return '0:00'; const sign=min<0?'-':''; min=Math.abs(Math.round(min)); return sign+String(div(min,60)).padStart(2,'0')+':'+String(min%60).padStart(2,'0'); }
+function hhmm12(hhmm){ if(!hhmm) return ''; let [h,m]=hhmm.split(':').map(Number); const ap=h<12?'AM':'PM'; let h12=h%12; if(h12===0) h12=12; return `${String(h12).padStart(2,'0')}:${String(m).padStart(2,'0')} ${ap}`; }
+function nowHM(){ const d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+
+/* ============================================================
+   CONSTANTS
+   ============================================================ */
+const STORAGE_KEY='hrm_manager_v2';
+const JMONTHS=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+const JDAYS=['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
+const WORK_START=8*60, WORK_END=17*60, FULL_DAY=WORK_END-WORK_START;
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const DEFAULT_MGR_STATE={
+  employerName:'کارفرما',
+  employees:[],       // [{id, userName, data, importedAt}]
+  settings:{
+    theme:'ocean-blue',
+    particles:true
+  }
+};
+let mgrState = JSON.parse(JSON.stringify(DEFAULT_MGR_STATE));
+let currentMonthFilter = '';
+let viewMode = 'table';
+let sidebarOpen = false;
+
+function saveMgr(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(mgrState)); }
+  catch(e){ console.warn('Save error', e); }
+}
+function loadMgr(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const d = JSON.parse(raw);
+      mgrState = {...DEFAULT_MGR_STATE, ...d, settings:{...DEFAULT_MGR_STATE.settings, ...(d.settings||{})}};
+    }
+  }catch(e){ console.warn(e); }
+}
+
+/* ============================================================
+   HELPER: Compute day for an employee
+   ============================================================ */
+function computeEmpDay(emp, jstr){
+  const data = emp.data || {};
+  const e = data.entries?.[jstr] || {};
+  const w = dayOfWeekJ(jstr);
+  const weekend = w>=5;
+  const holidayTitle = data.holidays?.[jstr];
+  const leave = data.leaves?.[jstr];
+  const mission = data.missions?.[jstr];
+  const em = toMin(e.entry), xm = toMin(e.exit);
+  const hasManual = (em!==null)||(xm!==null);
+  const res = {work:0,ot:0,def:0,desc:'',type:'normal'};
+
+  if(holidayTitle){ res.desc = holidayTitle; res.type='holiday'; }
+  else if(leave && leave.type==='daily'){ res.desc='مرخصی روزانه'+(leave.desc?' - '+leave.desc:''); res.type='leave'; }
+  else if(leave && leave.type==='hourly'){ res.desc=`مرخصی ساعتی (${leave.hours} س)`; res.type='leave_hourly'; }
+  else if(mission){ res.desc='ماموریت - '+mission; res.type='mission'; }
+
+  if((holidayTitle || (leave && leave.type==='daily')) && !hasManual) return res;
+  if(em===null && xm===null) return res;
+
+  let work=0, ot=0, def=0;
+  if(weekend){
+    if(em!==null && xm!==null){ work=Math.max(0, xm-em); ot=work; }
+  } else {
+    if(em!==null && xm!==null){
+      work = Math.max(0, xm-em);
+      if(em < WORK_START) ot += Math.min(xm, WORK_START) - em;
+      if(xm > WORK_END) ot += xm - Math.max(em, WORK_END);
+      if(ot < 0) ot = 0;
+      const insideStart = Math.max(em, WORK_START);
+      const insideEnd = Math.min(xm, WORK_END);
+      const inside = Math.max(0, insideEnd - insideStart);
+      def = Math.max(0, FULL_DAY - inside);
+    }
+  }
+  if(leave && leave.type==='hourly' && leave.hours>0){
+    const lh = Math.round(parseFloat(leave.hours)*60);
+    work = Math.max(0, work - lh);
+    def = Math.max(0, def - lh);
+  }
+  if(holidayTitle && hasManual){ ot = Math.max(0, work); def = 0; }
+  res.work=work; res.ot=ot; res.def=def;
+  if(!res.desc && e.desc) res.desc = e.desc;
+  return res;
+}
+
+/* ============================================================
+   STATISTICS
+   ============================================================ */
+function empMonthStats(emp, yearMonth){
+  let y, m;
+  if(yearMonth){
+    const p = yearMonth.split('/'); y = parseInt(p[0]); m = parseInt(p[1]);
+  } else {
+    const keys = [...Object.keys(emp.data?.entries||{}), ...Object.keys(emp.data?.holidays||{})];
+    if(!keys.length){
+      // Try from importedAt
+      const d = new Date(emp.importedAt || Date.now());
+      const j = jalaali.toJalaali(d);
+      y = j.jy; m = j.jm;
+    } else {
+      const sorted = keys.sort().reverse();
+      const p = sorted[0].split('/');
+      y = parseInt(p[0]); m = parseInt(p[1]);
+    }
+  }
+  const days = jalaali.jalaaliMonthLength(y, m);
+  let work=0, ot=0, def=0;
+  for(let d=1; d<=days; d++){
+    const jstr = `${y}/${String(m).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
+    const c = computeEmpDay(emp, jstr);
+    work += c.work; ot += c.ot; def += c.def;
+  }
+  return {year:y, month:m, work, ot, def, label:`${JMONTHS[m-1]} ${y}`};
+}
+
+function countEmpDays(emp){
+  return Object.keys(emp.data?.entries||{}).filter(k=>{
+    const e = emp.data.entries[k];
+    return e.entry || e.exit;
+  }).length;
+}
+
+function totalStats(){
+  let totalWork=0, totalOT=0, totalDef=0;
+  mgrState.employees.forEach(emp=>{
+    const s = empMonthStats(emp, currentMonthFilter);
+    if(s){ totalWork += s.work; totalOT += s.ot; totalDef += s.def; }
+  });
+  return {totalWork, totalOT, totalDef};
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function renderAll(){
+  renderTopbar();
+  renderDashboard();
+  renderRecentFiles();
+  renderEmployees();
+  renderAnalytics();
+  renderSettings();
+}
+
+function renderTopbar(){
+  const d = new Date();
+  const clockEl = document.getElementById('topClock');
+  const dateEl = document.getElementById('topDate');
+  if(clockEl) clockEl.textContent = String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');
+  if(dateEl) dateEl.textContent = jalaliPretty(d);
+  
+  // 🔐 نمایش نام کاربر واقعی از لاگین
+  const user = getCurrentUser();
+  if(user){
+    const subEl = document.getElementById('sidebarSub');
+    if(subEl) subEl.textContent = user.name;
+    const nameEl = document.getElementById('topbarName');
+    if(nameEl) nameEl.textContent = 'پنل مدیریت — ' + user.name;
+  } else {
+    const subEl = document.getElementById('sidebarSub');
+    if(subEl) subEl.textContent = mgrState.employerName || 'کارفرما';
+    const nameEl = document.getElementById('topbarName');
+    if(nameEl) nameEl.textContent = 'پنل مدیریت — ' + (mgrState.employerName || 'کارفرما');
+  }
+  
+  const roleEl = document.getElementById('topbarRole');
+  if(roleEl){
+    roleEl.textContent = mgrState.employees.length
+      ? `${mgrState.employees.length} پرسنل بارگذاری شده — آخرین بروزرسانی: ${new Date().toLocaleTimeString('fa-IR')}`
+      : 'در انتظار دریافت گزارش‌ها…';
+  }
+}
+
+function renderDashboard(){
+  // KPI count
+  const countEl = document.getElementById('kpiCount');
+  if(countEl) countEl.textContent = mgrState.employees.length;
+
+  const t = totalStats();
+  animateNumber(document.getElementById('kpiTotalWork'), t.totalWork, v => toHM(v));
+  animateNumber(document.getElementById('kpiTotalOT'), t.totalOT, v => toHM(v));
+  animateNumber(document.getElementById('kpiTotalDef'), t.totalDef, v => toHM(v));
+
+  // Sparkline per month
+  const monthlyData = getMonthlyAggregate();
+  drawSparkline('sparkTotalWork', monthlyData.map(d=>d.work/60));
+  drawSparkline('sparkTotalOT', monthlyData.map(d=>d.ot/60), 'var(--success)');
+  drawSparkline('sparkTotalDef', monthlyData.map(d=>d.def/60), 'var(--danger)');
+
+  // Progress bars
+  const total = mgrState.employees.length || 1;
+  const withDeficit = mgrState.employees.filter(e=>{ const s=empMonthStats(e,currentMonthFilter); return s && s.def>0; }).length;
+  const withOT = mgrState.employees.filter(e=>{ const s=empMonthStats(e,currentMonthFilter); return s && s.ot>0; }).length;
+  const pctDef = (withDeficit / total) * 100;
+  const pctOT = (withOT / total) * 100;
+  const bd = document.getElementById('barDeficit');
+  const pd = document.getElementById('pctDeficit');
+  if(bd) bd.style.width = pctDef.toFixed(0)+'%';
+  if(pd) pd.textContent = pctDef.toFixed(0)+'%';
+  const bo = document.getElementById('barOT');
+  const po = document.getElementById('pctOT');
+  if(bo) bo.style.width = pctOT.toFixed(0)+'%';
+  if(po) po.textContent = pctOT.toFixed(0)+'%';
+
+  // Employee list summary
+  renderDashboardEmpList();
+}
+
+function getMonthlyAggregate(){
+  // Aggregate per last 6 months
+  const months = {};
+  mgrState.employees.forEach(emp=>{
+    const keys = [...Object.keys(emp.data?.entries||{}), ...Object.keys(emp.data?.holidays||{})];
+    keys.forEach(k=>{
+      const p = k.split('/');
+      const ym = p[0]+'/'+p[1];
+      if(!months[ym]) months[ym] = {work:0, ot:0, def:0};
+    });
+  });
+  const sorted = Object.keys(months).sort().slice(-6);
+  const result = sorted.map(ym=>{
+    let work=0, ot=0, def=0;
+    mgrState.employees.forEach(emp=>{
+      const s = empMonthStats(emp, ym);
+      if(s){ work += s.work; ot += s.ot; def += s.def; }
+    });
+    return {ym, work, ot, def};
+  });
+  return result.length ? result : [{ym:'',work:0,ot:0,def:0}];
+}
+
+function renderDashboardEmpList(){
+  const el = document.getElementById('dashboardEmpList');
+  if(!el) return;
+  if(!mgrState.employees.length){
+    el.innerHTML = `<div class="empty"><span class="empty-icon">📭</span><div class="empty-title">هیچ پرسنلی ثبت نشده</div><div class="empty-text">از بخش «دریافت گزارش‌ها» فایل‌های JSON کارکنان را بارگذاری کنید</div></div>`;
+    return;
+  }
+  el.innerHTML = mgrState.employees.map(emp=>{
+    const s = empMonthStats(emp, currentMonthFilter) || {work:0, ot:0, def:0, label:'—'};
+    const initial = (emp.userName||'؟').charAt(0);
+    return `
+      <div class="task-item" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="openEmp('${emp.id}')">
+        <div class="emp-mini-avatar">${initial}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700">${escapeHtml(emp.userName)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">${s.label} • ${countEmpDays(emp)} روز ثبت‌شده</div>
+        </div>
+        <div style="display:flex;gap:8px;font-size:11px;text-align:center">
+          <div><div style="color:var(--muted)">کارکرد</div><div style="color:var(--accent);font-weight:800">${toHM(s.work)}</div></div>
+          <div><div style="color:var(--muted)">OT</div><div style="color:var(--success);font-weight:800">${toHM(s.ot)}</div></div>
+          <div><div style="color:var(--muted)">کسری</div><div style="color:var(--danger);font-weight:800">${s.def>0?'-'+toHM(s.def):'—'}</div></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderRecentFiles(){
+  const el = document.getElementById('recentFiles');
+  if(!el) return;
+  const recent = [...mgrState.employees].sort((a,b)=> (b.importedAt||0) - (a.importedAt||0)).slice(0, 10);
+  if(!recent.length){
+    el.innerHTML = `<div class="empty"><span class="empty-icon">📂</span><div class="empty-title">فایلی دریافت نشده</div><div class="empty-text">فایل‌های JSON کارکنان را از کادر بالا بارگذاری کنید</div></div>`;
+    return;
+  }
+  el.innerHTML = recent.map(emp=>{
+    const dateStr = emp.importedAt ? jalaliStr(new Date(emp.importedAt)) : '—';
+    return `
+      <div class="task-item" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
+        <div style="font-size:24px">📄</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700">${escapeHtml(emp.userName)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">دریافت: ${dateStr} • ${countEmpDays(emp)} روز داده</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="openEmp('${emp.id}')">👁️ مشاهده</button>
+        <button class="btn btn-danger btn-icon btn-sm" onclick="removeEmp('${emp.id}')">🗑️</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderEmployees(){
+  const content = document.getElementById('employeesContent');
+  if(!content) return;
+  if(!mgrState.employees.length){
+    content.innerHTML = `<div class="empty"><span class="empty-icon">👥</span><div class="empty-title">هیچ پرسنلی ثبت نشده</div><div class="empty-text">ابتدا از بخش «دریافت گزارش‌ها» فایل‌های JSON کارکنان را بارگذاری کنید</div></div>`;
+    return;
+  }
+
+  const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+  let list = mgrState.employees.filter(e => !q || (e.userName||'').toLowerCase().includes(q));
+
+  if(viewMode === 'cards'){
+    content.innerHTML = '<div class="emp-grid">' + list.map(emp=>renderEmpCard(emp)).join('') + '</div>';
+  } else {
+    content.innerHTML = renderEmpTable(list);
+  }
+}
+
+function renderEmpCard(emp){
+  const s = empMonthStats(emp, currentMonthFilter) || {work:0, ot:0, def:0, label:'—'};
+  const initial = (emp.userName||'؟').charAt(0);
+  const pct = s.work ? Math.min(1, s.work/FULL_DAY/22) : 0;
+  return `
+    <div class="emp-card" onclick="openEmp('${emp.id}')">
+      <div class="emp-head">
+        <div class="emp-avatar-wrap">
+          <div class="emp-avatar-ring" style="--progress:${(pct*360).toFixed(0)}deg"></div>
+          <div class="emp-avatar">${initial}</div>
+        </div>
+        <div class="emp-info">
+          <div class="emp-name">${escapeHtml(emp.userName)}</div>
+          <div class="emp-meta">${s.label} — ${countEmpDays(emp)} روز ثبت‌شده</div>
+        </div>
+      </div>
+      <div class="emp-stats">
+        <div class="stat work"><div class="stat-label">کارکرد</div><div class="stat-value">${toHM(s.work)}</div></div>
+        <div class="stat ot"><div class="stat-label">اضافه‌کاری</div><div class="stat-value">${toHM(s.ot)}</div></div>
+        <div class="stat def"><div class="stat-label">کسری</div><div class="stat-value">${s.def>0?'-'+toHM(s.def):'—'}</div></div>
+      </div>
+      <div class="emp-actions" onclick="event.stopPropagation()">
+        <button class="btn btn-info btn-sm" onclick="openEmp('${emp.id}')">👁️ مشاهده</button>
+        <button class="btn btn-ghost btn-sm" onclick="printEmp('${emp.id}')">🖨️ پرینت</button>
+        <button class="btn btn-danger btn-icon btn-sm" onclick="removeEmp('${emp.id}')">🗑️</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderEmpTable(list){
+  let sumW=0, sumOT=0, sumDef=0;
+  const rows = list.map(emp=>{
+    const s = empMonthStats(emp, currentMonthFilter);
+    if(s){ sumW+=s.work; sumOT+=s.ot; sumDef+=s.def; }
+    const initial = (emp.userName||'؟').charAt(0);
+    return `
+      <tr onclick="openEmp('${emp.id}')">
+        <td><div class="emp-cell"><div class="emp-mini-avatar">${initial}</div><span>${escapeHtml(emp.userName)}</span></div></td>
+        <td>${s?s.label:'—'}</td>
+        <td>${countEmpDays(emp)}</td>
+        <td class="work-val">${s?toHM(s.work):'—'}</td>
+        <td class="ot-val">${s&&s.ot>0?toHM(s.ot):'—'}</td>
+        <td class="def-val">${s&&s.def>0?'-'+toHM(s.def):'—'}</td>
+        <td onclick="event.stopPropagation()">
+          <button class="btn btn-info btn-sm" onclick="openEmp('${emp.id}')">مشاهده</button>
+          <button class="btn btn-ghost btn-sm" onclick="printEmp('${emp.id}')">🖨️</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  return `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="text-align:right">پرسنل</th>
+            <th>ماه</th>
+            <th>روزهای ثبت‌شده</th>
+            <th>مجموع کارکرد</th>
+            <th>اضافه‌کاری</th>
+            <th>کسری</th>
+            <th>عملیات</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+        <tfoot>
+          <tr class="sum-row">
+            <td colspan="3">جمع کل (${list.length} نفر)</td>
+            <td>${toHM(sumW)}</td>
+            <td>${toHM(sumOT)}</td>
+            <td>${sumDef>0?'-'+toHM(sumDef):'—'}</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  `;
+}
+
+function renderAnalytics(){
+  const topEl = document.getElementById('topPerformers');
+  const attEl = document.getElementById('needAttention');
+  const distEl = document.getElementById('workDistribution');
+  if(!topEl || !attEl || !distEl) return;
+
+  if(!mgrState.employees.length){
+    const html = `<div class="empty"><span class="empty-icon">📊</span><div class="empty-title">داده‌ای برای تحلیل</div><div class="empty-text">ابتدا گزارش‌های پرسنل را بارگذاری کنید</div></div>`;
+    topEl.innerHTML = html; attEl.innerHTML = html; distEl.innerHTML = html;
+    return;
+  }
+
+  // Top performers: by work hours (descending)
+  const sorted = [...mgrState.employees].map(e=>({emp:e, s:empMonthStats(e,currentMonthFilter)}))
+    .filter(x=>x.s)
+    .sort((a,b)=> b.s.work - a.s.work);
+
+  topEl.innerHTML = sorted.slice(0, 3).map((x, i)=>{
+    const medal = ['🥇','🥈','🥉'][i];
+    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--card2);border-radius:12px;margin-bottom:8px">
+      <div style="font-size:24px">${medal}</div>
+      <div style="flex:1">
+        <div style="font-weight:700">${escapeHtml(x.emp.userName)}</div>
+        <div style="font-size:11px;color:var(--muted)">${x.s.label}</div>
+      </div>
+      <div style="text-align:left;color:var(--accent);font-weight:800">${toHM(x.s.work)}</div>
+    </div>`;
+  }).join('') || '<div class="empty-text">داده‌ای موجود نیست</div>';
+
+  // Need attention: highest deficit
+  const deficitList = sorted.filter(x=>x.s.def > 0).sort((a,b)=> b.s.def - a.s.def).slice(0,3);
+  attEl.innerHTML = deficitList.length
+    ? deficitList.map(x=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--card2);border-radius:12px;margin-bottom:8px">
+          <div style="font-size:20px">⚠️</div>
+          <div style="flex:1">
+            <div style="font-weight:700">${escapeHtml(x.emp.userName)}</div>
+            <div style="font-size:11px;color:var(--muted)">${x.s.label}</div>
+          </div>
+          <div style="text-align:left;color:var(--danger);font-weight:800">-${toHM(x.s.def)}</div>
+        </div>`).join('')
+    : '<div class="empty-text">هیچ پرسنلی کسری ندارد ✅</div>';
+
+  // Work distribution
+  const buckets = {low:0, mid:0, high:0};
+  sorted.forEach(x=>{
+    const h = x.s.work / 60;
+    if(h < 100) buckets.low++;
+    else if(h < 180) buckets.mid++;
+    else buckets.high++;
+  });
+  const totalEmp = sorted.length || 1;
+  distEl.innerHTML = `
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+        <span style="color:var(--muted)">کمتر از ۱۰۰ ساعت</span>
+        <strong style="color:var(--warn)">${buckets.low} نفر (${((buckets.low/totalEmp)*100).toFixed(0)}%)</strong>
+      </div>
+      <div style="height:10px;background:var(--card2);border-radius:5px;overflow:hidden">
+        <div style="height:100%;width:${(buckets.low/totalEmp)*100}%;background:linear-gradient(90deg,var(--warn),#fbbf24);transition:width 1s"></div>
+      </div>
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+        <span style="color:var(--muted)">۱۰۰ تا ۱۸۰ ساعت</span>
+        <strong style="color:var(--info)">${buckets.mid} نفر (${((buckets.mid/totalEmp)*100).toFixed(0)}%)</strong>
+      </div>
+      <div style="height:10px;background:var(--card2);border-radius:5px;overflow:hidden">
+        <div style="height:100%;width:${(buckets.mid/totalEmp)*100}%;background:linear-gradient(90deg,var(--info),#60a5fa);transition:width 1s"></div>
+      </div>
+    </div>
+    <div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+        <span style="color:var(--muted)">بیشتر از ۱۸۰ ساعت</span>
+        <strong style="color:var(--success)">${buckets.high} نفر (${((buckets.high/totalEmp)*100).toFixed(0)}%)</strong>
+      </div>
+      <div style="height:10px;background:var(--card2);border-radius:5px;overflow:hidden">
+        <div style="height:100%;width:${(buckets.high/totalEmp)*100}%;background:linear-gradient(90deg,var(--success),#34d399);transition:width 1s"></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderSettings(){
+  const nameEl = document.getElementById('employerName');
+  if(nameEl) nameEl.value = mgrState.employerName || '';
+  const ptEl = document.getElementById('particlesToggle');
+  if(ptEl) ptEl.checked = mgrState.settings.particles !== false;
+  document.querySelectorAll('.theme-chip').forEach(el => {
+    el.classList.toggle('active', el.dataset.themeVal === mgrState.settings.theme);
+  });
+  document.querySelectorAll('.theme-chip').forEach(el => {
+    el.classList.toggle('active', el.dataset.themeVal === mgrState.settings.theme);
+  });
+  updateAccountPanel();
+}
+/* ============================================================
+   🔐 ACCOUNT FUNCTIONS — تغییر رمز و خروج
+   ============================================================ */
+function updateAccountPanel(){
+  const user = getCurrentUser();
+  if(!user) return;
+  const nameEl = document.getElementById('currentUserName');
+  const userEl = document.getElementById('currentUserUsername');
+  if(nameEl) nameEl.textContent = user.name;
+  if(userEl) userEl.textContent = user.username;
+}
+
+function gotoChangePassword(){
+  window.location.href = 'change-pwd.html';
+}
+
+function doLogout(){
+  if(!confirm('از حساب خود خارج می‌شوید؟')) return;
+  localStorage.removeItem('hrm_current_user');
+  sessionStorage.removeItem('hrm_current_user');
+  window.location.href = 'login.html';
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ============================================================
+   EMPLOYEE MODAL (Timesheet) — با انتخاب ماه
+   ============================================================ */
+let currentEmpModalId = null; // کارمند فعلی در مودال
+let currentEmpModalMonth = null; // ماه انتخاب‌شده در مودال
+
+function openEmp(id, monthOverride){
+  const emp = mgrState.employees.find(e=>e.id===id);
+  if(!emp) return;
+
+  currentEmpModalId = id;
+
+  // تعیین ماه پیش‌فرض
+  if(monthOverride){
+    currentEmpModalMonth = monthOverride;
+  } else if(currentMonthFilter){
+    currentEmpModalMonth = currentMonthFilter;
+  } else {
+    // آخرین ماهی که این کارمند داده داره
+    const keys = [...Object.keys(emp.data?.entries||{}), ...Object.keys(emp.data?.holidays||{})];
+    if(keys.length){
+      const sorted = keys.sort().reverse();
+      const p = sorted[0].split('/');
+      currentEmpModalMonth = p[0]+'/'+p[1];
+    } else {
+      currentEmpModalMonth = null;
+    }
+  }
+
+  renderEmpModal();
+  openModal('empModal');
+}
+
+/* لیست ماه‌های موجود برای یک کارمند */
+function getEmpMonths(emp){
+  const months = new Set();
+  Object.keys(emp.data?.entries||{}).forEach(k=>{
+    const p = k.split('/'); months.add(p[0]+'/'+p[1]);
+  });
+  Object.keys(emp.data?.holidays||{}).forEach(k=>{
+    const p = k.split('/'); months.add(p[0]+'/'+p[1]);
+  });
+  Object.keys(emp.data?.leaves||{}).forEach(k=>{
+    const p = k.split('/'); months.add(p[0]+'/'+p[1]);
+  });
+  Object.keys(emp.data?.missions||{}).forEach(k=>{
+    const p = k.split('/'); months.add(p[0]+'/'+p[1]);
+  });
+  return [...months].sort().reverse();
+}
+
+/* ماه قبلی / بعدی */
+function navEmpMonth(dir){
+  const emp = mgrState.employees.find(e=>e.id===currentEmpModalId);
+  if(!emp) return;
+  const months = getEmpMonths(emp);
+  if(!months.length) return;
+  const idx = months.indexOf(currentEmpModalMonth);
+  let newIdx = idx + dir;
+  if(newIdx < 0) newIdx = 0;
+  if(newIdx >= months.length) newIdx = months.length - 1;
+  currentEmpModalMonth = months[newIdx];
+  renderEmpModal();
+}
+
+/* تغییر ماه از منو */
+function changeEmpMonth(ym){
+  if(!ym) return;
+  currentEmpModalMonth = ym;
+  renderEmpModal();
+}
+
+/* رندر مودال کارمند */
+function renderEmpModal(){
+  const emp = mgrState.employees.find(e=>e.id===currentEmpModalId);
+  if(!emp) return;
+
+  const months = getEmpMonths(emp);
+  const monthIdx = months.indexOf(currentEmpModalMonth);
+  const hasPrev = monthIdx < months.length - 1;
+  const hasNext = monthIdx > 0;
+
+  // محاسبه آمار ماه انتخاب‌شده
+  const s = empMonthStats(emp, currentEmpModalMonth) || {year:0, month:0, work:0, ot:0, def:0, label:'—'};
+
+  let tableHtml = '';
+  if(s.year && s.month){
+    const days = jalaali.jalaaliMonthLength(s.year, s.month);
+    for(let d=1; d<=days; d++){
+      const jstr = `${s.year}/${String(s.month).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
+      const wd = dayOfWeekJ(jstr);
+      const weekend = wd>=5;
+      const c = computeEmpDay(emp, jstr);
+      const e = emp.data.entries?.[jstr] || {};
+      const entryD = e.entry ? hhmm12(e.entry) : '—';
+      const exitD = e.exit ? hhmm12(e.exit) : '—';
+      const otT = c.ot>0 ? toHM(c.ot) : '—';
+      const defT = c.def>0 ? '-'+toHM(c.def) : '—';
+      const isHoliday = !!emp.data.holidays?.[jstr];
+      const cls = isHoliday ? 'official-holiday' : (weekend ? 'holiday-row' : '');
+      tableHtml += `
+        <tr class="${cls}">
+          <td>${JDAYS[wd]}</td>
+          <td>${d}</td>
+          <td>${entryD}</td>
+          <td>${exitD}</td>
+          <td style="color:var(--accent);font-weight:700">${c.work>0?toHM(c.work):'—'}</td>
+          <td style="color:var(--success)">${otT}</td>
+          <td style="color:var(--danger)">${defT}</td>
+          <td style="font-size:11px;text-align:right">${escapeHtml(e.desc || c.desc || '')}</td>
+        </tr>
+      `;
+    }
+  }
+
+  // ساخت منوی ماه
+  const monthOptions = months.map(ym=>{
+    const p = ym.split('/');
+    const label = `${JMONTHS[parseInt(p[1])-1]} ${p[0]}`;
+    return `<option value="${ym}" ${ym===currentEmpModalMonth?'selected':''}>${label}</option>`;
+  }).join('');
+
+  const monthLabel = currentEmpModalMonth
+    ? (()=>{ const p=currentEmpModalMonth.split('/'); return `${JMONTHS[parseInt(p[1])-1]} ${p[0]}`; })()
+    : '—';
+
+  document.getElementById('empModalBody').innerHTML = `
+    <div class="ts-header">
+      <h2>📄 تایم‌شیت ${escapeHtml(emp.userName)}</h2>
+      <p>تاریخ گزارش: ${jalaliPretty(new Date())} — تعداد ماه‌های موجود: ${months.length}</p>
+    </div>
+
+    ${months.length > 1 ? `
+      <div class="month-picker-bar">
+        <label>
+          🗓️ ماه مورد بررسی:
+          <select onchange="changeEmpMonth(this.value)">
+            ${monthOptions}
+          </select>
+        </label>
+        <button class="nav-btn" onclick="navEmpMonth(1)" ${!hasPrev?'disabled':''} title="ماه قدیمی‌تر">◀</button>
+        <button class="nav-btn" onclick="navEmpMonth(-1)" ${!hasNext?'disabled':''} title="ماه جدیدتر">▶</button>
+        <span class="month-badge">${monthLabel}</span>
+      </div>
+    ` : `
+      <div class="month-picker-bar" style="justify-content:center">
+        <span class="month-badge">${monthLabel}</span>
+      </div>
+    `}
+
+    <div class="ts-kpis">
+      <div class="ts-kpi"><div class="ts-kpi-label">مجموع کارکرد</div><div class="ts-kpi-value">${toHM(s.work)}</div></div>
+      <div class="ts-kpi success"><div class="ts-kpi-label">اضافه‌کاری</div><div class="ts-kpi-value">${toHM(s.ot)}</div></div>
+      <div class="ts-kpi danger"><div class="ts-kpi-label">کسری کار</div><div class="ts-kpi-value">${s.def>0?'-'+toHM(s.def):'0:00'}</div></div>
+      <div class="ts-kpi info"><div class="ts-kpi-label">روزهای ثبت‌شده</div><div class="ts-kpi-value">${countEmpDays(emp)}</div></div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn btn-info btn-sm" onclick="printEmp('${emp.id}')">🖨️ پرینت این ماه</button>
+      <button class="btn btn-success btn-sm" onclick="exportEmpExcelMonth('${emp.id}','${currentEmpModalMonth}')">📗 اکسل این ماه</button>
+      <button class="btn btn-warn btn-sm" onclick="exportEmpPDF('${emp.id}')">📕 PDF این ماه</button>
+      <button class="btn btn-ghost btn-sm" onclick="downloadEmpJSON('${emp.id}')">⬇️ دانلود JSON اصلی</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>روز</th><th>تاریخ</th><th>ورود</th><th>خروج</th>
+            <th>کارکرد</th><th>اضافه‌کاری</th><th>کسری</th><th>شرح</th>
+          </tr>
+        </thead>
+        <tbody>${tableHtml}</tbody>
+        <tfoot>
+          <tr class="sum-row">
+            <td colspan="4">جمع کل</td>
+            <td>${toHM(s.work)}</td>
+            <td>${toHM(s.ot)}</td>
+            <td>${s.def>0?'-'+toHM(s.def):'—'}</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  `;
+}
+
+/* خروجی اکسل برای ماه خاص (از مودال) */
+function exportEmpExcelMonth(id, ym){
+  const emp = mgrState.employees.find(e=>e.id===id);
+  if(!emp || !ym) return;
+  const s = empMonthStats(emp, ym) || {year:0, month:0, work:0, ot:0, def:0, label:'—'};
+  const rows = [];
+  if(s.year && s.month){
+    const days = jalaali.jalaaliMonthLength(s.year, s.month);
+    for(let d=1; d<=days; d++){
+      const jstr = `${s.year}/${String(s.month).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
+      const wd = dayOfWeekJ(jstr);
+      const c = computeEmpDay(emp, jstr);
+      const e = emp.data.entries?.[jstr] || {};
+      const p = jstr.split('/');
+      rows.push({
+        day: JDAYS[wd],
+        date: `${p[2]}/${p[1]}/${p[0]}`,
+        entry: e.entry ? hhmm12(e.entry) : '',
+        exit: e.exit ? hhmm12(e.exit) : '',
+        work: c.work>0 ? toHM(c.work) : '',
+        ot: c.ot>0 ? toHM(c.ot) : '',
+        def: c.def>0 ? '-'+toHM(c.def) : '',
+        desc: e.desc || c.desc || ''
+      });
+    }
+  }
+  const aoa = [
+    ['تایم‌شیت ' + emp.userName],
+    ['ماه: ' + s.label, '', 'تاریخ گزارش:', jalaliStr(new Date())],
+    [],
+    ['روز','تاریخ','ورود','خروج','کارکرد','اضافه‌کاری','کسری','شرح']
+  ];
+  rows.forEach(r=>aoa.push([r.day, r.date, r.entry, r.exit, r.work, r.ot, r.def, r.desc]));
+  aoa.push([]);
+  aoa.push(['جمع کل','','','', toHM(s.work), toHM(s.ot), s.def>0?'-'+toHM(s.def):'0:00','']);
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [{wch:12},{wch:14},{wch:10},{wch:10},{wch:10},{wch:12},{wch:10},{wch:30}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'تایم‌شیت');
+  XLSX.writeFile(wb, `timesheet-${emp.userName.replace(/\s/g,'_')}-${ym.replace(/\//g,'-')}.xlsx`);
+  toast('اکسل ماه انتخاب‌شده آماده شد', 'success');
+}
+
+/* ============================================================
+   UPLOAD / IMPORT
+   ============================================================ */
+function handleFiles(files){
+  if(!files || !files.length) return;
+  const arr = Array.from(files);
+  let done = 0, added = 0, replaced = 0, errors = [];
+
+  const pb = document.getElementById('progressBar');
+  const pf = document.getElementById('progressFill');
+  pb.classList.add('active');
+  pf.style.width = '0%';
+
+  arr.forEach(f => {
+    const r = new FileReader();
+    r.onload = ev => {
+      try{
+        const d = JSON.parse(ev.target.result);
+        if(!d || (!d.userName && !d.entries)) throw new Error('فرمت نامعتبر');
+        const name = (d.userName || 'ناشناس').trim() || 'ناشناس';
+        const existing = mgrState.employees.find(x => x.userName === name);
+        if(existing){
+          existing.data = d;
+          existing.importedAt = Date.now();
+          replaced++;
+        } else {
+          mgrState.employees.push({
+            id: 'emp_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+            userName: name,
+            data: d,
+            importedAt: Date.now()
+          });
+          added++;
+        }
+      }catch(err){ errors.push(f.name + ': ' + err.message); }
+      done++;
+      pf.style.width = Math.round(done / arr.length * 100) + '%';
+      if(done === arr.length){
+        setTimeout(()=>{ pb.classList.remove('active'); pf.style.width='0%'; }, 500);
+        saveMgr();
+        refreshMonthFilter();
+        renderAll();
+        const msg = [];
+        if(added) msg.push(`${added} پرسنل جدید`);
+        if(replaced) msg.push(`${replaced} بروزرسانی`);
+        if(errors.length) msg.push(`${errors.length} خطا`);
+        toast('✅ ' + (msg.join(' • ') || 'انجام شد'), errors.length ? 'error' : 'success');
+      }
+    };
+    r.onerror = ()=>{ errors.push(f.name + ': خطای خواندن'); done++; };
+    r.readAsText(f);
+  });
+}
+
+function refreshMonthFilter(){
+  const sel = document.getElementById('monthSelect');
+  if(!sel) return;
+  const cur = sel.value;
+  const months = new Set();
+  mgrState.employees.forEach(emp=>{
+    Object.keys(emp.data?.entries || {}).forEach(k=>{
+      const p = k.split('/'); months.add(p[0]+'/'+p[1]);
+    });
+    Object.keys(emp.data?.holidays || {}).forEach(k=>{
+      const p = k.split('/'); months.add(p[0]+'/'+p[1]);
+    });
+  });
+  const sorted = [...months].sort().reverse();
+  sel.innerHTML = '<option value="">همه ماه‌ها</option>' +
+    sorted.map(m => {
+      const p = m.split('/');
+      return `<option value="${m}">${JMONTHS[parseInt(p[1])-1]} ${p[0]}</option>`;
+    }).join('');
+  sel.value = cur || '';
+}
+
+function removeEmp(id){
+  const emp = mgrState.employees.find(e=>e.id===id);
+  if(!emp) return;
+  if(!confirm(`حذف «${emp.userName}» از پنل؟`)) return;
+  mgrState.employees = mgrState.employees.filter(e=>e.id!==id);
+  saveMgr(); refreshMonthFilter(); renderAll();
+  toast('حذف شد', 'success');
+}
+
+function clearAll(){
+  if(!mgrState.employees.length) return;
+  if(!confirm('حذف همه پرسنل از پنل؟')) return;
+  if(!confirm('تایید نهایی: همه پرسنل حذف شوند؟')) return;
+  mgrState.employees = [];
+  saveMgr(); refreshMonthFilter(); renderAll();
+  toast('همه پرسنل حذف شدند', 'success');
+}
+
+/* ============================================================
+   SIDEBAR / PANEL SWITCH
+   ============================================================ */
+function toggleSidebar(){
+  const sb = document.getElementById('sidebar');
+  const tg = document.getElementById('sidebarToggle');
+  sidebarOpen = !sidebarOpen;
+  if(window.innerWidth <= 900){
+    sb.classList.toggle('open', sidebarOpen);
+    if(tg) tg.textContent = sidebarOpen ? '✕' : '☰';
+  } else {
+    sb.classList.toggle('collapsed');
+    if(tg) tg.textContent = sb.classList.contains('collapsed') ? '▶' : '◀';
+  }
+}
+
+function switchPanel(name){
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active', b.dataset.panel === name));
+  document.querySelectorAll('.mobile-nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.panel === name));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  const el = document.getElementById('panel-' + name);
+  if(el) el.classList.add('active');
+  // Close sidebar on mobile
+  if(window.innerWidth <= 900){
+    document.getElementById('sidebar').classList.remove('open');
+    sidebarOpen = false;
+    document.getElementById('sidebarToggle').textContent = '☰';
+  }
+}
+
+function setView(v, el){
+  viewMode = v;
+  document.querySelectorAll('#panel-employees .toolbar .chip').forEach(c=>{
+    if(c.textContent.includes('کارتی')||c.textContent.includes('جدولی')) c.classList.remove('active');
+  });
+  if(el) el.classList.add('active');
+  renderEmployees();
+}
+
+/* ============================================================
+   THEME / PARTICLES
+   ============================================================ */
+function setTheme(t){
+  mgrState.settings.theme = t;
+  saveMgr(); applyTheme();
+  toast('تم تغییر کرد', 'success');
+}
+function applyTheme(){
+  const t = mgrState.settings.theme;
+  document.documentElement.setAttribute('data-theme', t === 'ocean-blue' ? '' : t);
+  document.querySelectorAll('.theme-chip').forEach(el=>{
+    el.classList.toggle('active', el.dataset.themeVal === t);
+  });
+}
+function toggleParticles(){
+  mgrState.settings.particles = document.getElementById('particlesToggle').checked;
+  saveMgr(); initParticles();
+  toast(mgrState.settings.particles ? '✨ ذرات روشن شد' : 'ذرات خاموش شد', 'success');
+}
+function initParticles(){
+  const box = document.getElementById('particles');
+  if(!box) return;
+  box.innerHTML = '';
+  if(!mgrState.settings.particles){ box.classList.add('off'); return; }
+  box.classList.remove('off');
+  const count = window.innerWidth < 640 ? 15 : 35;
+  for(let i=0; i<count; i++){
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.bottom = '-10px';
+    p.style.setProperty('--dx', (Math.random() * 100 - 50) + 'px');
+    const dur = 15 + Math.random() * 25;
+    p.style.animationDuration = dur + 's';
+    p.style.animationDelay = (-Math.random() * dur) + 's';
+    p.style.opacity = 0.2 + Math.random() * 0.5;
+    p.style.width = p.style.height = (3 + Math.random() * 4) + 'px';
+    box.appendChild(p);
+  }
+}
+
+/* ============================================================
+   EMPLOYER NAME
+   ============================================================ */
+function saveEmployerName(){
+  mgrState.employerName = document.getElementById('employerName').value.trim() || 'کارفرما';
+  saveMgr(); renderTopbar();
+  toast('نام ذخیره شد', 'success');
+}
+
+/* ============================================================
+   BACKUP / RESTORE
+   ============================================================ */
+function backupManager(){
+  if(!mgrState.employees.length) return toast('چیزی برای پشتیبان نیست', 'error');
+  const blob = new Blob([JSON.stringify({...mgrState, exportedAt: Date.now(), version:'mgr-v2'}, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `manager-backup-${jalaliStr().replace(/\//g,'-')}.json`;
+  a.click();
+  toast('پشتیبان پنل دانلود شد', 'success');
+}
+function restoreManager(ev){
+  const f = ev.target.files[0]; if(!f) return;
+  if(!confirm('پرسنل فعلی جایگزین خواهند شد. مطمئنید؟')) return;
+  const r = new FileReader();
+  r.onload = e => {
+    try{
+      const d = JSON.parse(e.target.result);
+      if(d.employees && Array.isArray(d.employees)){
+        mgrState = {...DEFAULT_MGR_STATE, ...d, settings:{...DEFAULT_MGR_STATE.settings, ...(d.settings||{})}};
+      } else {
+        throw new Error('فرمت نامعتبر');
+      }
+      saveMgr(); applyTheme(); initParticles();
+      refreshMonthFilter(); renderAll();
+      toast('پنل بازیابی شد', 'success');
+    }catch(err){ toast('فایل معتبر نیست: ' + err.message, 'error'); }
+  };
+  r.readAsText(f);
+}
+
+/* ============================================================
+   ANIMATIONS & UTILS
+   ============================================================ */
+function initRipple(){
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('button, .chip, .theme-chip, .nav-item');
+    if(!btn) return;
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const x = e.clientX - rect.left - size/2;
+    const y = e.clientY - rect.top - size/2;
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    ripple.style.width = ripple.style.height = size + 'px';
+    ripple.style.left = x + 'px';
+    ripple.style.top = y + 'px';
+    btn.appendChild(ripple);
+    setTimeout(()=>ripple.remove(), 600);
+  });
+}
+
+function animateNumber(el, target, formatter){
+  if(!el) return;
+  const duration = 1200;
+  const startTime = performance.now();
+  const startVal = parseFloat(el.dataset.rawValue || 0);
+  function step(now){
+    const t = Math.min((now - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - t, 3);
+    const val = startVal + (target - startVal) * eased;
+    el.textContent = formatter ? formatter(val) : Math.round(val);
+    if(t < 1) requestAnimationFrame(step);
+    else el.dataset.rawValue = target;
+  }
+  requestAnimationFrame(step);
+}
+
+function drawSparkline(containerId, values, color){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  if(!values || values.length < 2){ el.innerHTML = ''; return; }
+  const w = 200, h = 32;
+  const max = Math.max(...values, 1);
+  const min = Math.min(...values, 0);
+  const range = max - min || 1;
+  const step = w / (values.length - 1);
+  let path = '';
+  let area = `M 0 ${h} `;
+  values.forEach((v, i)=>{
+    const x = i * step;
+    const y = h - ((v - min) / range) * (h - 6) - 3;
+    path += (i === 0 ? 'M' : 'L') + ` ${x.toFixed(1)} ${y.toFixed(1)} `;
+    area += `L ${x.toFixed(1)} ${y.toFixed(1)} `;
+  });
+  area += `L ${w} ${h} Z`;
+  el.innerHTML = `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <path class="area" d="${area}" ${color?`style="fill:${color}"`:''}></path>
+    <path class="line" d="${path}" ${color?`style:stroke:${color}`:''}></path>
+  </svg>`;
+}
+
+function hideSplash(){
+  const s = document.getElementById('splash');
+  if(!s) return;
+  setTimeout(()=>s.classList.add('hide'), 1600);
+}
+
+/* ============================================================
+   MODAL / TOAST
+   ============================================================ */
+function openModal(id){ document.getElementById(id)?.classList.add('open'); }
+function closeModal(id){ document.getElementById(id)?.classList.remove('open'); }
+function toast(msg, type){
+  const t = document.getElementById('toast');
+  if(!t) return;
+  t.textContent = msg;
+  t.className = 'toast show ' + (type || '');
+  clearTimeout(t._t);
+  t._t = setTimeout(()=>{ t.className = 'toast'; }, 3000);
+}
+/* ============================================================
+   EXPORT: Summary (Excel/PDF)
+   ============================================================ */
+function exportSummaryExcel(){
+  if(!mgrState.employees.length) return toast('پرسنلی وجود ندارد', 'error');
+  const rows = mgrState.employees.map(emp=>{
+    const s = empMonthStats(emp, currentMonthFilter);
+    return [
+      emp.userName,
+      s ? s.label : '—',
+      countEmpDays(emp),
+      s ? toHM(s.work) : '—',
+      s ? toHM(s.ot) : '—',
+      s && s.def > 0 ? '-' + toHM(s.def) : '—'
+    ];
+  });
+  const t = totalStats();
+  const aoa = [
+    ['گزارش جمعی کارکرد پرسنل'],
+    ['کارفرما: ' + (mgrState.employerName || '—'), '', 'تاریخ گزارش:', jalaliStr(new Date())],
+    [],
+    ['نام پرسنل', 'ماه', 'روزهای ثبت‌شده', 'مجموع کارکرد', 'اضافه‌کاری', 'کسری']
+  ];
+  rows.forEach(r => aoa.push(r));
+  aoa.push([]);
+  aoa.push(['جمع کل (' + mgrState.employees.length + ' نفر)', '', '', toHM(t.totalWork), toHM(t.totalOT), t.totalDef > 0 ? '-' + toHM(t.totalDef) : '0:00']);
+
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [{wch:24},{wch:18},{wch:14},{wch:14},{wch:12},{wch:12}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'گزارش جمعی');
+  XLSX.writeFile(wb, `summary-${jalaliStr().replace(/\//g,'-')}.xlsx`);
+  toast('اکسل جمعی آماده شد', 'success');
+}
+
+function exportSummaryPDF(){
+  if(!mgrState.employees.length) return toast('پرسنلی وجود ندارد', 'error');
+  const t = totalStats();
+  const rows = mgrState.employees.map((emp, i) => {
+    const s = empMonthStats(emp, currentMonthFilter) || {work:0, ot:0, def:0, label:'—'};
+    return `
+      <tr style="background:${i%2?'#faf8f2':'#fff'}">
+        <td style="padding:8px;border:1px solid #ddd;text-align:center">${i+1}</td>
+        <td style="padding:8px;border:1px solid #ddd;text-align:right">${escapeHtml(emp.userName)}</td>
+        <td style="padding:8px;border:1px solid #ddd;text-align:center">${s.label}</td>
+        <td style="padding:8px;border:1px solid #ddd;text-align:center">${countEmpDays(emp)}</td>
+        <td style="padding:8px;border:1px solid #ddd;text-align:center;font-weight:700;color:#0284c7">${toHM(s.work)}</td>
+        <td style="padding:8px;border:1px solid #ddd;text-align:center;color:#10b981">${toHM(s.ot)}</td>
+        <td style="padding:8px;border:1px solid #ddd;text-align:center;color:#ef4444">${s.def>0?'-'+toHM(s.def):'0:00'}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const w = window.open('', '_blank');
+  if(!w){ toast('لطفاً اجازه پنجره بازشو را بدهید', 'error'); return; }
+  w.document.write(`
+    <!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8">
+    <title>گزارش جمعی پرسنل</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+    <style>
+      @page{size:A4;margin:15mm}
+      body{font-family:Vazirmatn,Tahoma;direction:rtl;padding:20px;color:#111}
+      .head{text-align:center;border-bottom:3px solid #0284c7;padding-bottom:14px;margin-bottom:20px}
+      .head h1{color:#0284c7;margin:0 0 6px 0;font-size:22px}
+      .head p{color:#666;margin:4px 0;font-size:12px}
+      .kpis{display:flex;gap:10px;margin-bottom:18px}
+      .kpi{flex:1;padding:12px;background:#e0f2fe;border-right:4px solid #0284c7;border-radius:6px}
+      .kpi.g{background:#d1fae5;border-color:#10b981}
+      .kpi.r{background:#fee2e2;border-color:#ef4444}
+      .kpi-l{font-size:11px;color:#666}
+      .kpi-v{font-size:18px;font-weight:800;color:#0284c7;margin-top:4px}
+      .kpi.g .kpi-v{color:#059669}
+      .kpi.r .kpi-v{color:#dc2626}
+      table{width:100%;border-collapse:collapse;font-size:11px}
+      thead tr{background:#0284c7;color:#fff}
+      th,td{border:1px solid #ddd;padding:7px}
+      tfoot tr{background:#0284c7;color:#fff;font-weight:800}
+      .sign{margin-top:40px;text-align:center;font-size:12px}
+      .foot{text-align:center;color:#999;font-size:10px;margin-top:30px;border-top:1px solid #eee;padding-top:10px}
+    </style></head><body>
+      <div class="head">
+        <h1>گزارش جمعی کارکرد پرسنل</h1>
+        <p>کارفرما: ${escapeHtml(mgrState.employerName || '—')} — تعداد پرسنل: ${mgrState.employees.length} نفر</p>
+        <p>تاریخ گزارش: ${jalaliPretty(new Date())}${currentMonthFilter ? ' — ماه: ' + currentMonthFilter : ''}</p>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><div class="kpi-l">مجموع کارکرد</div><div class="kpi-v">${toHM(t.totalWork)}</div></div>
+        <div class="kpi g"><div class="kpi-l">اضافه‌کاری</div><div class="kpi-v">${toHM(t.totalOT)}</div></div>
+        <div class="kpi r"><div class="kpi-l">کسری</div><div class="kpi-v">${t.totalDef>0?'-'+toHM(t.totalDef):'0:00'}</div></div>
+      </div>
+      <table>
+        <thead><tr>
+          <th>#</th><th>نام پرسنل</th><th>ماه</th><th>روزها</th>
+          <th>کارکرد</th><th>اضافه‌کاری</th><th>کسری</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot><tr>
+          <td colspan="4" style="text-align:center">جمع کل</td>
+          <td style="text-align:center">${toHM(t.totalWork)}</td>
+          <td style="text-align:center">${toHM(t.totalOT)}</td>
+          <td style="text-align:center">${t.totalDef>0?'-'+toHM(t.totalDef):'0:00'}</td>
+        </tr></tfoot>
+      </table>
+      <div class="sign">
+        <div>امضای مدیر / کارفرما: _______________________</div>
+      </div>
+      <div class="foot">پنل مدیریت کارکرد پرسنل — ${jalaliPretty(new Date())}</div>
+    </body></html>
+  `);
+  w.document.close();
+  setTimeout(()=>{ w.print(); }, 700);
+  toast('پنجره پرینت باز شد', 'success');
+}
+
+/* ============================================================
+   EXPORT: Employee Individual
+   ============================================================ */
+function buildEmpExport(emp){
+  const s = empMonthStats(emp, currentMonthFilter) || {year:0, month:0, work:0, ot:0, def:0, label:'—'};
+  const rows = [];
+  if(s.year && s.month){
+    const days = jalaali.jalaaliMonthLength(s.year, s.month);
+    for(let d=1; d<=days; d++){
+      const jstr = `${s.year}/${String(s.month).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
+      const wd = dayOfWeekJ(jstr);
+      const c = computeEmpDay(emp, jstr);
+      const e = emp.data.entries?.[jstr] || {};
+      const p = jstr.split('/');
+      const dateFormatted = `${p[2]}/${p[1]}/${p[0]}`;
+      rows.push({
+        day: JDAYS[wd],
+        date: dateFormatted,
+        entry: e.entry ? hhmm12(e.entry) : '',
+        exit: e.exit ? hhmm12(e.exit) : '',
+        work: c.work>0 ? toHM(c.work) : '',
+        ot: c.ot>0 ? toHM(c.ot) : '',
+        def: c.def>0 ? '-'+toHM(c.def) : '',
+        desc: e.desc || c.desc || ''
+      });
+    }
+  }
+  return {rows, stats: s, name: emp.userName};
+}
+
+function exportEmpExcel(id){
+  const emp = mgrState.employees.find(e=>e.id===id);
+  if(!emp) return;
+  const data = buildEmpExport(emp);
+  const aoa = [
+    ['تایم‌شیت ' + emp.userName],
+    ['ماه: ' + data.stats.label, '', 'تاریخ گزارش:', jalaliStr(new Date())],
+    [],
+    ['روز','تاریخ','ورود','خروج','کارکرد','اضافه‌کاری','کسری','شرح']
+  ];
+  data.rows.forEach(r => aoa.push([r.day, r.date, r.entry, r.exit, r.work, r.ot, r.def, r.desc]));
+  aoa.push([]);
+  aoa.push(['جمع کل','','','', toHM(data.stats.work), toHM(data.stats.ot), data.stats.def>0?'-'+toHM(data.stats.def):'0:00','']);
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [{wch:12},{wch:14},{wch:10},{wch:10},{wch:10},{wch:12},{wch:10},{wch:30}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'تایم‌شیت');
+  XLSX.writeFile(wb, `timesheet-${emp.userName.replace(/\s/g,'_')}-${jalaliStr().replace(/\//g,'-')}.xlsx`);
+  toast('اکسل کارمند آماده شد', 'success');
+}
+
+function exportEmpPDF(id){
+  const emp = mgrState.employees.find(e=>e.id===id);
+  if(!emp) return;
+  const data = buildEmpExport(emp);
+  const w = window.open('', '_blank');
+  if(!w){ toast('لطفاً اجازه پنجره بازشو را بدهید', 'error'); return; }
+  w.document.write(`
+    <!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8">
+    <title>تایم‌شیت ${escapeHtml(emp.userName)}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+    <style>
+      @page{size:A4;margin:14mm}
+      body{font-family:Vazirmatn,Tahoma;direction:rtl;padding:18px;color:#111}
+      .head{text-align:center;border-bottom:3px solid #0284c7;padding-bottom:14px;margin-bottom:18px}
+      .head h1{color:#0284c7;margin:0 0 6px 0;font-size:20px}
+      .head p{color:#666;margin:4px 0;font-size:12px}
+      .kpis{display:flex;gap:8px;margin-bottom:16px}
+      .kpi{flex:1;padding:10px;background:#e0f2fe;border-right:4px solid #0284c7;border-radius:6px}
+      .kpi.g{background:#d1fae5;border-color:#10b981}
+      .kpi.r{background:#fee2e2;border-color:#ef4444}
+      .kpi.b{background:#dbeafe;border-color:#3b82f6}
+      .kpi-l{font-size:10px;color:#666}
+      .kpi-v{font-size:15px;font-weight:800;color:#0284c7;margin-top:3px}
+      .kpi.g .kpi-v{color:#059669}
+      .kpi.r .kpi-v{color:#dc2626}
+      .kpi.b .kpi-v{color:#1d4ed8}
+      table{width:100%;border-collapse:collapse;font-size:10.5px}
+      thead tr{background:#0284c7;color:#fff}
+      th,td{border:1px solid #ddd;padding:5px;text-align:center}
+      tbody tr:nth-child(even){background:#fafbfc}
+      tfoot tr{background:#0284c7;color:#fff;font-weight:800}
+      .sign{margin-top:34px;display:flex;justify-content:space-between;font-size:11px}
+      .sign div{text-align:center}
+      .sign .line{margin-top:30px;border-top:1px solid #333;padding-top:5px;width:180px}
+      .foot{text-align:center;color:#999;font-size:10px;margin-top:22px;border-top:1px solid #eee;padding-top:10px}
+    </style></head><body>
+      <div class="head">
+        <h1>تایم‌شیت ${escapeHtml(emp.userName)}</h1>
+        <p>${data.stats.label} — ${jalaliPretty(new Date())}</p>
+        <p>کارفرما: ${escapeHtml(mgrState.employerName || '—')}</p>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><div class="kpi-l">مجموع کارکرد</div><div class="kpi-v">${toHM(data.stats.work)}</div></div>
+        <div class="kpi g"><div class="kpi-l">اضافه‌کاری</div><div class="kpi-v">${toHM(data.stats.ot)}</div></div>
+        <div class="kpi r"><div class="kpi-l">کسری</div><div class="kpi-v">${data.stats.def>0?'-'+toHM(data.stats.def):'0:00'}</div></div>
+        <div class="kpi b"><div class="kpi-l">روزهای ثبت‌شده</div><div class="kpi-v">${data.rows.filter(r=>r.entry||r.exit).length}</div></div>
+      </div>
+      <table>
+        <thead><tr>
+          <th>روز</th><th>تاریخ</th><th>ورود</th><th>خروج</th>
+          <th>کارکرد</th><th>اضافه‌کاری</th><th>کسری</th><th>شرح</th>
+        </tr></thead>
+        <tbody>
+          ${data.rows.map(r=>`<tr>
+            <td>${r.day}</td><td>${r.date}</td>
+            <td>${r.entry||'—'}</td><td>${r.exit||'—'}</td>
+            <td>${r.work||'—'}</td>
+            <td style="color:#059669">${r.ot||'—'}</td>
+            <td style="color:#dc2626">${r.def||'—'}</td>
+            <td style="text-align:right;font-size:10px">${escapeHtml(r.desc)}</td>
+          </tr>`).join('')}
+          <tr style="background:#0284c7;color:#fff;font-weight:800">
+            <td colspan="4">جمع کل</td>
+            <td>${toHM(data.stats.work)}</td>
+            <td>${toHM(data.stats.ot)}</td>
+            <td>${data.stats.def>0?'-'+toHM(data.stats.def):'0:00'}</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="sign">
+        <div><div>امضای پرسنل</div><div class="line"></div></div>
+        <div><div>امضای مدیر</div><div class="line"></div></div>
+        <div><div>امضای کارفرما</div><div class="line"></div></div>
+      </div>
+      <div class="foot">پنل مدیریت کارکرد پرسنل — ${jalaliPretty(new Date())}</div>
+    </body></html>
+  `);
+  w.document.close();
+  setTimeout(()=>{ w.print(); }, 700);
+  toast('پنجره پرینت باز شد', 'success');
+}
+
+function printEmp(id){
+  const emp = mgrState.employees.find(e=>e.id===id);
+  if(!emp) return;
+  const data = buildEmpExport(emp);
+  const w = window.open('', '_blank');
+  if(!w){ toast('لطفاً اجازه پنجره بازشو را بدهید', 'error'); return; }
+  w.document.write(`
+    <!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8">
+    <title>تایم‌شیت ${escapeHtml(emp.userName)}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+    <style>
+      @page{size:A4;margin:14mm}
+      body{font-family:Vazirmatn,Tahoma;direction:rtl;padding:18px;color:#111}
+      .head{text-align:center;border-bottom:3px solid #0284c7;padding-bottom:12px;margin-bottom:16px}
+      .head h1{color:#0284c7;margin:0;font-size:20px}
+      .head p{color:#666;margin:5px 0;font-size:12px}
+      table{width:100%;border-collapse:collapse;font-size:11px}
+      thead tr{background:#0284c7;color:#fff}
+      th,td{border:1px solid #ddd;padding:6px;text-align:center}
+      tbody tr:nth-child(even){background:#fafbfc}
+      tfoot tr{background:#0284c7;color:#fff;font-weight:800}
+      .sign{margin-top:40px;display:flex;justify-content:space-between;font-size:12px}
+      .sign div{text-align:center}
+      .sign .line{margin-top:34px;border-top:1px solid #333;padding-top:6px;width:180px}
+    </style></head><body>
+      <div class="head">
+        <h1>تایم‌شیت ${escapeHtml(emp.userName)}</h1>
+        <p>${data.stats.label} — ${jalaliPretty(new Date())}</p>
+      </div>
+      <table>
+        <thead><tr>
+          <th>روز</th><th>تاریخ</th><th>ورود</th><th>خروج</th>
+          <th>کارکرد</th><th>اضافه‌کاری</th><th>کسری</th><th>شرح</th>
+        </tr></thead>
+        <tbody>
+          ${data.rows.map(r=>`<tr>
+            <td>${r.day}</td><td>${r.date}</td>
+            <td>${r.entry||'—'}</td><td>${r.exit||'—'}</td>
+            <td>${r.work||'—'}</td>
+            <td>${r.ot||'—'}</td>
+            <td>${r.def||'—'}</td>
+            <td style="text-align:right;font-size:10px">${escapeHtml(r.desc)}</td>
+          </tr>`).join('')}
+          <tr style="background:#0284c7;color:#fff;font-weight:800">
+            <td colspan="4">جمع کل</td>
+            <td>${toHM(data.stats.work)}</td>
+            <td>${toHM(data.stats.ot)}</td>
+            <td>${data.stats.def>0?'-'+toHM(data.stats.def):'0:00'}</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="sign">
+        <div><div>امضای پرسنل</div><div class="line"></div></div>
+        <div><div>امضای مدیر</div><div class="line"></div></div>
+        <div><div>امضای کارفرما</div><div class="line"></div></div>
+      </div>
+    </body></html>
+  `);
+  w.document.close();
+  setTimeout(()=>{ w.print(); }, 700);
+}
+
+function printAll(){
+  if(!mgrState.employees.length) return toast('پرسنلی وجود ندارد', 'error');
+  const w = window.open('', '_blank');
+  if(!w){ toast('لطفاً اجازه پنجره بازشو را بدهید', 'error'); return; }
+
+  const pages = mgrState.employees.map(emp=>{
+    const data = buildEmpExport(emp);
+    return `
+      <div class="page">
+        <div class="head">
+          <h1>تایم‌شیت ${escapeHtml(emp.userName)}</h1>
+          <p>${data.stats.label} — ${jalaliPretty(new Date())}</p>
+        </div>
+        <table>
+          <thead><tr>
+            <th>روز</th><th>تاریخ</th><th>ورود</th><th>خروج</th>
+            <th>کارکرد</th><th>اضافه‌کاری</th><th>کسری</th><th>شرح</th>
+          </tr></thead>
+          <tbody>
+            ${data.rows.map(r=>`<tr>
+              <td>${r.day}</td><td>${r.date}</td>
+              <td>${r.entry||'—'}</td><td>${r.exit||'—'}</td>
+              <td>${r.work||'—'}</td>
+              <td>${r.ot||'—'}</td>
+              <td>${r.def||'—'}</td>
+              <td style="text-align:right;font-size:10px">${escapeHtml(r.desc)}</td>
+            </tr>`).join('')}
+            <tr style="background:#0284c7;color:#fff;font-weight:800">
+              <td colspan="4">جمع کل</td>
+              <td>${toHM(data.stats.work)}</td>
+              <td>${toHM(data.stats.ot)}</td>
+              <td>${data.stats.def>0?'-'+toHM(data.stats.def):'0:00'}</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+  }).join('');
+
+  w.document.write(`
+    <!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8">
+    <title>گزارش جمعی پرسنل</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+    <style>
+      @page{size:A4;margin:14mm}
+      body{font-family:Vazirmatn,Tahoma;direction:rtl;color:#111}
+      .page{padding:18px;page-break-after:always}
+      .page:last-child{page-break-after:auto}
+      .head{text-align:center;border-bottom:3px solid #0284c7;padding-bottom:12px;margin-bottom:16px}
+      .head h1{color:#0284c7;margin:0;font-size:20px}
+      .head p{color:#666;margin:5px 0;font-size:12px}
+      table{width:100%;border-collapse:collapse;font-size:10px}
+      thead tr{background:#0284c7;color:#fff}
+      th,td{border:1px solid #ddd;padding:5px;text-align:center}
+      tbody tr:nth-child(even){background:#fafbfc}
+    </style></head><body>${pages}</body></html>
+  `);
+  w.document.close();
+  setTimeout(()=>{ w.print(); }, 900);
+}
+
+function downloadEmpJSON(id){
+  const emp = mgrState.employees.find(e=>e.id===id);
+  if(!emp) return;
+  const blob = new Blob([JSON.stringify(emp.data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${emp.userName.replace(/\s/g,'_')}-backup.json`;
+  a.click();
+  toast('JSON دانلود شد', 'success');
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+let _mgrBooted = false;
+function bootManager(){
+  if(_mgrBooted) return;
+  _mgrBooted = true;
+
+  applyTheme();
+  initRipple();
+  initParticles();
+  refreshMonthFilter();
+  renderAll();
+
+  hideSplash();
+
+  // Clock
+  setInterval(renderTopbar, 1000);
+
+  // Close sidebar on outside click (mobile)
+  document.addEventListener('click', (e)=>{
+    if(window.innerWidth > 900) return;
+    const sb = document.getElementById('sidebar');
+    const tg = document.getElementById('sidebarToggle');
+    if(!sb || !sb.classList.contains('open')) return;
+    if(sb.contains(e.target) || (tg && tg.contains(e.target))) return;
+    sb.classList.remove('open');
+    sidebarOpen = false;
+    if(tg) tg.textContent = '☰';
+  });
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+(function init(){
+  loadMgr();
+
+  // Upload area
+  const ua = document.getElementById('uploadArea');
+  const fi = document.getElementById('fileInput');
+  if(ua && fi){
+    ua.onclick = () => fi.click();
+    fi.onchange = (e) => { handleFiles(e.target.files); fi.value=''; };
+    ua.addEventListener('dragover', (e)=>{ e.preventDefault(); ua.classList.add('drag'); });
+    ua.addEventListener('dragleave', ()=> ua.classList.remove('drag'));
+    ua.addEventListener('drop', (e)=>{
+      e.preventDefault(); ua.classList.remove('drag');
+      handleFiles(e.dataTransfer.files);
+    });
+  }
+
+  // Month filter
+  const ms = document.getElementById('monthSelect');
+  if(ms){
+    ms.addEventListener('change', (e)=>{
+      currentMonthFilter = e.target.value;
+      renderAll();
+    });
+  }
+
+  // Modal outside click
+  document.getElementById('empModal')?.addEventListener('click', (e)=>{
+    if(e.target.id === 'empModal') closeModal('empModal');
+  });
+
+  // Sidebar toggle
+  document.getElementById('sidebarToggle')?.addEventListener('click', toggleSidebar);
+
+  // Init sidebar state on mobile
+  if(window.innerWidth <= 900){
+    document.getElementById('sidebarToggle').textContent = '☰';
+  }
+
+  // Boot
+  setTimeout(bootManager, 100);
+})();
+</script>
+</body>
+</html>

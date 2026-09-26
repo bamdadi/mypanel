@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>ورود به سامانه | کارکرد ماهیانه</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+<script src="users.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+
+:root{
+  --bg:#050a15;--card:rgba(20,30,50,.65);--card2:rgba(30,45,70,.6);
+  --text:#e8f0f8;--muted:#8ba0b8;
+  --accent:#00d4ff;--accent2:#4dabff;--accent3:#7c3aed;
+  --border:rgba(0,212,255,.25);--danger:#ef4444;--success:#10b981;
+  --glow:0 0 40px rgba(0,212,255,.4);
+}
+
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:Vazirmatn,system-ui,sans-serif;
+  background:var(--bg);color:var(--text);
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;position:relative;
+}
+
+/* 🌈 پس‌زمینه گرادیان متحرک */
+.bg-gradient{
+  position:fixed;inset:0;z-index:-2;
+  background:
+    radial-gradient(circle at 20% 20%,rgba(0,212,255,.25),transparent 40%),
+    radial-gradient(circle at 80% 30%,rgba(124,58,237,.25),transparent 40%),
+    radial-gradient(circle at 50% 90%,rgba(77,171,255,.2),transparent 50%),
+    linear-gradient(135deg,#050a15,#0a1428,#050a15);
+  background-size:200% 200%;
+  animation:bgShift 20s ease infinite;
+}
+@keyframes bgShift{
+  0%,100%{background-position:0% 0%}
+  50%{background-position:100% 100%}
+}
+
+/* ✨ ذرات */
+#particles{position:fixed;inset:0;z-index:-1;pointer-events:none}
+.particle{
+  position:absolute;width:3px;height:3px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 10px var(--accent);
+  animation:float-particle linear infinite;
+}
+@keyframes float-particle{
+  0%{transform:translate(0,0) scale(1);opacity:0}
+  10%{opacity:.8}
+  90%{opacity:.4}
+  100%{transform:translate(var(--dx,30px),-100vh) scale(.3);opacity:0}
+}
+
+/* 💎 کارت شیشه‌ای */
+.login-card{
+  width:100%;max-width:440px;
+  background:linear-gradient(135deg,rgba(20,30,50,.85),rgba(30,45,70,.7));
+  backdrop-filter:blur(24px) saturate(180%);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  border:1px solid var(--border);
+  border-radius:24px;
+  padding:40px 32px;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.6),
+    0 0 60px rgba(0,212,255,.15),
+    inset 0 1px 0 rgba(255,255,255,.08);
+  position:relative;
+  overflow:hidden;
+  animation:cardIn .8s cubic-bezier(.2,.9,.3,1.1);
+}
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(40px) scale(.95)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+
+/* نوار نور متحرک روی کارت */
+.login-card::before{
+  content:"";position:absolute;top:0;right:0;left:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),var(--accent3),transparent);
+  background-size:200% 100%;
+  animation:shine 3s linear infinite;
+}
+@keyframes shine{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* 🔐 لوگو */
+.login-logo{
+  width:80px;height:80px;margin:0 auto 20px;
+  border-radius:20px;
+  background:linear-gradient(135deg,var(--accent),var(--accent3));
+  display:flex;align-items:center;justify-content:center;
+  font-size:40px;
+  box-shadow:
+    0 10px 40px rgba(0,212,255,.5),
+    0 0 0 1px rgba(255,255,255,.1),
+    inset 0 2px 10px rgba(255,255,255,.2);
+  animation:logoPulse 3s ease-in-out infinite;
+}
+@keyframes logoPulse{
+  0%,100%{transform:scale(1);box-shadow:0 10px 40px rgba(0,212,255,.5),0 0 0 1px rgba(255,255,255,.1)}
+  50%{transform:scale(1.05);box-shadow:0 15px 60px rgba(0,212,255,.7),0 0 0 1px rgba(255,255,255,.15)}
+}
+
+.login-title{
+  text-align:center;font-size:22px;font-weight:800;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  margin-bottom:6px;letter-spacing:.5px;
+}
+.login-sub{
+  text-align:center;font-size:13px;color:var(--muted);
+  margin-bottom:30px;
+}
+
+/* فرم */
+.form-group{margin-bottom:16px;position:relative}
+.form-label{
+  display:block;font-size:12px;font-weight:700;color:var(--muted);
+  margin-bottom:8px;
+}
+.input-wrap{position:relative;display:flex;align-items:center}
+.input-icon{
+  position:absolute;right:14px;font-size:18px;opacity:.6;
+  pointer-events:none;transition:.2s;
+}
+.form-input{
+  width:100%;
+  background:rgba(10,20,40,.7);
+  border:1.5px solid var(--border);
+  border-radius:12px;
+  padding:14px 46px 14px 46px;
+  font-size:15px;font-weight:600;
+  color:var(--text);
+  outline:none;transition:.25s;
+  font-family:inherit;
+}
+.form-input::placeholder{color:var(--muted);font-weight:400;font-size:13px}
+.form-input:focus{
+  border-color:var(--accent);
+  background:rgba(10,20,40,.95);
+  box-shadow:0 0 0 4px rgba(0,212,255,.15),var(--glow);
+}
+.form-input:focus ~ .input-icon,
+.input-wrap:focus-within .input-icon{opacity:1;color:var(--accent)}
+
+.toggle-pwd{
+  position:absolute;left:14px;background:transparent;border:none;
+  font-size:18px;cursor:pointer;color:var(--muted);
+  padding:4px;line-height:1;transition:.2s;
+}
+.toggle-pwd:hover{color:var(--accent)}
+
+/* چک‌باکس + فراموشی */
+.form-extras{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:22px;font-size:13px;
+}
+.checkbox-wrap{
+  display:flex;align-items:center;gap:8px;cursor:pointer;
+  color:var(--muted);user-select:none;
+}
+.checkbox-wrap input{
+  appearance:none;width:18px;height:18px;border-radius:5px;
+  border:1.5px solid var(--border);background:rgba(10,20,40,.7);
+  cursor:pointer;transition:.2s;position:relative;
+}
+.checkbox-wrap input:checked{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-color:var(--accent);
+}
+.checkbox-wrap input:checked::after{
+  content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:#000;font-weight:900;font-size:12px;
+}
+.forgot-link{
+  color:var(--accent);text-decoration:none;font-size:12px;font-weight:700;
+  cursor:pointer;transition:.2s;
+}
+.forgot-link:hover{color:var(--accent2);text-decoration:underline}
+
+/* دکمه ورود */
+.btn-login{
+  width:100%;padding:15px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2),var(--accent3));
+  background-size:200% 100%;
+  border:none;border-radius:12px;
+  color:#fff;font-size:15px;font-weight:800;
+  cursor:pointer;transition:.3s;
+  box-shadow:0 8px 30px rgba(0,212,255,.4);
+  position:relative;overflow:hidden;
+  font-family:inherit;
+  letter-spacing:.3px;
+}
+.btn-login:hover{
+  transform:translateY(-2px);
+  box-shadow:0 12px 40px rgba(0,212,255,.6);
+  background-position:100% 0;
+}
+.btn-login:active{transform:translateY(0)}
+.btn-login:disabled{
+  opacity:.6;cursor:not-allowed;transform:none;
+}
+.btn-login .spinner{
+  display:inline-block;width:16px;height:16px;
+  border:2px solid rgba(255,255,255,.3);
+  border-top-color:#fff;border-radius:50%;
+  animation:spin .7s linear infinite;
+  vertical-align:middle;margin-left:8px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.ripple{
+  position:absolute;border-radius:50%;background:rgba(255,255,255,.5);
+  transform:scale(0);animation:ripple-anim .6s linear;pointer-events:none;
+}
+@keyframes ripple-anim{to{transform:scale(4);opacity:0}}
+
+/* خطا */
+.error-box{
+  background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);
+  color:#fca5a5;padding:12px 16px;border-radius:10px;
+  font-size:13px;font-weight:600;margin-bottom:16px;
+  display:none;animation:shake .4s;
+}
+.error-box.show{display:block}
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-6px)}
+  75%{transform:translateX(6px)}
+}
+
+/* اطلاعات ورود آزمایشی */
+.demo-info{
+  margin-top:22px;padding:14px;
+  background:rgba(0,212,255,.08);
+  border:1px dashed rgba(0,212,255,.3);
+  border-radius:10px;
+  font-size:11.5px;color:var(--muted);line-height:1.9;
+  text-align:center;
+}
+.demo-info strong{color:var(--accent);font-weight:800}
+
+/* فوتر */
+.footer{
+  text-align:center;margin-top:24px;
+  font-size:11px;color:var(--muted);opacity:.6;
+}
+
+/* 🎨 مودال فراموشی رمز */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);
+  display:none;align-items:center;justify-content:center;z-index:100;padding:20px;
+}
+.modal-overlay.open{display:flex;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{
+  background:linear-gradient(135deg,rgba(20,30,50,.95),rgba(30,45,70,.9));
+  border:1px solid var(--border);border-radius:20px;
+  padding:28px;max-width:420px;width:100%;
+  box-shadow:0 30px 80px rgba(0,0,0,.7);
+  animation:cardIn .4s;position:relative;
+}
+.modal h3{color:var(--accent);margin-bottom:12px;font-size:17px}
+.modal p{font-size:13px;color:var(--muted);line-height:2;margin-bottom:14px}
+.modal-close{
+  position:absolute;top:12px;left:12px;
+  background:rgba(255,255,255,.05);border:none;color:var(--muted);
+  font-size:18px;width:32px;height:32px;border-radius:8px;
+  cursor:pointer;transition:.2s;line-height:1;
+}
+.modal-close:hover{background:rgba(239,68,68,.2);color:var(--danger)}
+
+/* 📱 موبایل */
+@media (max-width:520px){
+  .login-card{padding:32px 22px;margin:16px;border-radius:20px}
+  .login-logo{width:64px;height:64px;font-size:32px}
+  .login-title{font-size:19px}
+  .form-input{padding:13px 42px;font-size:14px}
+  .input-icon{font-size:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- 🌈 پس‌زمینه گرادیان -->
+<div class="bg-gradient"></div>
+<div id="particles"></div>
+
+<!-- 💎 کارت لاگین -->
+<div class="login-card">
+
+  <!-- 🔐 لوگو -->
+  <div class="login-logo">🔐</div>
+
+  <h1 class="login-title">ورود به سامانه کارکرد</h1>
+  <p class="login-sub">سامانه هوشمند مدیریت کارکرد ماهیانه</p>
+
+  <!-- هشدار خطا -->
+  <div class="error-box" id="errorBox"></div>
+
+  <!-- فرم -->
+  <form id="loginForm" onsubmit="handleLogin(event)">
+
+    <div class="form-group">
+      <label class="form-label" for="username">نام کاربری</label>
+      <div class="input-wrap">
+        <input type="text" id="username" class="form-input" placeholder="مثلاً: ahmad" autocomplete="username" required>
+        <span class="input-icon">👤</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="password">رمز عبور</label>
+      <div class="input-wrap">
+        <input type="password" id="password" class="form-input" placeholder="رمز عبور خود را وارد کنید" autocomplete="current-password" required>
+        <span class="input-icon">🔒</span>
+        <button type="button" class="toggle-pwd" onclick="togglePassword()" title="نمایش/مخفی">👁️</button>
+      </div>
+    </div>
+
+    <div class="form-extras">
+      <label class="checkbox-wrap">
+        <input type="checkbox" id="rememberMe" checked>
+        <span>مرا به خاطر بسپار</span>
+      </label>
+      <a class="forgot-link" onclick="showForgotPassword()">فراموشی رمز؟</a>
+    </div>
+
+    <button type="submit" class="btn-login" id="loginBtn">
+      ورود به سامانه
+    </button>
+  </form>
+
+  <!-- اطلاعات آزمایشی -->
+  <div class="demo-info">
+    <div>🔑 <strong>رمز پیش‌فرض کارمندان:</strong> 123456</div>
+    <div>👔 <strong>رمز پیش‌فرض کارفرما:</strong> Admin@2024</div>
+    <div style="margin-top:6px;font-size:10.5px">در اولین ورود، از شما خواسته می‌شود رمز را تغییر دهید.</div>
+  </div>
+
+  <div class="footer">
+    نسخه ۳.۰ | © سامانه کارکرد
+  </div>
+</div>
+
+<!-- مودال فراموشی رمز -->
+<div class="modal-overlay" id="forgotModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeForgot()">✕</button>
+    <h3>🔑 بازیابی رمز عبور</h3>
+    <p>برای بازیابی رمز، لطفاً با <strong style="color:var(--accent)">کارفرما</strong> تماس بگیرید و درخواست بازنشانی رمز کنید.</p>
+    <p style="font-size:12px">پس از بازنشانی توسط کارفرما، رمز شما به مقدار پیش‌فرض (123456) باز می‌گردد و باید در اولین ورود آن را تغییر دهید.</p>
+    <button class="btn-login" onclick="closeForgot()" style="margin-top:8px">متوجه شدم</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   INIT
+   ============================================================ */
+
+// اگه کاربر قبلاً لاگین کرده، برو به پنل مناسب
+(function checkAlreadyLoggedIn(){
+  const user = getCurrentUser();
+  if(user){
+    if(user.role === 'admin'){
+      window.location.href = 'manager.html';
+    } else {
+      window.location.href = 'index.html';
+    }
+  }
+})();
+
+// ذرات متحرک
+(function initParticles(){
+  const box = document.getElementById('particles');
+  const count = window.innerWidth < 640 ? 20 : 40;
+  for(let i=0; i<count; i++){
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.bottom = '-10px';
+    p.style.setProperty('--dx', (Math.random() * 80 - 40) + 'px');
+    const dur = 12 + Math.random() * 18;
+    p.style.animationDuration = dur + 's';
+    p.style.animationDelay = (-Math.random() * dur) + 's';
+    p.style.opacity = 0.3 + Math.random() * 0.5;
+    p.style.width = p.style.height = (2 + Math.random() * 3) + 'px';
+    box.appendChild(p);
+  }
+})();
+
+/* ============================================================
+   RIPPLE
+   ============================================================ */
+document.addEventListener('click', function(e){
+  const btn = e.target.closest('button, .forgot-link');
+  if(!btn) return;
+  const rect = btn.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  const x = e.clientX - rect.left - size/2;
+  const y = e.clientY - rect.top - size/2;
+  const ripple = document.createElement('span');
+  ripple.className = 'ripple';
+  ripple.style.width = ripple.style.height = size + 'px';
+  ripple.style.left = x + 'px';
+  ripple.style.top = y + 'px';
+  btn.appendChild(ripple);
+  setTimeout(()=>ripple.remove(), 600);
+});
+
+/* ============================================================
+   SHOW / HIDE PASSWORD
+   ============================================================ */
+function togglePassword(){
+  const inp = document.getElementById('password');
+  const btn = document.querySelector('.toggle-pwd');
+  if(inp.type === 'password'){
+    inp.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    inp.type = 'password';
+    btn.textContent = '👁️';
+  }
+}
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+async function handleLogin(e){
+  e.preventDefault();
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const rememberMe = document.getElementById('rememberMe').checked;
+  const btn = document.getElementById('loginBtn');
+  const errorBox = document.getElementById('errorBox');
+
+  // پاک کردن خطای قبلی
+  errorBox.classList.remove('show');
+  errorBox.textContent = '';
+
+  // چک اعتبار فرم
+  if(!username || !password){
+    showError('لطفاً نام کاربری و رمز عبور را وارد کنید');
+    return;
+  }
+
+  // حالت loading
+  btn.disabled = true;
+  btn.innerHTML = 'در حال بررسی... <span class="spinner"></span>';
+
+  try{
+    const result = await checkPassword(username, password);
+
+    if(!result.ok){
+      showError(result.error || 'خطا در ورود');
+      btn.disabled = false;
+      btn.textContent = 'ورود به سامانه';
+      return;
+    }
+
+    // ذخیره کاربر
+    saveCurrentUser(result.user, rememberMe);
+
+    // اگه باید رمز عوض کنه → برو به صفحه تغییر رمز
+    if(mustChangePassword(result.user.username)){
+      btn.innerHTML = 'در حال انتقال...';
+      setTimeout(()=>{
+        window.location.href = 'change-pwd.html?force=1';
+      }, 500);
+      return;
+    }
+
+    // اگه همه چیز درسته → برو به پنل مناسب
+    btn.innerHTML = 'خوش آمدید! ✅';
+    setTimeout(()=>{
+      if(result.user.role === 'admin'){
+        window.location.href = 'manager.html';
+      } else {
+        window.location.href = 'index.html';
+      }
+    }, 600);
+
+  }catch(err){
+    showError('خطای سیستمی: ' + err.message);
+    btn.disabled = false;
+    btn.textContent = 'ورود به سامانه';
+  }
+}
+
+function showError(msg){
+  const errorBox = document.getElementById('errorBox');
+  errorBox.textContent = '⚠️ ' + msg;
+  errorBox.classList.add('show');
+}
+
+/* ============================================================
+   FORGOT PASSWORD
+   ============================================================ */
+function showForgotPassword(){
+  document.getElementById('forgotModal').classList.add('open');
+}
+function closeForgot(){
+  document.getElementById('forgotModal').classList.remove('open');
+}
+
+// بستن مودال با کلیک بیرون
+document.getElementById('forgotModal').addEventListener('click', function(e){
+  if(e.target === this) closeForgot();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,2392 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>سامانه هوشمند کارکرد ماهیانه</title>
+<script src="users.js"></script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏰</text></svg>">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+<script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+
+/* 🎨 متغیرهای ۷ تم */
+:root{
+  --bg:#0a0a12;--bg2:#12121c;--card:#1a1a26;--card2:#22222f;--text:#e8e8f0;
+  --muted:#8b8b9e;--accent:#d4af37;--accent2:#f0c75e;
+  --border:rgba(212,175,55,.22);--holiday:rgba(212,175,55,.10);
+  --danger:#e74c3c;--success:#2ecc71;--info:#3498db;
+  --shadow:0 12px 40px rgba(0,0,0,.45);
+  --glow:0 0 24px rgba(212,175,55,.25);
+  --avatar-bg:#7c3aed;
+}
+[data-theme="midnight-rose"]{
+  --bg:#12060e;--bg2:#1a0a14;--card:#24101c;--card2:#2d1424;--text:#f5e6ec;
+  --muted:#a88894;--accent:#e91e63;--accent2:#ff6090;
+  --border:rgba(233,30,99,.25);--holiday:rgba(233,30,99,.10);
+  --glow:0 0 24px rgba(233,30,99,.25);
+}
+[data-theme="light"]{
+  --bg:#f0f0f5;--bg2:#ffffff;--card:#ffffff;--card2:#f8f8fc;--text:#1a1a2e;
+  --muted:#6b6b80;--accent:#c9a227;--accent2:#d4af37;
+  --border:rgba(201,162,39,.3);--holiday:rgba(201,162,39,.10);
+  --shadow:0 8px 24px rgba(0,0,0,.10);
+  --glow:0 0 20px rgba(201,162,39,.20);
+}
+[data-theme="ocean"]{
+  --bg:#04141f;--bg2:#062130;--card:#0a2a3d;--card2:#0e3548;--text:#e0f2f7;
+  --muted:#7a9dad;--accent:#00bcd4;--accent2:#4dd0e1;
+  --border:rgba(0,188,212,.25);--holiday:rgba(0,188,212,.10);
+  --shadow:0 12px 40px rgba(0,0,0,.5);
+  --glow:0 0 24px rgba(0,188,212,.30);
+}
+[data-theme="pure-black"]{
+  --bg:#000000;--bg2:#0a0a0a;--card:#111111;--card2:#1a1a1a;--text:#e0e0e0;
+  --muted:#7a7a7a;--accent:#d4af37;--accent2:#f0c75e;
+  --border:rgba(212,175,55,.30);--holiday:rgba(212,175,55,.08);
+  --shadow:0 12px 40px rgba(0,0,0,.8);
+  --glow:0 0 24px rgba(212,175,55,.20);
+}
+[data-theme="sakura"]{
+  --bg:#2a1720;--bg2:#381f29;--card:#472a35;--card2:#54323f;--text:#fce4ec;
+  --muted:#c49ba9;--accent:#f48fb1;--accent2:#f8bbd0;
+  --border:rgba(244,143,177,.30);--holiday:rgba(244,143,177,.10);
+  --shadow:0 12px 40px rgba(0,0,0,.5);
+  --glow:0 0 24px rgba(244,143,177,.30);
+}
+[data-theme="forest"]{
+  --bg:#0a1508;--bg2:#0f1e0c;--card:#142b13;--card2:#1b381a;--text:#dcecd0;
+  --muted:#7f9a72;--accent:#8bc34a;--accent2:#aed581;
+  --border:rgba(139,195,74,.28);--holiday:rgba(139,195,74,.10);
+  --shadow:0 12px 40px rgba(0,0,0,.5);
+  --glow:0 0 24px rgba(139,195,74,.25);
+}
+html,body{height:100%}
+body{
+  font-family:Vazirmatn,system-ui,sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;transition:background .35s,color .35s;overflow-x:hidden;
+  background-attachment:fixed;background-size:cover;background-position:center;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:-1;
+  background:radial-gradient(circle at 20% 10%,rgba(212,175,55,.08),transparent 50%),
+             radial-gradient(circle at 80% 80%,rgba(212,175,55,.05),transparent 50%);
+  pointer-events:none;
+}
+#particles{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.55;transition:opacity .4s}
+#particles.off{opacity:0}
+[data-theme="light"] #particles{opacity:.20}
+.particle{
+  position:absolute;width:3px;height:3px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 8px var(--accent);
+  animation:float-particle linear infinite;
+}
+@keyframes float-particle{
+  0%{transform:translate(0,0) scale(1);opacity:0}
+  10%{opacity:.6}
+  90%{opacity:.5}
+  100%{transform:translate(var(--dx,20px),-100vh) scale(.4);opacity:0}
+}
+#splash{
+  position:fixed;inset:0;background:var(--bg);z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  transition:opacity .6s,visibility .6s;
+}
+#splash.hide{opacity:0;visibility:hidden;pointer-events:none}
+.splash-logo{font-size:72px;animation:splash-pulse 1.5s ease-in-out infinite}
+@keyframes splash-pulse{
+  0%,100%{transform:scale(1);filter:drop-shadow(0 0 20px var(--accent))}
+  50%{transform:scale(1.1);filter:drop-shadow(0 0 40px var(--accent))}
+}
+.splash-title{font-size:20px;font-weight:800;color:var(--accent);letter-spacing:1px}
+.splash-bar{width:240px;height:4px;background:var(--card2);border-radius:2px;overflow:hidden}
+.splash-bar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));animation:splash-fill 1.8s ease-out forwards}
+@keyframes splash-fill{to{width:100%}}
+.splash-sub{font-size:12px;color:var(--muted)}
+
+a{color:var(--accent);text-decoration:none}
+button,input,select,textarea{font-family:inherit;color:inherit}
+input,select,textarea{
+  background:var(--card2);border:1px solid var(--border);border-radius:10px;
+  padding:8px 12px;font-size:14px;outline:none;transition:.2s;width:100%;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(212,175,55,.15)}
+button{cursor:pointer;border:none;border-radius:10px;transition:.2s;font-weight:600;position:relative;overflow:hidden}
+button:active{transform:scale(.97)}
+.ripple{
+  position:absolute;border-radius:50%;background:rgba(255,255,255,.5);
+  transform:scale(0);animation:ripple-anim .6s linear;pointer-events:none;
+}
+@keyframes ripple-anim{to{transform:scale(4);opacity:0}}
+
+.app{max-width:1400px;margin:0 auto;padding:14px}
+.topbar{
+  display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;
+  background:linear-gradient(135deg,var(--card),var(--card2));
+  border:1px solid var(--border);border-radius:16px;padding:14px 18px;
+  box-shadow:var(--shadow);margin-bottom:14px;position:relative;overflow:hidden;
+  animation:slideDown .5s ease;
+}
+.topbar::after{content:"";position:absolute;top:0;right:0;height:100%;width:4px;background:linear-gradient(180deg,var(--accent),transparent)}
+@keyframes slideDown{from{opacity:0;transform:translateY(-15px)}to{opacity:1;transform:none}}
+.user-info{display:flex;align-items:center;gap:12px}
+.avatar-wrap{position:relative;width:56px;height:56px;flex-shrink:0}
+.avatar-ring{
+  position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(var(--accent) var(--progress,0deg),var(--card2) 0deg);
+  transition:background .8s ease;
+}
+.avatar-ring::after{
+  content:"";position:absolute;inset:3px;border-radius:50%;background:var(--card);
+}
+.avatar{
+  position:absolute;inset:7px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:800;font-size:17px;z-index:1;
+  background:linear-gradient(135deg,var(--avatar-bg),var(--accent));
+  text-shadow:0 1px 3px rgba(0,0,0,.5);
+}
+.user-name{font-weight:700;font-size:16px}
+.user-role{font-size:12px;color:var(--muted)}
+.live-dot{
+  display:inline-block;width:8px;height:8px;border-radius:50%;
+  background:var(--success);margin-left:6px;position:relative;
+  box-shadow:0 0 8px var(--success);vertical-align:middle;
+}
+.live-dot::before{
+  content:"";position:absolute;inset:-3px;border-radius:50%;
+  border:2px solid var(--success);opacity:.6;
+  animation:live-pulse 1.8s ease-out infinite;
+}
+@keyframes live-pulse{0%{transform:scale(1);opacity:.6}100%{transform:scale(2.2);opacity:0}}
+.clock-box{text-align:left}
+.clock-time{font-size:20px;font-weight:700;color:var(--accent);letter-spacing:1px;font-variant-numeric:tabular-nums}
+.clock-date{font-size:12px;color:var(--muted);margin-top:2px}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:14px}
+.kpi{
+  background:linear-gradient(135deg,var(--card),var(--card2));
+  border:1px solid var(--border);border-radius:14px;padding:14px 16px;
+  position:relative;overflow:hidden;box-shadow:var(--shadow);animation:fadeIn .6s ease;
+  cursor:pointer;transition:.28s;
+}
+.kpi:hover{transform:translateY(-3px);box-shadow:0 16px 44px rgba(212,175,55,.22);border-color:var(--accent)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.kpi::before{content:"";position:absolute;top:0;right:0;width:100%;height:3px;background:linear-gradient(90deg,var(--accent),transparent)}
+.kpi-label{font-size:12px;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.kpi-value{font-size:24px;font-weight:800;color:var(--accent);letter-spacing:.5px;font-variant-numeric:tabular-nums}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.sparkline{height:28px;margin-top:8px;opacity:.85}
+.sparkline svg{width:100%;height:100%;overflow:visible;display:block}
+.sparkline path.line{fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sparkline path.area{fill:var(--accent);opacity:.12;stroke:none}
+
+.month-progress{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:14px 18px;margin-bottom:14px;box-shadow:var(--shadow);
+}
+.mp-row{display:flex;align-items:center;gap:12px;margin-bottom:8px;font-size:12px}
+.mp-row:last-child{margin-bottom:0}
+.mp-label{min-width:150px;color:var(--muted);display:flex;justify-content:space-between;gap:10px}
+.mp-label strong{color:var(--accent);font-variant-numeric:tabular-nums}
+.mp-bar{flex:1;height:9px;background:var(--card2);border-radius:5px;overflow:hidden;position:relative}
+.mp-fill{
+  height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));
+  transition:width 1.2s cubic-bezier(.2,.8,.2,1);border-radius:5px;
+  position:relative;overflow:hidden;
+}
+.mp-fill::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);
+  animation:shine 2s infinite;
+}
+@keyframes shine{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.mp-fill.success{background:linear-gradient(90deg,var(--success),#55efc4)}
+
+.menu{
+  display:flex;flex-wrap:wrap;gap:6px;background:var(--card);
+  border:1px solid var(--border);border-radius:14px;padding:8px;margin-bottom:14px;
+  box-shadow:var(--shadow);position:sticky;top:8px;z-index:50;
+}
+.menu-btn{
+  flex:1;min-width:110px;background:transparent;color:var(--text);
+  padding:10px 14px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;
+  border-radius:9px;transition:.25s;
+}
+.menu-btn:hover{background:var(--card2)}
+.menu-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;box-shadow:0 4px 14px rgba(212,175,55,.35)}
+.menu-btn .icon{font-size:16px}
+
+.panel{display:none;animation:fadeIn .4s}
+.panel.active{display:block}
+.section{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:16px;margin-bottom:14px;box-shadow:var(--shadow);
+}
+.section-title{
+  font-size:15px;font-weight:700;color:var(--accent);margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;padding-bottom:8px;border-bottom:1px dashed var(--border);
+}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+.row>*{flex:1;min-width:120px}
+.row .no-flex{flex:0 0 auto;min-width:auto}
+
+.btn{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#000;padding:9px 16px;font-size:13px;font-weight:700;
+  box-shadow:0 4px 14px rgba(212,175,55,.25);
+}
+.btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-ghost{background:var(--card2);color:var(--text);border:1px solid var(--border);box-shadow:none}
+.btn-ghost:hover{background:var(--holiday)}
+.btn-danger{background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff}
+.btn-success{background:linear-gradient(135deg,#2ecc71,#27ae60);color:#fff}
+.btn-info{background:linear-gradient(135deg,#3498db,#2980b9);color:#fff}
+.btn-sm{padding:6px 10px;font-size:12px}
+.btn-icon{padding:6px 8px;min-width:auto}
+
+.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:900px}
+thead th{
+  background:linear-gradient(135deg,var(--card2),var(--card));
+  color:var(--accent);padding:10px 8px;text-align:center;font-weight:700;
+  border-bottom:1px solid var(--border);font-size:12px;
+}
+tbody td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--border);transition:.2s}
+tbody tr:hover{background:var(--holiday)}
+tr.holiday-row{background:var(--holiday)}
+tr.holiday-row td{color:var(--accent)}
+tr.official-holiday{background:rgba(231,76,60,.12)!important}
+tr.official-holiday td{color:#ff8a80}
+tr.today-row{
+  outline:2px solid var(--accent);outline-offset:-2px;
+  background:rgba(212,175,55,.06);
+  animation:today-glow 2s ease-in-out infinite alternate;
+}
+@keyframes today-glow{
+  from{box-shadow:inset 0 0 8px rgba(212,175,55,.15)}
+  to{box-shadow:inset 0 0 20px rgba(212,175,55,.35)}
+}
+tr.sum-row td{
+  background:linear-gradient(135deg,var(--card2),var(--card));
+  font-weight:800;color:var(--accent);border-top:2px solid var(--accent);
+}
+.time-cell{
+  cursor:pointer;padding:6px 8px;border-radius:8px;display:inline-block;
+  min-width:70px;background:var(--card2);border:1px solid transparent;transition:.2s;
+  font-weight:600;letter-spacing:.5px;
+}
+.time-cell:hover{border-color:var(--accent);background:var(--holiday)}
+.time-cell.empty{color:var(--muted);font-weight:400}
+
+.badge{padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-ok{background:rgba(46,204,113,.18);color:#2ecc71}
+.badge-warn{background:rgba(241,196,15,.18);color:#f1c40f}
+.badge-bad{background:rgba(231,76,60,.18);color:#e74c3c}
+.badge-info{background:rgba(52,152,219,.18);color:#3498db}
+
+.desc-input{
+  background:transparent;border:1px dashed transparent;border-radius:6px;
+  padding:4px 6px;font-size:11px;width:100%;min-width:100px;text-align:center;transition:.2s;
+}
+.desc-input:hover{border-color:var(--border);background:var(--card2)}
+.desc-input:focus{border-color:var(--accent);background:var(--card2);text-align:right}
+
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;z-index:200;padding:14px;
+  animation:fadeIn .25s;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:20px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;
+  box-shadow:var(--shadow);animation:slideDown .3s;position:relative;
+}
+.modal h3{color:var(--accent);margin-bottom:14px;font-size:16px}
+.modal-close{
+  position:absolute;top:12px;left:12px;background:transparent;color:var(--muted);
+  font-size:20px;padding:4px 10px;line-height:1;
+}
+.modal-close:hover{color:var(--danger)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:10px}
+.cal-head{
+  text-align:center;font-size:12px;font-weight:700;color:var(--accent);
+  padding:6px 0;background:var(--card2);border-radius:8px;
+}
+.cal-day{
+  aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  background:var(--card2);border-radius:8px;cursor:pointer;font-size:13px;
+  transition:.2s;border:2px solid transparent;position:relative;font-weight:600;
+}
+.cal-day:hover{background:var(--holiday);border-color:var(--accent)}
+.cal-day.selected{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000}
+.cal-day.holiday{background:var(--holiday);color:var(--accent)}
+.cal-day.empty{background:transparent;cursor:default;pointer-events:none}
+
+.task-item{
+  display:flex;align-items:flex-start;gap:10px;padding:12px;
+  background:var(--card2);border:1px solid var(--border);border-radius:12px;
+  margin-bottom:8px;transition:.25s;animation:fadeIn .3s;
+}
+.task-item:hover{border-color:var(--accent);transform:translateX(-3px)}
+.task-item.done{opacity:.55}
+.task-item.done .task-title{text-decoration:line-through}
+.task-check{
+  width:22px;height:22px;border-radius:50%;border:2px solid var(--border);
+  cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  transition:.2s;background:transparent;
+}
+.task-check.checked{background:var(--success);border-color:var(--success);color:#fff}
+.task-content{flex:1;min-width:0}
+.task-title{font-weight:700;font-size:14px;margin-bottom:3px}
+.task-meta{font-size:11px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
+.task-desc{font-size:12px;color:var(--muted);margin-top:5px}
+
+.chat-box{
+  background:var(--card2);border:1px solid var(--border);border-radius:12px;
+  padding:12px;height:420px;overflow-y:auto;margin-bottom:10px;display:flex;flex-direction:column;gap:10px;
+}
+.msg{max-width:82%;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.8;word-wrap:break-word}
+.msg.user{align-self:flex-end;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;border-bottom-left-radius:4px;white-space:pre-wrap}
+.msg.ai{align-self:flex-start;background:var(--card);border:1px solid var(--border);border-bottom-right-radius:4px}
+.msg.sys{align-self:center;background:transparent;color:var(--muted);font-size:11px;font-style:italic}
+.msg code{background:rgba(212,175,55,.15);padding:2px 6px;border-radius:4px;font-family:monospace;direction:ltr;display:inline-block}
+.msg strong{color:var(--accent);font-weight:800}
+.msg pre{background:rgba(0,0,0,.25);padding:8px;border-radius:6px;direction:ltr;text-align:left;overflow-x:auto;font-family:monospace;font-size:11px;margin:8px 0}
+.msg table{
+  width:100%;border-collapse:collapse;margin:10px 0;font-size:12px;
+  background:var(--card2);border-radius:8px;overflow:hidden;min-width:0;
+}
+.msg table th{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#000;padding:8px 6px;text-align:center;font-weight:800;
+  border:1px solid var(--border);
+}
+.msg table td{padding:6px;text-align:center;border:1px solid var(--border)}
+.msg table tr:nth-child(even) td{background:rgba(212,175,55,.06)}
+.msg table tr:hover td{background:var(--holiday)}
+.typing::after{content:"...";animation:dots 1.2s infinite}
+@keyframes dots{0%{content:"."}33%{content:".."}66%{content:"..."}}
+
+.wisdom{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(10px);
+  display:none;align-items:center;justify-content:center;z-index:300;padding:20px;
+}
+.wisdom.open{display:flex;animation:fadeIn .5s}
+.wisdom-card{
+  background:linear-gradient(135deg,var(--card),var(--card2));
+  border:2px solid var(--accent);border-radius:22px;padding:36px 28px;max-width:520px;
+  text-align:center;box-shadow:0 20px 60px rgba(212,175,55,.35);
+  animation:popIn .6s cubic-bezier(.2,.9,.3,1.2);position:relative;overflow:hidden;
+}
+.wisdom-card::before{
+  content:"";position:absolute;inset:-50%;background:conic-gradient(from 0deg,transparent,var(--accent),transparent 30%);
+  animation:rot 4s linear infinite;opacity:.15;z-index:0;
+}
+.wisdom-card>*{position:relative;z-index:1}
+@keyframes popIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+@keyframes rot{to{transform:rotate(360deg)}}
+.wisdom-icon{font-size:48px;margin-bottom:14px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.wisdom-text{font-size:17px;line-height:2;color:var(--text);font-weight:500;margin-bottom:10px}
+.wisdom-author{font-size:13px;color:var(--accent);font-weight:700}
+
+.toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--card);border:1px solid var(--accent);border-radius:12px;
+  padding:12px 22px;font-size:13px;font-weight:600;color:var(--text);
+  box-shadow:var(--shadow);z-index:400;transition:.35s;opacity:0;max-width:90vw;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.success{border-color:var(--success);color:var(--success)}
+.toast.error{border-color:var(--danger);color:var(--danger)}
+
+.chip{
+  display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;
+  background:var(--card2);border:1px solid var(--border);font-size:12px;cursor:pointer;transition:.2s;
+}
+.chip:hover{border-color:var(--accent);background:var(--holiday)}
+.chip.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;border-color:transparent}
+
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
+.empty-state .icon{font-size:48px;margin-bottom:12px;opacity:.5}
+.divider{height:1px;background:var(--border);margin:14px 0}
+
+.notif-toggle{
+  display:flex;align-items:center;gap:8px;padding:10px 12px;
+  background:var(--card2);border:1px solid var(--border);border-radius:10px;
+  font-size:13px;cursor:pointer;transition:.2s;
+}
+.notif-toggle:hover{border-color:var(--accent);background:var(--holiday)}
+.notif-toggle input{width:auto;cursor:pointer}
+.notif-toggle input:checked + span{color:var(--accent);font-weight:700}
+
+.theme-chip{
+  display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;
+  background:var(--card2);border:2px solid var(--border);font-size:12px;cursor:pointer;
+  transition:.25s;font-weight:600;
+}
+.theme-chip:hover{transform:translateY(-2px);border-color:var(--accent)}
+.theme-chip.active{border-color:var(--accent);background:var(--holiday);box-shadow:var(--glow)}
+.theme-dot{width:14px;height:14px;border-radius:50%;box-shadow:0 0 8px currentColor}
+
+[data-tip]{position:relative}
+[data-tip]:hover::after{
+  content:attr(data-tip);
+  position:absolute;bottom:calc(100% + 8px);right:50%;transform:translateX(50%);
+  background:var(--card);color:var(--text);padding:6px 12px;border-radius:8px;
+  font-size:11px;font-weight:500;white-space:nowrap;z-index:100;
+  border:1px solid var(--accent);box-shadow:var(--shadow);
+  animation:fadeIn .2s;pointer-events:none;
+}
+[data-tip]:hover::before{
+  content:"";position:absolute;bottom:calc(100% + 3px);right:50%;transform:translateX(50%);
+  border:5px solid transparent;border-top-color:var(--accent);z-index:101;
+}
+
+@media (max-width:640px){
+  .app{padding:8px}
+  .topbar{padding:10px 12px;border-radius:12px}
+  .clock-time{font-size:16px}
+  .kpi-value{font-size:20px}
+  .menu{overflow-x:auto;flex-wrap:nowrap;padding:6px}
+  .menu-btn{min-width:auto;white-space:nowrap;padding:8px 12px;font-size:12px}
+  .section{padding:12px}
+  table{font-size:12px}
+  .msg{max-width:92%}
+  .wisdom-card{padding:26px 18px}
+  .wisdom-text{font-size:15px}
+  .msg table{font-size:11px}
+  .mp-label{min-width:100px;font-size:11px}
+  .avatar-wrap{width:48px;height:48px}
+}
+</style>
+</head>
+<body>
+
+<!-- 🎯 Splash Screen -->
+<div id="splash">
+  <div class="splash-logo">⏰</div>
+  <div class="splash-title">سامانه هوشمند کارکرد ماهیانه</div>
+  <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+  <div class="splash-sub">در حال آماده‌سازی...</div>
+</div>
+
+<!-- ✨ ذرات متحرک پس‌زمینه -->
+<div id="particles"></div>
+
+<!-- Wisdom Popup -->
+<div class="wisdom" id="wisdomPopup">
+  <div class="wisdom-card">
+    <div class="wisdom-icon">✨</div>
+    <div class="wisdom-text" id="wisdomText"></div>
+    <div class="wisdom-author" id="wisdomAuthor"></div>
+    <button class="btn" style="margin-top:22px" onclick="closeWisdom()">شروع کار 🚀</button>
+  </div>
+</div>
+
+<!-- Lock Screen -->
+<div class="modal-overlay" id="lockScreen">
+  <div class="modal" style="max-width:380px;text-align:center">
+    <div style="font-size:48px;margin-bottom:10px">🔒</div>
+    <h3 style="justify-content:center">ورود به سامانه</h3>
+    <input type="password" id="lockPass" placeholder="رمز عبور" style="text-align:center;font-size:16px;padding:12px" onkeydown="if(event.key==='Enter')unlock()">
+    <button class="btn" style="width:100%;margin-top:12px" onclick="unlock()">ورود</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="showRecovery()">🔑 فراموشی رمز</button>
+  </div>
+</div>
+
+<!-- Recovery Modal -->
+<div class="modal-overlay" id="recoveryModal">
+  <div class="modal" style="max-width:400px">
+    <button class="modal-close" onclick="closeModal('recoveryModal')">✕</button>
+    <h3>🔑 بازیابی رمز عبور</h3>
+    <div id="recoveryBody"></div>
+  </div>
+</div>
+
+<!-- KPI Detail Modal -->
+<div class="modal-overlay" id="kpiModal">
+  <div class="modal" style="max-width:520px">
+    <button class="modal-close" onclick="closeModal('kpiModal')">✕</button>
+    <h3 id="kpiModalTitle">جزئیات</h3>
+    <div id="kpiModalBody"></div>
+  </div>
+</div>
+
+<!-- Jalali Picker Modal -->
+<div class="modal-overlay" id="jalaliPickerModal">
+  <div class="modal" style="max-width:400px">
+    <button class="modal-close" onclick="closeModal('jalaliPickerModal')">✕</button>
+    <h3>📅 انتخاب تاریخ</h3>
+    <div class="row" style="margin-bottom:6px">
+      <button class="btn btn-ghost btn-sm no-flex" onclick="jpNav(-1)">◀</button>
+      <div id="jpLabel" style="flex:1;text-align:center;font-weight:700;color:var(--accent)"></div>
+      <button class="btn btn-ghost btn-sm no-flex" onclick="jpNav(1)">▶</button>
+    </div>
+    <div class="cal-grid">
+      <div class="cal-head">ش</div><div class="cal-head">ی</div><div class="cal-head">د</div>
+      <div class="cal-head">س</div><div class="cal-head">چ</div><div class="cal-head">پ</div><div class="cal-head">ج</div>
+    </div>
+    <div class="cal-grid" id="jpGrid"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="jpToday()">امروز</button>
+      <button class="btn btn-ghost" onclick="closeModal('jalaliPickerModal')">انصراف</button>
+    </div>
+  </div>
+</div>
+
+<!-- Time Edit Modal -->
+<div class="modal-overlay" id="timeEditModal">
+  <div class="modal" style="max-width:380px">
+    <button class="modal-close" onclick="closeModal('timeEditModal')">✕</button>
+    <h3 id="timeEditTitle">ویرایش ساعت</h3>
+    <div id="timeEditBody"></div>
+  </div>
+</div>
+
+<!-- 📱 اپ اصلی -->
+<div class="app" id="appRoot">
+
+  <!-- Topbar با آواتار پویا -->
+  <div class="topbar">
+    <div class="user-info">
+      <div class="avatar-wrap">
+        <div class="avatar-ring" id="avatarRing" style="--progress:0deg"></div>
+        <div class="avatar" id="avatarInitial">؟</div>
+      </div>
+      <div>
+        <div class="user-name" id="topUserName">کاربر مهمان</div>
+        <div class="user-role">
+          <span class="live-dot"></span>
+          <span id="liveStatus">در حال رصد</span>
+        </div>
+      </div>
+    </div>
+    <div class="clock-box">
+      <div class="clock-time" id="topClock">--:--:--</div>
+      <div class="clock-date" id="topDate">---</div>
+    </div>
+  </div>
+
+  <!-- KPIs تعاملی با Sparkline -->
+  <div class="kpis">
+    <div class="kpi" data-tip="مجموع ساعات کارکرد این ماه" onclick="showKpiDetail('total')">
+      <div class="kpi-label">⏱️ مجموع کارکرد ماه</div>
+      <div class="kpi-value" id="kpiTotal">0:00</div>
+      <div class="kpi-sub">ساعت:دقیقه</div>
+      <div class="sparkline" id="sparkTotal"></div>
+    </div>
+    <div class="kpi" data-tip="مجموع ساعات اضافه‌کاری" onclick="showKpiDetail('ot')">
+      <div class="kpi-label">➕ مجموع اضافه‌کاری</div>
+      <div class="kpi-value" id="kpiOT" style="color:var(--success)">0:00</div>
+      <div class="kpi-sub">ساعت:دقیقه</div>
+      <div class="sparkline" id="sparkOT"></div>
+    </div>
+    <div class="kpi" data-tip="مجموع کسری کار" onclick="showKpiDetail('def')">
+      <div class="kpi-label">➖ مجموع کسری کار</div>
+      <div class="kpi-value" id="kpiDef" style="color:var(--danger)">0:00</div>
+      <div class="kpi-sub">ساعت:دقیقه</div>
+      <div class="sparkline" id="sparkDef"></div>
+    </div>
+    <div class="kpi" data-tip="تعداد وظایف انجام‌نشده" onclick="showKpiDetail('tasks')">
+      <div class="kpi-label">📋 وظایف باقی‌مانده</div>
+      <div class="kpi-value" id="kpiTasks" style="color:var(--info)">0</div>
+      <div class="kpi-sub">کار انجام‌نشده</div>
+      <div class="sparkline" id="sparkTasks"></div>
+    </div>
+  </div>
+
+  <!-- Progress Bar ماه -->
+  <div class="month-progress">
+    <div class="mp-row">
+      <div class="mp-label"><span>📅 پیشرفت ماه</span><strong id="mpMonthPct">0%</strong></div>
+      <div class="mp-bar"><div class="mp-fill" id="mpMonthBar" style="width:0"></div></div>
+    </div>
+    <div class="mp-row">
+      <div class="mp-label"><span>✅ کارکرد انجام‌شده</span><strong id="mpWorkPct">0%</strong></div>
+      <div class="mp-bar"><div class="mp-fill success" id="mpWorkBar" style="width:0"></div></div>
+    </div>
+  </div>
+
+  <!-- Menu -->
+  <div class="menu">
+    <button class="menu-btn active" data-panel="work"><span class="icon">📊</span> کارکرد ماهیانه</button>
+    <button class="menu-btn" data-panel="tasks"><span class="icon">✅</span> وظایف و یادآور</button>
+    <button class="menu-btn" data-panel="manage"><span class="icon">🗂️</span> مدیریت رویدادها</button>
+    <button class="menu-btn" data-panel="chat"><span class="icon">🤖</span> دستیار هوشمند</button>
+    <button class="menu-btn" data-panel="settings"><span class="icon">⚙️</span> تنظیمات</button>
+  </div>
+
+  <!-- Panel: Work -->
+  <div class="panel active" id="panel-work">
+    <div class="section">
+      <div class="row">
+        <input id="userNameInput" placeholder="نام و نام خانوادگی" class="no-flex" style="min-width:200px">
+        <button class="btn no-flex" onclick="saveUserName()">ذخیره نام</button>
+        <div style="flex:1"></div>
+        <button class="btn btn-info no-flex" onclick="calcTodayExit()">🕐 محاسبه کارکرد (ثبت پایان)</button>
+        <button class="btn btn-danger no-flex" onclick="confirmClear()">🗑️ پاک کردن اطلاعات</button>
+      </div>
+      <div class="row">
+        <div class="chip" onclick="changeMonth(-1)">◀ ماه قبل</div>
+        <div class="chip active" id="monthLabel">---</div>
+        <div class="chip" onclick="changeMonth(1)">ماه بعد ▶</div>
+        <div style="flex:1"></div>
+        <button class="btn btn-ghost btn-sm no-flex" onclick="exportExcel()">📗 اکسل</button>
+        <button class="btn btn-ghost btn-sm no-flex" onclick="exportPDF()">📕 PDF (پرینت)</button>
+        <button class="btn btn-ghost btn-sm no-flex" onclick="exportWord()">📘 Word</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">📅 جدول کارکرد</div>
+      <div class="table-wrap">
+        <table id="workTable">
+          <thead>
+            <tr>
+              <th>روز</th>
+              <th>تاریخ</th>
+              <th>ورود</th>
+              <th>خروج</th>
+              <th>کارکرد</th>
+              <th>اضافه‌کاری</th>
+              <th>کسری</th>
+              <th>وضعیت</th>
+              <th>شرح</th>
+            </tr>
+          </thead>
+          <tbody id="workBody"></tbody>
+          <tfoot id="workFoot"></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel: Tasks -->
+  <div class="panel" id="panel-tasks">
+    <div class="section">
+      <div class="section-title">➕ افزودن وظیفه / یادآور</div>
+      <div class="row">
+        <input id="taskTitle" placeholder="عنوان وظیفه" style="min-width:200px">
+        <input id="taskDate" placeholder="تاریخ شمسی (1403/07/15)" class="no-flex" style="min-width:170px">
+        <button class="btn btn-ghost no-flex" onclick="pickJalaliDate('taskDate')">📅</button>
+        <input type="time" id="taskTime" class="no-flex" style="min-width:130px">
+      </div>
+      <textarea id="taskDesc" placeholder="توضیحات (اختیاری)" rows="2" style="margin-bottom:10px"></textarea>
+      <button class="btn" onclick="addTask()">➕ افزودن</button>
+    </div>
+    <div class="section">
+      <div class="section-title">📋 لیست وظایف</div>
+      <div class="row" style="margin-bottom:10px">
+        <div class="chip active" onclick="filterTasks('all',this)">همه</div>
+        <div class="chip" onclick="filterTasks('pending',this)">باقی‌مانده</div>
+        <div class="chip" onclick="filterTasks('done',this)">انجام‌شده</div>
+        <div class="chip" onclick="filterTasks('today',this)">امروز</div>
+      </div>
+      <div id="taskList"></div>
+    </div>
+  </div>
+
+  <!-- Panel: Manage -->
+  <div class="panel" id="panel-manage">
+    <div class="section">
+      <div class="section-title">🎉 ثبت روز تعطیل</div>
+      <div class="row">
+        <input id="holidayDate" placeholder="تاریخ (1403/07/15)" style="min-width:170px">
+        <button class="btn btn-ghost no-flex" onclick="pickJalaliDate('holidayDate')">📅</button>
+        <input id="holidayTitle" placeholder="شرح تعطیلی" style="min-width:200px">
+        <button class="btn btn-info no-flex" onclick="addHoliday()">ثبت تعطیلی</button>
+      </div>
+      <div class="divider"></div>
+      <div class="row">
+        <button class="btn btn-success" onclick="loadOfficialHolidays(currentYear)">🌐 دریافت خودکار تعطیلات رسمی</button>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">🏖️ ثبت مرخصی</div>
+      <div class="row">
+        <input id="leaveDate" placeholder="تاریخ (1403/07/15)" style="min-width:170px">
+        <button class="btn btn-ghost no-flex" onclick="pickJalaliDate('leaveDate')">📅</button>
+        <select id="leaveType" class="no-flex" style="min-width:140px" onchange="toggleLeaveHours()">
+          <option value="daily">مرخصی روزانه</option>
+          <option value="hourly">مرخصی ساعتی</option>
+        </select>
+        <input type="number" id="leaveHours" placeholder="تعداد ساعت" class="no-flex" style="min-width:110px;display:none" step="0.5" min="0">
+        <input id="leaveDesc" placeholder="توضیح" style="min-width:150px">
+        <button class="btn btn-info no-flex" onclick="addLeave()">ثبت مرخصی</button>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">🚗 ثبت ماموریت</div>
+      <div class="row">
+        <input id="missionDate" placeholder="تاریخ" style="min-width:150px">
+        <button class="btn btn-ghost no-flex" onclick="pickJalaliDate('missionDate')">📅</button>
+        <input id="missionDesc" placeholder="شرح ماموریت" style="min-width:200px">
+        <button class="btn btn-info no-flex" onclick="addMission()">ثبت ماموریت</button>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">📋 رویدادهای ثبت‌شده</div>
+      <div id="eventsList"></div>
+    </div>
+  </div>
+
+  <!-- Panel: Chat -->
+  <div class="panel" id="panel-chat">
+    <div class="section">
+      <div class="section-title">🤖 دستیار هوشمند GapGPT</div>
+      <div class="chat-box" id="chatBox"></div>
+      <div class="row" style="margin-bottom:8px">
+        <input id="chatInput" placeholder="پیام خود را بنویسید..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}">
+        <button class="btn no-flex" onclick="sendChat()">ارسال ➤</button>
+      </div>
+      <div class="row">
+        <button class="btn btn-ghost btn-sm no-flex" onclick="analyzeWork()">📊 تحلیل کارکرد من</button>
+        <button class="btn btn-ghost btn-sm no-flex" onclick="testAI()">🔌 تست اتصال AI</button>
+        <button class="btn btn-ghost btn-sm no-flex" onclick="printChat()">🖨️ پرینت گفتگو</button>
+        <button class="btn btn-ghost btn-sm no-flex" onclick="clearChat()">🧹 پاک کردن چت</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel: Settings -->
+  <div class="panel" id="panel-settings">
+    <div class="section">
+      <div class="section-title">🎨 تم و ظاهر</div>
+      <div class="row" style="gap:8px">
+        <div class="theme-chip" data-theme-val="midnight-gold" onclick="setTheme('midnight-gold')">
+          <span class="theme-dot" style="background:#d4af37;color:#d4af37"></span> Midnight Gold
+        </div>
+        <div class="theme-chip" data-theme-val="midnight-rose" onclick="setTheme('midnight-rose')">
+          <span class="theme-dot" style="background:#e91e63;color:#e91e63"></span> Midnight Rose
+        </div>
+        <div class="theme-chip" data-theme-val="ocean" onclick="setTheme('ocean')">
+          <span class="theme-dot" style="background:#00bcd4;color:#00bcd4"></span> Ocean Blue
+        </div>
+        <div class="theme-chip" data-theme-val="pure-black" onclick="setTheme('pure-black')">
+          <span class="theme-dot" style="background:#d4af37;color:#d4af37"></span> Pure Black
+        </div>
+        <div class="theme-chip" data-theme-val="sakura" onclick="setTheme('sakura')">
+          <span class="theme-dot" style="background:#f48fb1;color:#f48fb1"></span> Sakura
+        </div>
+        <div class="theme-chip" data-theme-val="forest" onclick="setTheme('forest')">
+          <span class="theme-dot" style="background:#8bc34a;color:#8bc34a"></span> Forest
+        </div>
+        <div class="theme-chip" data-theme-val="light" onclick="setTheme('light')">
+          <span class="theme-dot" style="background:#c9a227;color:#c9a227"></span> روشن
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="row">
+        <label class="notif-toggle" style="flex:1">
+          <input type="checkbox" id="particlesToggle" onchange="toggleParticles()">
+          <span>✨ نمایش ذرات متحرک پس‌زمینه</span>
+        </label>
+      </div>
+
+      <div class="row">
+        <label style="flex:1">🖼️ آدرس تصویر پس‌زمینه:
+          <input id="bgUrl" placeholder="https://..." style="margin-top:6px">
+        </label>
+        <button class="btn no-flex" onclick="setBg()">اعمال</button>
+        <button class="btn btn-ghost no-flex" onclick="clearBg()">حذف</button>
+      </div>
+      <div class="row">
+        <label style="flex:1">📁 آپلود تصویر پس‌زمینه:
+          <input type="file" id="bgFile" accept="image/*" onchange="uploadBg(event)" style="margin-top:6px">
+        </label>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🔒 رمز عبور و بازیابی</div>
+      <div class="row">
+        <label style="display:flex;align-items:center;gap:8px;flex:0 0 auto">
+          <input type="checkbox" id="passEnabled" style="width:auto" onchange="togglePass()">
+          فعال‌سازی رمز ورود
+        </label>
+      </div>
+      <div class="row">
+        <input type="password" id="passNew" placeholder="رمز جدید">
+        <button class="btn" onclick="savePass()">ذخیره رمز</button>
+      </div>
+      <div class="divider"></div>
+      <div class="row">
+        <input id="secQuestion" placeholder="سوال امنیتی (مثلاً: نام اولین معلم من؟)" style="min-width:250px">
+      </div>
+      <div class="row">
+        <input id="secAnswer" placeholder="پاسخ سوال امنیتی">
+        <button class="btn btn-info" onclick="saveSecurity()">ذخیره سوال امنیتی</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🔔 نوتیفیکیشن هوشمند</div>
+      <div class="row">
+        <button class="btn btn-info no-flex" onclick="requestNotificationPermission()">🎯 فعال‌سازی نوتیف مرورگر</button>
+        <button class="btn btn-ghost no-flex" onclick="testNotification()">🧪 تست نوتیف</button>
+        <span id="notifStatus" style="font-size:12px;color:var(--muted);align-self:center"></span>
+      </div>
+      <div class="divider"></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px">
+        <label class="notif-toggle"><input type="checkbox" id="notifMorning" onchange="saveNotifSettings()"><span>🌅 یادآور صبح (۸:۰۰)</span></label>
+        <label class="notif-toggle"><input type="checkbox" id="notifEndDay" onchange="saveNotifSettings()"><span>🌆 یادآور پایان کار (۱۷:۰۰)</span></label>
+        <label class="notif-toggle"><input type="checkbox" id="notifEntryLate" onchange="saveNotifSettings()"><span>⚠️ هشدار تأخیر ورود (۹:۳۰)</span></label>
+        <label class="notif-toggle"><input type="checkbox" id="notifExitLate" onchange="saveNotifSettings()"><span>⚠️ هشدار عدم ثبت خروج (۱۷:۳۰)</span></label>
+        <label class="notif-toggle"><input type="checkbox" id="notifOverdueTasks" onchange="saveNotifSettings()"><span>📋 وظایف عقب‌افتاده (۱۰:۰۰)</span></label>
+        <label class="notif-toggle"><input type="checkbox" id="notifDeficit" onchange="saveNotifSettings()"><span>➖ هشدار کسری کار (جمعه ۱۰:۰۰)</span></label>
+        <label class="notif-toggle"><input type="checkbox" id="notifWeekly" onchange="saveNotifSettings()"><span>📊 خلاصه هفتگی (شنبه ۹:۰۰)</span></label>
+        <label class="notif-toggle"><input type="checkbox" id="notifMidDay" onchange="saveNotifSettings()"><span>☕ گزارش نیم‌روز (۱۲:۳۰)</span></label>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🤖 هوش مصنوعی (GapGPT)</div>
+      <div style="background:rgba(46,204,113,.08);border-right:3px solid var(--success);padding:10px;border-radius:8px;margin-bottom:12px;font-size:12px;line-height:1.8">
+        ✅ <strong>آدرس صحیح:</strong> <code style="direction:ltr;display:inline-block;background:var(--card2);padding:2px 6px;border-radius:4px">https://api.gapgpt.app/v1/chat/completions</code>
+      </div>
+      <div class="row"><input id="aiKey" placeholder="کلید API" type="password"></div>
+      <div class="row"><input id="aiModel" placeholder="نام مدل (پیش‌فرض: gapgpt-qwen-3.5)"></div>
+      <div class="row"><input id="aiBase" placeholder="https://api.gapgpt.app/v1/chat/completions"></div>
+      <div class="row">
+        <button class="btn" onclick="saveAI()">ذخیره تنظیمات AI</button>
+        <button class="btn btn-ghost" onclick="testAI()">🔌 تست اتصال</button>
+      </div>
+    </div>
+<div class="section">
+  <div class="section-title">👤 حساب کاربری</div>
+  <div class="row">
+    <div style="flex:1">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px">کاربر فعلی:</div>
+      <div style="font-weight:800;color:var(--accent);font-size:15px" id="currentUserName">—</div>
+    </div>
+    <div style="flex:1">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px">نام کاربری:</div>
+      <div style="font-weight:700;font-size:14px" id="currentUserUsername">—</div>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="row">
+    <button class="btn btn-info no-flex" onclick="gotoChangePassword()">🔑 تغییر رمز عبور</button>
+    <button class="btn btn-danger no-flex" onclick="doLogout()">🚪 خروج از حساب</button>
+  </div>
+</div>
+    <div class="section">
+      <div class="section-title">💾 پشتیبان‌گیری</div>
+      <div class="row">
+        <button class="btn btn-success no-flex" onclick="backupJSON()">⬇️ دانلود پشتیبان (JSON)</button>
+        <label class="btn btn-info no-flex" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">
+          ⬆️ بازیابی از فایل
+          <input type="file" accept=".json" onchange="restoreJSON(event)" style="display:none">
+        </label>
+        <button class="btn btn-danger no-flex" onclick="resetAll()">🔥 بازنشانی کامل</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+  /* ============================================================
+   🔐 AUTH CHECK — چک لاگین
+   ============================================================ */
+(function authGuard(){
+  const user = getCurrentUser();
+  
+  // اگه لاگین نکرده → برو به لاگین
+  if(!user){
+    window.location.href = 'login.html';
+    return;
+  }
+  
+  // اگه رمز عوض نشده → برو به تغییر رمز
+  if(mustChangePassword(user.username)){
+    window.location.href = 'change-pwd.html?force=1';
+    return;
+  }
+  
+  // اگه کارفرما وارد پنل کارمند شده → بره پنل خودش
+  if(user.role === 'admin'){
+    window.location.href = 'manager.html';
+    return;
+  }
+})();
+
+/* ============================================================
+   JALALI DATE
+   ============================================================ */
+function nowJalali(){ const d = new Date(); const j = jalaali.toJalaali(d); return { jy: j.jy, jm: j.jm, jd: j.jd }; }
+function jalaliStr(d = new Date()){ const j = jalaali.toJalaali(d); return `${j.jy}/${String(j.jm).padStart(2,'0')}/${String(j.jd).padStart(2,'0')}`; }
+function jalaliPretty(d = new Date()){ const j = jalaali.toJalaali(d); const wd = (d.getDay() + 1) % 7; return `${JDAYS[wd]} ${j.jd} ${JMONTHS[j.jm-1]} ${j.jy}`; }
+function jalaliToDate(jstr){ const p = jstr.split('/').map(Number); const g = jalaali.toGregorian(p[0], p[1], p[2]); return new Date(g.gy, g.gm - 1, g.gd); }
+function dayOfWeekJ(jstr){ const d = jalaliToDate(jstr); return (d.getDay() + 1) % 7; }
+function isWeekend(jstr){ const w = dayOfWeekJ(jstr); return w === 5 || w === 6; }
+
+/* ============================================================
+   TIME UTILITIES
+   ============================================================ */
+function div(a,b){return Math.floor(a/b);}
+function toMin(hhmm){ if(!hhmm) return null; const [h,m]=hhmm.split(':').map(Number); return h*60+m; }
+function toHM(min){ if(min===null||min===undefined||isNaN(min)) return '0:00'; const sign=min<0?'-':''; min=Math.abs(Math.round(min)); return sign+String(div(min,60)).padStart(2,'0')+':'+String(min%60).padStart(2,'0'); }
+function hhmm12(hhmm){ if(!hhmm) return ''; let [h,m]=hhmm.split(':').map(Number); const ap=h<12?'AM':'PM'; let h12=h%12; if(h12===0) h12=12; return `${String(h12).padStart(2,'0')}:${String(m).padStart(2,'0')} ${ap}`; }
+function nowHM(){ const d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const DEFAULT_STATE={
+  userName:'', entries:{}, holidays:{}, leaves:{}, missions:{}, tasks:[],
+  officialHolidays:{},
+  settings:{
+    theme:'midnight-gold', bg:'', particles:true,
+    passEnabled:false, pass:'',
+    secQuestion:'', secAnswer:'',
+    aiKey:'', aiModel:'gapgpt-qwen-3.5',
+    aiBase:'https://api.gapgpt.app/v1/chat/completions',
+    notif:{
+      enabled:false, morning:true, endDay:true, entryLate:true,
+      exitLate:true, overdueTasks:true, deficit:true, weekly:true, midDay:true
+    }
+  },
+  chat:[]
+};
+let state=JSON.parse(JSON.stringify(DEFAULT_STATE));
+let currentYear, currentMonth;
+let taskFilter='all';
+const STORAGE_KEY='hrm_system_v4';
+const JMONTHS=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+const JDAYS=['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
+
+function save(){ try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); }catch(e){ console.warn('Save error',e); } }
+function load(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const d=JSON.parse(raw);
+      state={...DEFAULT_STATE,...d,settings:{...DEFAULT_STATE.settings,...(d.settings||{})}};
+      if(!state.settings.notif) state.settings.notif = {...DEFAULT_STATE.settings.notif};
+    }
+  }catch(e){ console.warn(e); }
+}
+
+/* ============================================================
+   OFFICIAL HOLIDAYS
+   ============================================================ */
+async function loadOfficialHolidays(year){
+  if(!year){ const n=nowJalali(); year=n.jy; }
+  const cdnTemplates=[
+    `https://cdn.jsdelivr.net/gh/hasan-ahani/shamsi-holidays@main/holidays/{y}.json`,
+    `https://raw.githack.com/hasan-ahani/shamsi-holidays/main/holidays/{y}.json`,
+    `https://raw.githubusercontent.com/hasan-ahani/shamsi-holidays/main/holidays/{y}.json`
+  ];
+  const yearsToTry=[year, year-1, year-2, year-3].filter(y=>y>1390);
+  toast('در حال دریافت تعطیلات رسمی...','success');
+  let data=null, lastError='', usedYear=null;
+  outer:
+  for(const cdn of cdnTemplates){
+    for(const y of yearsToTry){
+      const url=cdn.replace('{y}',y);
+      try{
+        const res=await fetch(url,{cache:'no-store'});
+        if(res.ok){ data=JSON.parse(await res.text()); usedYear=y; break outer; }
+        else lastError=`HTTP ${res.status}`;
+      }catch(e){ lastError=e.message; }
+    }
+  }
+  if(!data){ toast(`❌ دریافت ناموفق: ${lastError}`,'error'); return; }
+  if(usedYear!==year) toast(`⚠️ داده سال ${usedYear} استفاده شد`,'error');
+  const list=Array.isArray(data)?data:(data.holidays||data.data||[]);
+  let added=0;
+  list.forEach(item=>{
+    let date=item.date||item.jalali||item.day;
+    let desc=item.description||item.title||item.event||'تعطیل رسمی';
+    if(!date) return;
+    const p=String(date).split('/').map(x=>x.trim());
+    if(p.length!==3) return;
+    const normalized=`${p[0]}/${String(p[1]).padStart(2,'0')}/${String(p[2]).padStart(2,'0')}`;
+    state.officialHolidays[normalized]=desc;
+    state.holidays[normalized]='تعطیل رسمی: '+desc;
+    added++;
+  });
+  save(); renderAll();
+  if(added>0) toast(`✅ ${added} تعطیل رسمی ثبت شد`,'success');
+  else toast('داده‌ای یافت نشد','error');
+}
+
+/* ============================================================
+   WORK CALCULATION
+   ============================================================ */
+const WORK_START=8*60, WORK_END=17*60, FULL_DAY=WORK_END-WORK_START;
+function computeDay(jstr){
+  const e=state.entries[jstr]||{}; const w=dayOfWeekJ(jstr); const weekend=w>=5;
+  const holidayTitle=state.holidays[jstr]; const leave=state.leaves[jstr]; const mission=state.missions[jstr];
+  const em=toMin(e.entry), xm=toMin(e.exit); const hasManual=(em!==null)||(xm!==null);
+  const res={work:0,ot:0,def:0,desc:'',type:'normal'};
+  if(holidayTitle){res.desc=holidayTitle;res.type='holiday';}
+  else if(leave&&leave.type==='daily'){res.desc='مرخصی روزانه'+(leave.desc?' - '+leave.desc:'');res.type='leave';}
+  else if(leave&&leave.type==='hourly'){res.desc=`مرخصی ساعتی (${leave.hours} س)`+(leave.desc?' - '+leave.desc:'');res.type='leave_hourly';}
+  else if(mission){res.desc='ماموریت - '+mission;res.type='mission';}
+  if((holidayTitle||(leave&&leave.type==='daily'))&&!hasManual) return res;
+  if(em===null&&xm===null) return res;
+  let work=0,ot=0,def=0;
+  if(weekend){
+    if(em!==null&&xm!==null){work=Math.max(0,xm-em);ot=work;}
+    else if(em!==null){const n=toMin(nowHM());if(n>em){work=n-em;ot=work;}}
+  }else{
+    if(em!==null&&xm!==null){
+      work=Math.max(0,xm-em);
+      if(em<WORK_START)ot+=Math.min(xm,WORK_START)-em;
+      if(xm>WORK_END)ot+=xm-Math.max(em,WORK_END);
+      if(ot<0)ot=0;
+      const insideStart=Math.max(em,WORK_START); const insideEnd=Math.min(xm,WORK_END); const inside=Math.max(0,insideEnd-insideStart); def=Math.max(0,FULL_DAY-inside);
+    }else if(em!==null){
+      const n=toMin(nowHM());
+      if(n>em){
+        work=n-em;
+        if(em<WORK_START)ot+=Math.min(n,WORK_START)-em;
+        if(n>WORK_END)ot+=n-Math.max(em,WORK_END);
+        if(ot<0)ot=0;
+        const inside=Math.max(0,Math.min(n,WORK_END)-Math.max(em,WORK_START)); def=Math.max(0,FULL_DAY-inside);
+      }
+    }
+  }
+  if(leave&&leave.type==='hourly'&&leave.hours>0){ const lh=Math.round(parseFloat(leave.hours)*60); work=Math.max(0,work-lh); def=Math.max(0,def-lh); }
+  if(holidayTitle&&hasManual){ot=Math.max(0,work);def=0;}
+  res.work=work;res.ot=ot;res.def=def;
+  if(!res.desc&&e.desc)res.desc=e.desc;
+  return res;
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+let liveTimer=null;
+function renderAll(){
+  renderTopbar();
+  renderKPIs();
+  renderKPIsEnhanced();
+  renderMonthProgress();
+  renderAvatar();
+  renderWorkTable();
+  renderTasks();
+  renderEvents();
+  renderSettingsInputs();
+}
+
+function renderTopbar(){
+  const d=new Date();
+  document.getElementById('topClock').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');
+  document.getElementById('topDate').textContent=jalaliPretty(d);
+  
+  // 🔐 نمایش نام کاربر واقعی از لاگین
+  const user = getCurrentUser();
+  const displayName = user ? user.name : (state.userName || 'کاربر مهمان');
+  document.getElementById('topUserName').textContent = displayName;
+  document.getElementById('avatarInitial').textContent = displayName.trim().charAt(0) || '؟';
+}
+
+function renderKPIs(){
+  const days=jalaali.jalaaliMonthLength(currentYear,currentMonth);
+  let totWork=0,totOT=0,totDef=0;
+  for(let d=1;d<=days;d++){
+    const jstr=`${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
+    const c=computeDay(jstr);
+    totWork+=c.work; totOT+=c.ot; totDef+=c.def;
+  }
+  document.getElementById('kpiTotal').textContent=toHM(totWork);
+  document.getElementById('kpiOT').textContent=toHM(totOT);
+  document.getElementById('kpiDef').textContent=toHM(totDef);
+  document.getElementById('kpiTasks').textContent=state.tasks.filter(t=>!t.done).length;
+}
+
+function renderWorkTable(){
+  const tbody=document.getElementById('workBody'); const tfoot=document.getElementById('workFoot');
+  const activeEl = document.activeElement;
+  if(activeEl && activeEl.classList && activeEl.classList.contains('desc-input')){ return; }
+
+  tbody.innerHTML=''; tfoot.innerHTML='';
+  document.getElementById('monthLabel').textContent=`${JMONTHS[currentMonth-1]} ${currentYear}`;
+  const days=jalaali.jalaaliMonthLength(currentYear,currentMonth);
+  const todayStr=jalaliStr();
+  let sumWork=0,sumOT=0,sumDef=0;
+
+  for(let d=1;d<=days;d++){
+    const jstr=`${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
+    const wd=dayOfWeekJ(jstr); const dayName=JDAYS[wd]; const weekend=wd>=5; const isToday=jstr===todayStr;
+    const c=computeDay(jstr); const e=state.entries[jstr]||{};
+    sumWork+=c.work; sumOT+=c.ot; sumDef+=c.def;
+    const tr=document.createElement('tr');
+    const isOfficialHoliday=!!state.officialHolidays[jstr];
+    if(isOfficialHoliday) tr.classList.add('official-holiday');
+    else if(weekend) tr.classList.add('holiday-row');
+    if(isToday) tr.classList.add('today-row');
+    const entryDisplay=e.entry?hhmm12(e.entry):'—'; const exitDisplay=e.exit?hhmm12(e.exit):'—';
+    let badgeClass='badge-ok', badgeText='عادی';
+    if(state.holidays[jstr]){badgeClass=isOfficialHoliday?'badge-bad':'badge-warn';badgeText=isOfficialHoliday?'تعطیل رسمی':'تعطیل';}
+    else if(state.leaves[jstr]){badgeClass='badge-info';badgeText='مرخصی';}
+    else if(state.missions[jstr]){badgeClass='badge-info';badgeText='ماموریت';}
+    else if(weekend){badgeClass='badge-warn';badgeText='تعطیل هفتگی';}
+    const otText=c.ot>0?toHM(c.ot):'—'; const defText=c.def>0?'-'+toHM(c.def):'—';
+    const desc=c.desc||badgeText;
+    tr.innerHTML=`
+      <td>${dayName}</td>
+      <td>${d}</td>
+      <td><span class="time-cell ${e.entry?'':'empty'}" onclick="editTime('${jstr}','entry')">${entryDisplay}</span></td>
+      <td><span class="time-cell ${e.exit?'':'empty'}" onclick="editTime('${jstr}','exit')">${exitDisplay}</span></td>
+      <td>${c.work>0?toHM(c.work):'—'}</td>
+      <td style="color:var(--success)">${otText}</td>
+      <td style="color:var(--danger)">${defText}</td>
+      <td><span class="badge ${badgeClass}" title="${desc.replace(/"/g,'&quot;')}">${badgeText}</span></td>
+      <td><input type="text" class="desc-input"
+           value="${escapeHtml(e.desc||'')}"
+           oninput="saveDescInput('${jstr}', this.value)"
+           onblur="saveDescBlur('${jstr}', this.value)"
+           placeholder="شرح..."></td>
+    `;
+    tbody.appendChild(tr);
+  }
+  tfoot.innerHTML=`<tr class="sum-row"><td colspan="4">جمع کل</td><td>${toHM(sumWork)}</td><td style="color:var(--success)">${toHM(sumOT)}</td><td style="color:var(--danger)">${sumDef>0?'-'+toHM(sumDef):'—'}</td><td></td><td></td></tr>`;
+}
+
+function saveDescInput(jstr, v){
+  if(!state.entries[jstr]) state.entries[jstr]={};
+  state.entries[jstr].desc = v;
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+function saveDescBlur(jstr, v){
+  if(!state.entries[jstr]) state.entries[jstr]={};
+  state.entries[jstr].desc = v;
+  save(); renderKPIs();
+  toast('شرح ذخیره شد','success');
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+/* ============================================================
+   PASSWORD & SECURITY
+   ============================================================ */
+function saveSecurity(){
+  const q=document.getElementById('secQuestion').value.trim();
+  const a=document.getElementById('secAnswer').value.trim();
+  if(!q||!a) return toast('سوال و پاسخ امنیتی را وارد کنید','error');
+  state.settings.secQuestion=q;
+  state.settings.secAnswer=a;
+  save(); toast('سوال امنیتی ذخیره شد','success');
+}
+function showRecovery(){
+  if(!state.settings.secQuestion || !state.settings.secAnswer){
+    toast('هیچ سوال امنیتی تنظیم نشده است!','error'); return;
+  }
+  document.getElementById('recoveryBody').innerHTML=`
+    <p style="margin-bottom:12px;color:var(--muted);font-size:13px">به سوال زیر پاسخ دهید:</p>
+    <p style="margin-bottom:12px;font-weight:700;color:var(--accent)">${escapeHtml(state.settings.secQuestion)}</p>
+    <input id="recoveryAnswer" placeholder="پاسخ شما" onkeydown="if(event.key==='Enter')checkRecovery()">
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('recoveryModal')">انصراف</button>
+      <button class="btn" onclick="checkRecovery()">تایید</button>
+    </div>
+  `;
+  openModal('recoveryModal');
+}
+function checkRecovery(){
+  const a=document.getElementById('recoveryAnswer').value.trim();
+  if(a === state.settings.secAnswer){
+    state.settings.passEnabled=false; state.settings.pass=''; save();
+    document.getElementById('passEnabled').checked=false;
+    closeModal('recoveryModal');
+    document.getElementById('lockScreen').classList.remove('open');
+    toast('رمز عبور غیرفعال شد. اکنون می‌توانید وارد شوید.','success');
+    if(!_booted) boot();
+  } else {
+    toast('پاسخ نادرست است!','error');
+  }
+}
+function togglePass(){ state.settings.passEnabled=document.getElementById('passEnabled').checked; save(); }
+function savePass(){
+  const p=document.getElementById('passNew').value;
+  if(!p) return toast('رمز نمی‌تواند خالی باشد','error');
+  state.settings.pass=p; state.settings.passEnabled=true;
+  document.getElementById('passEnabled').checked=true;
+  save(); toast('رمز ذخیره شد','success');
+}
+
+/* ============================================================
+   TIME EDIT
+   ============================================================ */
+function editTime(jstr,field){
+  const e=state.entries[jstr]||{};
+  const current=e[field]||'';
+  const title=field==='entry'?'⏰ ویرایش ساعت ورود':'⏰ ویرایش ساعت خروج';
+  document.getElementById('timeEditTitle').textContent=`${title} — ${jstr}`;
+  document.getElementById('timeEditBody').innerHTML=`
+    <div class="row"><input type="time" id="editTimeInput" value="${current}"></div>
+    <div class="row" style="justify-content:center">
+      <button class="btn btn-ghost btn-sm no-flex" onclick="quickTime('editTimeInput','08:00')">08:00</button>
+      <button class="btn btn-ghost btn-sm no-flex" onclick="quickTime('editTimeInput','17:00')">17:00</button>
+      <button class="btn btn-ghost btn-sm no-flex" onclick="quickTime('editTimeInput','')">پاک</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('timeEditModal')">انصراف</button>
+      <button class="btn" onclick="saveTime('${jstr}','${field}')">ذخیره</button>
+    </div>
+  `;
+  openModal('timeEditModal');
+}
+function quickTime(id,v){ document.getElementById(id).value=v; }
+function saveTime(jstr,field){
+  const v=document.getElementById('editTimeInput').value;
+  if(!state.entries[jstr]) state.entries[jstr]={};
+  if(v) state.entries[jstr][field]=v;
+  else delete state.entries[jstr][field];
+  save(); closeModal('timeEditModal'); renderAll();
+  toast('ذخیره شد','success');
+}
+function autoRecordOnLaunch(){
+  const jstr=jalaliStr();
+  const e=state.entries[jstr]||{};
+  if(!e.entry){
+    if(!state.entries[jstr]) state.entries[jstr]={};
+    state.entries[jstr].entry=nowHM();
+    state.entries[jstr].autoEntry=true;
+    save();
+  }
+}
+function calcTodayExit(){
+  const jstr=jalaliStr();
+  if(!state.entries[jstr]) state.entries[jstr]={};
+  state.entries[jstr].exit=nowHM();
+  save(); renderAll();
+  toast('ساعت خروج ثبت شد: '+hhmm12(state.entries[jstr].exit),'success');
+}
+
+/* ============================================================
+   CLEAR / NAME / MONTH
+   ============================================================ */
+function confirmClear(){
+  if(!confirm('آیا از پاک کردن همه اطلاعات کارکرد مطمئن هستید؟'))return;
+  if(!confirm('تایید نهایی: واقعاً همه اطلاعات پاک شود؟'))return;
+  state.entries={}; state.holidays={}; state.leaves={}; state.missions={};
+  save(); renderAll(); toast('اطلاعات پاک شد','success');
+}
+function resetAll(){
+  if(!confirm('همه اطلاعات (شامل وظایف، تنظیمات، چت) پاک شود؟'))return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+}
+function saveUserName(){
+  state.userName=document.getElementById('userNameInput').value.trim();
+  save(); renderTopbar(); renderAvatar(); toast('نام ذخیره شد','success');
+}
+function changeMonth(d){
+  currentMonth+=d;
+  if(currentMonth<1){currentMonth=12; currentYear--;}
+  if(currentMonth>12){currentMonth=1; currentYear++;}
+  renderAll();
+}
+
+/* ============================================================
+   TASKS
+   ============================================================ */
+function addTask(){
+  const title=document.getElementById('taskTitle').value.trim();
+  const date=document.getElementById('taskDate').value.trim();
+  const time=document.getElementById('taskTime').value;
+  const desc=document.getElementById('taskDesc').value.trim();
+  if(!title) return toast('عنوان وظیفه را وارد کنید','error');
+  if(!date) return toast('تاریخ را وارد کنید','error');
+  state.tasks.push({id:Date.now()+Math.random(),title,desc,date,time,done:false,created:Date.now()});
+  save();
+  document.getElementById('taskTitle').value='';
+  document.getElementById('taskDesc').value='';
+  renderTasks(); renderKPIs();
+  toast('وظیفه اضافه شد ✅','success');
+}
+function toggleTask(id){ const t=state.tasks.find(x=>x.id===id); if(t){t.done=!t.done; save(); renderTasks(); renderKPIs();} }
+function deleteTask(id){ if(!confirm('حذف این وظیفه؟'))return; state.tasks=state.tasks.filter(x=>x.id!==id); save(); renderTasks(); renderKPIs(); }
+function filterTasks(f,el){
+  taskFilter=f;
+  document.querySelectorAll('#panel-tasks .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active'); renderTasks();
+}
+function renderTasks(){
+  const list=document.getElementById('taskList');
+  let items=[...state.tasks];
+  const today=jalaliStr();
+  if(taskFilter==='pending') items=items.filter(t=>!t.done);
+  if(taskFilter==='done') items=items.filter(t=>t.done);
+  if(taskFilter==='today') items=items.filter(t=>t.date===today);
+  items.sort((a,b)=>(a.done-b.done)||(a.date.localeCompare(b.date)));
+  if(!items.length){ list.innerHTML='<div class="empty-state"><div class="icon">📭</div>هیچ وظیفه‌ای یافت نشد</div>'; return; }
+  list.innerHTML=items.map(t=>`
+    <div class="task-item ${t.done?'done':''}">
+      <div class="task-check ${t.done?'checked':''}" onclick="toggleTask(${t.id})">${t.done?'✓':''}</div>
+      <div class="task-content">
+        <div class="task-title">${escapeHtml(t.title)}</div>
+        <div class="task-meta"><span>📅 ${t.date}</span>${t.time?'<span>⏰ '+t.time+'</span>':''}</div>
+        ${t.desc?'<div class="task-desc">'+escapeHtml(t.desc)+'</div>':''}
+      </div>
+      <button class="btn btn-danger btn-icon btn-sm" onclick="deleteTask(${t.id})">🗑️</button>
+    </div>
+  `).join('');
+}
+
+/* ============================================================
+   EVENTS
+   ============================================================ */
+function toggleLeaveHours(){ const t=document.getElementById('leaveType').value; document.getElementById('leaveHours').style.display=t==='hourly'?'':'none'; }
+function addHoliday(){
+  const d=document.getElementById('holidayDate').value.trim();
+  const t=document.getElementById('holidayTitle').value.trim();
+  if(!d) return toast('تاریخ را وارد کنید','error');
+  if(!/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(d)) return toast('فرمت تاریخ صحیح نیست','error');
+  state.holidays[d]=t||'تعطیل'; save(); renderAll();
+  document.getElementById('holidayDate').value=''; document.getElementById('holidayTitle').value='';
+  toast('روز تعطیل ثبت شد','success');
+}
+function addLeave(){
+  const d=document.getElementById('leaveDate').value.trim();
+  const type=document.getElementById('leaveType').value;
+  const h=parseFloat(document.getElementById('leaveHours').value)||0;
+  const desc=document.getElementById('leaveDesc').value.trim();
+  if(!d) return toast('تاریخ را وارد کنید','error');
+  if(!/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(d)) return toast('فرمت تاریخ صحیح نیست','error');
+  if(type==='hourly' && h<=0) return toast('ساعت مرخصی را وارد کنید','error');
+  state.leaves[d]={type,hours:h,desc}; save(); renderAll(); toast('مرخصی ثبت شد','success');
+}
+function addMission(){
+  const d=document.getElementById('missionDate').value.trim();
+  const desc=document.getElementById('missionDesc').value.trim();
+  if(!d) return toast('تاریخ را وارد کنید','error');
+  if(!/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(d)) return toast('فرمت تاریخ صحیح نیست','error');
+  state.missions[d]=desc||'ماموریت'; save(); renderAll(); toast('ماموریت ثبت شد','success');
+}
+function removeEvent(type,key){
+  if(!confirm('حذف این رویداد؟'))return;
+  if(type==='holiday') delete state.holidays[key];
+  if(type==='leave') delete state.leaves[key];
+  if(type==='mission') delete state.missions[key];
+  if(type==='official'){ delete state.officialHolidays[key]; delete state.holidays[key]; }
+  save(); renderAll();
+}
+function renderEvents(){
+  const el=document.getElementById('eventsList');
+  const items=[];
+  Object.keys(state.holidays).forEach(k=>{
+    const isOfficial=!!state.officialHolidays[k];
+    items.push({type:isOfficial?'official':'holiday',icon:isOfficial?'🔴':'🎉',key:k,label:isOfficial?'تعطیل رسمی':'تعطیل',desc:state.holidays[k]});
+  });
+  Object.keys(state.leaves).forEach(k=>{
+    const l=state.leaves[k];
+    const desc=l.type==='hourly'?`مرخصی ساعتی ${l.hours} ساعت ${l.desc||''}`:`مرخصی روزانه ${l.desc||''}`;
+    items.push({type:'leave',icon:'🏖️',key:k,label:'مرخصی',desc});
+  });
+  Object.keys(state.missions).forEach(k=>items.push({type:'mission',icon:'🚗',key:k,label:'ماموریت',desc:state.missions[k]}));
+  items.sort((a,b)=>a.key.localeCompare(b.key));
+  if(!items.length){el.innerHTML='<div class="empty-state"><div class="icon">📭</div>رویدادی ثبت نشده</div>';return;}
+  el.innerHTML=items.map(i=>`
+    <div class="task-item">
+      <div style="font-size:22px">${i.icon}</div>
+      <div class="task-content">
+        <div class="task-title">${i.label} — ${i.key}</div>
+        <div class="task-meta">${escapeHtml(i.desc)}</div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="removeEvent('${i.type}','${i.key}')">حذف</button>
+    </div>
+  `).join('');
+}
+
+/* ============================================================
+   JALALI PICKER
+   ============================================================ */
+let jpYear, jpMonth, jpTargetId;
+function pickJalaliDate(targetId){
+  jpTargetId=targetId;
+  const cur=document.getElementById(targetId).value;
+  if(cur && /^\d{4}\/\d{1,2}\/\d{1,2}$/.test(cur)){
+    const p=cur.split('/').map(Number); jpYear=p[0]; jpMonth=p[1];
+  } else {
+    const n=nowJalali(); jpYear=n.jy; jpMonth=n.jm;
+  }
+  drawJpGrid(); openModal('jalaliPickerModal');
+}
+function jpNav(d){
+  jpMonth+=d;
+  if(jpMonth<1){jpMonth=12; jpYear--;}
+  if(jpMonth>12){jpMonth=1; jpYear++;}
+  drawJpGrid();
+}
+function jpToday(){ const n=nowJalali(); jpYear=n.jy; jpMonth=n.jm; drawJpGrid(); }
+function drawJpGrid(){
+  document.getElementById('jpLabel').textContent=`${JMONTHS[jpMonth-1]} ${jpYear}`;
+  const grid=document.getElementById('jpGrid'); grid.innerHTML='';
+  const days=jalaali.jalaaliMonthLength(jpYear,jpMonth);
+  const first=`${jpYear}/${String(jpMonth).padStart(2,'0')}/01`;
+  const wd=dayOfWeekJ(first);
+  for(let i=0;i<wd;i++){ const d=document.createElement('div'); d.className='cal-day empty'; grid.appendChild(d); }
+  const today=jalaliStr();
+  for(let d=1;d<=days;d++){
+    const jstr=`${jpYear}/${String(jpMonth).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
+    const el=document.createElement('div'); el.className='cal-day';
+    if(state.officialHolidays[jstr]) el.classList.add('holiday');
+    else if(isWeekend(jstr)) el.classList.add('holiday');
+    if(jstr===today) el.classList.add('selected');
+    el.textContent=d;
+    el.onclick=()=>{ document.getElementById(jpTargetId).value=jstr; closeModal('jalaliPickerModal'); };
+    grid.appendChild(el);
+  }
+}
+
+/* ============================================================
+   SETTINGS
+   ============================================================ */
+function renderSettingsInputs(){
+  document.getElementById('userNameInput').value=state.userName;
+  document.getElementById('passEnabled').checked=state.settings.passEnabled;
+  document.getElementById('secQuestion').value=state.settings.secQuestion||'';
+  document.getElementById('secAnswer').value=state.settings.secAnswer||'';
+  document.getElementById('aiKey').value=state.settings.aiKey;
+  document.getElementById('aiModel').value=state.settings.aiModel;
+  document.getElementById('aiBase').value=state.settings.aiBase;
+  document.getElementById('bgUrl').value=state.settings.bg && state.settings.bg.startsWith('data:')?'':state.settings.bg;
+  const pt = document.getElementById('particlesToggle');
+  if(pt) pt.checked = state.settings.particles !== false;
+  document.querySelectorAll('.theme-chip').forEach(el => {
+    el.classList.toggle('active', el.dataset.themeVal === state.settings.theme);
+  });
+    loadNotifSettings();
+  updateAccountPanel();
+}
+function setTheme(t){
+  state.settings.theme=t; save(); applyTheme();
+  localStorage.setItem('theme_manual','true');
+  toast('تم تغییر کرد','success');
+}
+function applyTheme(){
+  const t=state.settings.theme;
+  document.documentElement.setAttribute('data-theme',t==='midnight-gold'?'':t);
+  document.querySelectorAll('.theme-chip').forEach(el => {
+    el.classList.toggle('active', el.dataset.themeVal === t);
+  });
+}
+function setBg(){ const u=document.getElementById('bgUrl').value.trim(); state.settings.bg=u; save(); document.body.style.backgroundImage=u?`url('${u}')`:''; toast('پس‌زمینه اعمال شد','success'); }
+function clearBg(){ state.settings.bg=''; document.body.style.backgroundImage=''; save(); document.getElementById('bgUrl').value=''; }
+function uploadBg(ev){
+  const f=ev.target.files[0]; if(!f)return;
+  if(f.size>2*1024*1024){ toast('حجم تصویر باید کمتر از ۲ مگابایت باشد','error'); return; }
+  const r=new FileReader();
+  r.onload=e=>{
+    state.settings.bg=e.target.result;
+    try{ save(); }catch(err){ toast('حجم تصویر زیاد است','error'); return; }
+    document.body.style.backgroundImage=`url('${e.target.result}')`;
+    toast('پس‌زمینه اعمال شد','success');
+  };
+  r.readAsDataURL(f);
+}
+function applyBg(){ if(state.settings.bg) document.body.style.backgroundImage=`url('${state.settings.bg}')`; }
+function saveAI(){
+  state.settings.aiKey=document.getElementById('aiKey').value.trim();
+  state.settings.aiModel=document.getElementById('aiModel').value.trim()||'gapgpt-qwen-3.5';
+  let url=document.getElementById('aiBase').value.trim()||'https://api.gapgpt.app/v1/chat/completions';
+  url=url.replace(/api\.gapgpt\.ir/g,'api.gapgpt.app');
+  state.settings.aiBase=url;
+  save(); toast('تنظیمات AI ذخیره شد','success');
+}
+
+/* ============================================================
+   BACKUP / RESTORE
+   ============================================================ */
+function backupJSON(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`hrm-backup-${jalaliStr().replace(/\//g,'-')}.json`;
+  a.click(); toast('پشتیبان دانلود شد','success');
+}
+function restoreJSON(ev){
+  const f=ev.target.files[0]; if(!f)return;
+  if(!confirm('اطلاعات فعلی جایگزین خواهد شد. مطمئنید؟'))return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      state={...DEFAULT_STATE,...d,settings:{...DEFAULT_STATE.settings,...(d.settings||{})}};
+      save(); applyTheme(); applyBg(); renderAll();
+      toast('بازیابی انجام شد','success');
+    }catch(err){toast('فایل معتبر نیست','error');}
+  };
+  r.readAsText(f);
+}
+
+/* ============================================================
+   EXPORT
+   ============================================================ */
+function buildExportData(){
+  const days=jalaali.jalaaliMonthLength(currentYear,currentMonth);
+  const rows=[]; let sumWork=0,sumOT=0,sumDef=0;
+  for(let d=1;d<=days;d++){
+    const jstr=`${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
+    const wd=dayOfWeekJ(jstr); const c=computeDay(jstr); const e=state.entries[jstr]||{};
+    sumWork+=c.work; sumOT+=c.ot; sumDef+=c.def;
+    const p=jstr.split('/');
+    const dateFormatted=`${p[2]}/${p[1]}/${p[0]}`;
+    rows.push({
+      day:JDAYS[wd],
+      date:dateFormatted,
+      entry:e.entry?hhmm12(e.entry):'',
+      exit:e.exit?hhmm12(e.exit):'',
+      work:c.work>0?toHM(c.work):'',
+      ot:c.ot>0?toHM(c.ot):'',
+      def:c.def>0?'-'+toHM(c.def):'',
+      desc:e.desc||c.desc||''
+    });
+  }
+  return {rows,sumWork,sumOT,sumDef,title:`کارکرد ${JMONTHS[currentMonth-1]} ${currentYear}`,name:state.userName||'کاربر'};
+}
+
+function exportExcel(){
+  const data=buildExportData();
+  const aoa=[
+    [data.title],
+    ['نام: '+data.name,'','تاریخ گزارش:',jalaliStr(new Date())],
+    [],
+    ['روز','تاریخ','ورود','خروج','کارکرد','اضافه‌کاری','کسری','شرح']
+  ];
+  data.rows.forEach(r=>aoa.push([r.day,r.date,r.entry,r.exit,r.work,r.ot,r.def,r.desc]));
+  aoa.push([]);
+  aoa.push(['جمع کل','','','',toHM(data.sumWork),toHM(data.sumOT),data.sumDef>0?'-'+toHM(data.sumDef):'','']);
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols']=[{wch:12},{wch:14},{wch:10},{wch:10},{wch:10},{wch:12},{wch:10},{wch:30}];
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'کارکرد');
+  XLSX.writeFile(wb,`hrm-${jalaliStr().replace(/\//g,'-')}.xlsx`);
+  toast('اکسل آماده شد','success');
+}
+
+function exportWord(){
+  const data=buildExportData();
+  const html=`
+    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+    <head><meta charset="utf-8"><title>${data.title}</title>
+    <style>
+      @page{size:A4;margin:2cm}
+      body{font-family:Tahoma;direction:rtl;padding:20px}
+      table{border-collapse:collapse;width:100%;font-size:11pt;direction:rtl}
+      th,td{border:1px solid #c9a227;padding:6px;text-align:center}
+      thead{background:#c9a227;color:#fff}
+      .sum-row{background:#c9a227;color:#fff;font-weight:bold}
+      h2{color:#8a6d3b;text-align:center}
+      p{text-align:center;color:#666}
+    </style>
+    </head>
+    <body dir="rtl">
+      <h2>${data.title}</h2>
+      <p>${data.name} — تاریخ گزارش: ${jalaliPretty(new Date())}</p>
+      <table dir="rtl">
+        <thead>
+          <tr>
+            <th>روز</th><th>تاریخ</th><th>ورود</th><th>خروج</th>
+            <th>کارکرد</th><th>اضافه‌کاری</th><th>کسری</th><th>شرح</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.rows.map(r=>`<tr>
+            <td>${r.day}</td>
+            <td>${r.date}</td>
+            <td>${r.entry||'—'}</td>
+            <td>${r.exit||'—'}</td>
+            <td>${r.work||'—'}</td>
+            <td>${r.ot||'—'}</td>
+            <td>${r.def||'—'}</td>
+            <td style="text-align:right">${escapeHtml(r.desc)}</td>
+          </tr>`).join('')}
+          <tr class="sum-row">
+            <td colspan="4">جمع کل</td>
+            <td>${toHM(data.sumWork)}</td>
+            <td>${toHM(data.sumOT)}</td>
+            <td>${data.sumDef>0?'-'+toHM(data.sumDef):'0:00'}</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="margin-top:30px;font-size:11pt;color:#333">
+        امضای پرسنل: ________________     امضای مدیر: ________________
+      </p>
+    </body></html>`;
+  const blob=new Blob(['\ufeff', html], {type: 'application/msword'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`hrm-${jalaliStr().replace(/\//g,'-')}.doc`;
+  a.click();
+  toast('فایل Word آماده شد','success');
+}
+
+function exportPDF(){
+  toast('در پنجره باز شده، "Save as PDF" را انتخاب کنید','success');
+  setTimeout(()=>{ window.print(); }, 500);
+}
+/* ============================================================
+   AI CHAT
+   ============================================================ */
+function normalizeAIUrl(url){
+  if(!url || !url.trim()) return 'https://api.gapgpt.app/v1/chat/completions';
+  url = url.trim();
+  url = url.replace(/api\.gapgpt\.ir/g, 'api.gapgpt.app');
+  if(url.endsWith('/v1') || url.endsWith('/v1/')){
+    url = url.replace(/\/$/, '') + '/chat/completions';
+  }
+  if(!url.includes('/chat/completions')){
+    url = url.replace(/\/$/, '') + '/chat/completions';
+  }
+  return url;
+}
+
+function mdToHtml(text){
+  if(!text) return '';
+  let html = escapeHtml(text);
+  html = html.replace(/```([\s\S]*?)```/g, (m, code) => `<pre>${code.trim()}</pre>`);
+  html = html.replace(/^### (.+)$/gm,'<strong style="color:var(--accent);font-size:15px;display:block;margin:8px 0 4px">$1</strong>');
+  html = html.replace(/^## (.+)$/gm,'<strong style="color:var(--accent);font-size:16px;display:block;margin:10px 0 5px">$1</strong>');
+  html = html.replace(/^# (.+)$/gm,'<strong style="color:var(--accent);font-size:17px;display:block;margin:12px 0 6px">$1</strong>');
+  html = html.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  html = html.replace(/(?<!\*)\*(?!\s)(.+?)(?<!\s)\*(?!\*)/g,'<em>$1</em>');
+  html = html.replace(/`(.+?)`/g,'<code>$1</code>');
+
+  const lines = html.split('\n');
+  const result = [];
+  let i = 0;
+  while(i < lines.length){
+    const line = lines[i];
+    if(/^\s*\|.+\|\s*$/.test(line) && i+1 < lines.length && /^\s*\|[\s\-:|]+\|\s*$/.test(lines[i+1])){
+      const headerCells = line.split('|').slice(1,-1).map(c=>c.trim());
+      const tableRows = [];
+      i += 2;
+      while(i < lines.length && /^\s*\|.+\|\s*$/.test(lines[i])){
+        const cells = lines[i].split('|').slice(1,-1).map(c=>c.trim());
+        tableRows.push(cells);
+        i++;
+      }
+      let tableHtml = '<table><thead><tr>';
+      headerCells.forEach(h => { tableHtml += `<th>${h}</th>`; });
+      tableHtml += '</tr></thead><tbody>';
+      tableRows.forEach(row => {
+        tableHtml += '<tr>';
+        for(let k=0; k<headerCells.length; k++){ tableHtml += `<td>${row[k]||''}</td>`; }
+        tableHtml += '</tr>';
+      });
+      tableHtml += '</tbody></table>';
+      result.push(tableHtml);
+      continue;
+    }
+    result.push(line);
+    i++;
+  }
+  html = result.join('\n');
+  html = html.replace(/^[-•*] (.+)$/gm,'&nbsp;&nbsp;• $1');
+  html = html.replace(/^\d+\. (.+)$/gm,'&nbsp;&nbsp;$&nbsp;$1');
+  html = html.replace(/\n(?![^<]*<\/(table|tr|td|th)>)/g,'<br>');
+  html = html.replace(/<br>\s*(<table)/g,'$1');
+  html = html.replace(/(<\/table>)\s*<br>/g,'$1');
+  return html;
+}
+
+function addMsg(role,text,cls){
+  const box=document.getElementById('chatBox');
+  const el=document.createElement('div'); el.className='msg '+role+(cls?' '+cls:'');
+  if(role==='ai' && !cls){ el.innerHTML=mdToHtml(text); } else { el.textContent=text; }
+  box.appendChild(el); box.scrollTop=box.scrollHeight; return el;
+}
+function renderChatFromState(){
+  const box=document.getElementById('chatBox'); box.innerHTML='';
+  if(!state.chat.length){
+    box.innerHTML='<div class="msg sys">سلام! من دستیار هوشمند شما هستم. می‌تونم کارکردت رو تحلیل کنم، جدول‌بندی کنم، راهکار بهبود بدم، یا درباره هر موضوعی گفتگو کنیم.</div>';
+    return;
+  }
+  state.chat.forEach(m=>{ addMsg(m.role==='user'?'user':'ai', m.content); });
+}
+async function sendChat(text){
+  const input=document.getElementById('chatInput');
+  const q=text||input.value.trim(); if(!q) return;
+  input.value=''; addMsg('user',q);
+  if(!state.settings.aiKey){
+    addMsg('ai','⚠️ لطفاً ابتدا در بخش **تنظیمات → هوش مصنوعی** کلید API مربوط به GapGPT را وارد کنید.');
+    return;
+  }
+  const thinking=addMsg('ai','در حال فکر کردن','typing');
+  try{
+    const ctx=buildAIContext();
+    const url=normalizeAIUrl(state.settings.aiBase);
+    const systemPrompt = `تو یک دستیار هوشمند فارسی‌زبان هستی که به کاربر برای مدیریت کارکرد، بهره‌وری، زمان و وظایف کمک می‌کنی.
+
+🚨 نکات مهم:
+- تاریخ امروز و ماه در حال بررسی در ابتدای پیام کاربر مشخص شده است. همیشه بر اساس این تاریخ تحلیل کن.
+- تاریخ‌ها را به فرمت روز/ماه/سال بنویس (مثال: 04/07/1405).
+- هرگز تاریخ امروز را حدس نزن؛ از داده ارائه‌شده استفاده کن.
+
+📋 قواعد پاسخ:
+1. پاسخ‌ها مختصر، کاربردی و ساختارمند باشند.
+2. از Markdown استفاده کن: **بولد**، لیست با -، و مهم‌تر از همه، برای داده‌های جدولی از جدول Markdown استفاده کن:
+
+| ستون۱ | ستون۲ | ستون۳ |
+|---|---|---|
+| مقدار | مقدار | مقدار |
+
+3. برای تحلیل کارکرد، حتماً یک جدول Markdown با ستون‌های: تاریخ | روز | کارکرد | اضافه‌کاری | کسری | وضعیت تولید کن.
+
+اطلاعات کارکرد کاربر:
+${ctx}`;
+
+    const res=await fetch(url,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.settings.aiKey},
+      body:JSON.stringify({
+        model:state.settings.aiModel||'gapgpt-qwen-3.5',
+        messages:[
+          {role:'system',content:systemPrompt},
+          ...state.chat.slice(-8),
+          {role:'user',content:q}
+        ],
+        stream:false
+      })
+    });
+    if(!res.ok){
+      const errTxt=await res.text();
+      let hint='';
+      if(res.status===401) hint='\n\n🔑 کلید API معتبر نیست.';
+      else if(res.status===404) hint='\n\n🌐 آدرس API اشتباه است. صحیح: https://api.gapgpt.app/v1/chat/completions';
+      else if(res.status===429) hint='\n\n⏱️ تعداد درخواست‌ها زیاد است.';
+      throw new Error(`HTTP ${res.status}${hint}\n${errTxt.slice(0,200)}`);
+    }
+    const data=await res.json();
+    const txt=data?.choices?.[0]?.message?.content||data?.message||'پاسخی دریافت نشد.';
+    thinking.remove(); addMsg('ai',txt);
+    state.chat.push({role:'user',content:q}); state.chat.push({role:'assistant',content:txt});
+    state.chat=state.chat.slice(-30); save();
+  }catch(e){
+    thinking.remove();
+    addMsg('ai','❌ خطا: '+e.message);
+  }
+}
+function clearChat(){ state.chat=[]; save(); document.getElementById('chatBox').innerHTML='<div class="msg sys">گفتگو پاک شد.</div>'; }
+
+function printChat(){
+  if(!state.chat.length){
+    toast('گفتگویی برای پرینت وجود ندارد','error'); return;
+  }
+  const messagesHtml = state.chat.map(m => {
+    const isUser = m.role === 'user';
+    const content = isUser ? escapeHtml(m.content).replace(/\n/g, '<br>') : mdToHtml(m.content);
+    return `<div class="chat-msg ${isUser ? 'user' : 'ai'}"><div class="msg-header">${isUser ? '👤 شما' : '🤖 دستیار هوشمند'}</div><div class="msg-body">${content}</div></div>`;
+  }).join('');
+  const w = window.open('', '_blank');
+  if(!w){ toast('لطفاً اجازه دسترسی به پنجره‌های بازشو را بدهید','error'); return; }
+  w.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرینت گفتگو</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css"><style>@page{size:A4;margin:15mm}body{font-family:Vazirmatn,Tahoma,sans-serif;direction:rtl;color:#111;background:#fff;padding:20px;line-height:1.9}.header{text-align:center;border-bottom:3px solid #c9a227;padding-bottom:12px;margin-bottom:22px}.header h1{color:#8a6d3b;margin:0 0 6px 0;font-size:20px}.header p{color:#666;margin:3px 0;font-size:12px}.chat-msg{margin-bottom:16px;padding:12px 14px;border-radius:10px;page-break-inside:avoid}.chat-msg.user{background:#fdf6e3;border-right:4px solid #c9a227}.chat-msg.ai{background:#f8f9fa;border-right:4px solid #3498db}.msg-header{font-weight:800;font-size:12px;color:#8a6d3b;margin-bottom:6px}.chat-msg.ai .msg-header{color:#2980b9}.msg-body{font-size:12.5px;line-height:1.95;word-wrap:break-word}.msg-body strong{color:#8a6d3b}.msg-body table{width:100%;border-collapse:collapse;margin:12px 0;font-size:11.5px}.msg-body table th{background:#c9a227;color:#fff;padding:8px 6px;text-align:center;font-weight:800;border:1px solid #a8861f}.msg-body table td{padding:6px;text-align:center;border:1px solid #ddd}.msg-body table tr:nth-child(even) td{background:#faf8f2}.footer{text-align:center;color:#999;font-size:10px;margin-top:30px;padding-top:12px;border-top:1px solid #eee}</style></head><body><div class="header"><h1>📄 گزارش گفتگو با دستیار هوشمند</h1><p>${state.userName || 'کاربر'} — تاریخ چاپ: ${jalaliPretty(new Date())}</p><p>ماه بررسی‌شده: ${JMONTHS[currentMonth-1]} ${currentYear}</p></div>${messagesHtml}<div class="footer">سامانه هوشمند کارکرد ماهیانه — تولید شده در ${jalaliPretty(new Date())}</div></body></html>`);
+  w.document.close();
+  setTimeout(() => { w.print(); }, 600);
+  toast('پنجره پرینت باز شد','success');
+}
+
+function buildAIContext(){
+  const days=jalaali.jalaaliMonthLength(currentYear,currentMonth);
+  let work=0,ot=0,def=0; const rows=[];
+  for(let d=1;d<=days;d++){
+    const jstr=`${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
+    const c=computeDay(jstr);
+    const wd=dayOfWeekJ(jstr);
+    const p=jstr.split('/');
+    const dateStr=`${p[2]}/${p[1]}/${p[0]}`;
+    if(c.work||c.ot||c.def||state.holidays[jstr]||state.leaves[jstr]||state.missions[jstr]){
+      rows.push({
+        date: dateStr, day: JDAYS[wd],
+        work: toHM(c.work), ot: toHM(c.ot),
+        def: c.def>0?'-'+toHM(c.def):'0:00',
+        desc: c.desc || (state.entries[jstr] && state.entries[jstr].desc) || ''
+      });
+    }
+    work+=c.work; ot+=c.ot; def+=c.def;
+  }
+  const pending=state.tasks.filter(t=>!t.done).length;
+  const pendingList=state.tasks.filter(t=>!t.done).slice(0,10).map(t=>`${t.date} - ${t.title}`).join('; ');
+  const todayStr = jalaliStr();
+  const p = todayStr.split('/');
+  const todayFormatted = `${p[2]}/${p[1]}/${p[0]}`;
+  const wd = (new Date().getDay() + 1) % 7;
+
+  return `📅 تاریخ امروز (از سیستم): ${JDAYS[wd]} ${todayFormatted}
+📆 ماه در حال بررسی: ${JMONTHS[currentMonth-1]} ${currentYear}
+
+📊 خلاصه ماه:
+- مجموع کارکرد: ${toHM(work)}
+- اضافه‌کاری: ${toHM(ot)}
+- کسری: ${toHM(def)}
+
+📋 وظایف باقی‌مانده (${pending}): ${pendingList || 'ندارد'}
+
+📝 جزئیات روزانه (JSON):
+${JSON.stringify(rows, null, 2)}`;
+}
+function analyzeWork(){
+  sendChat('لطفاً کارکرد ماه جاری من را به صورت ساختارمند تحلیل کن. یک جدول Markdown با ستون‌های «تاریخ | روز | کارکرد | اضافه‌کاری | کسری | وضعیت» برای روزهای دارای داده بساز. بعد از جدول، نقاط قوت و ضعف و راهکارهای عملی برای بهبود بهره‌وری را در قالب لیست ارائه بده.');
+}
+async function testAI(){
+  if(!state.settings.aiKey){ toast('ابتدا کلید API را وارد و ذخیره کنید','error'); return; }
+  toast('در حال تست اتصال...','success');
+  try{
+    const url=normalizeAIUrl(state.settings.aiBase);
+    const res=await fetch(url,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.settings.aiKey},
+      body:JSON.stringify({
+        model:state.settings.aiModel||'gapgpt-qwen-3.5',
+        messages:[{role:'user',content:'فقط بگو: تست موفق'}],
+        stream:false
+      })
+    });
+    if(!res.ok){
+      const errTxt=await res.text();
+      let hint='';
+      if(res.status===401) hint='کلید API نامعتبر است';
+      else if(res.status===404) hint='آدرس API اشتباه است';
+      toast(`❌ خطا ${res.status}: ${hint} — ${errTxt.slice(0,100)}`,'error');
+    } else {
+      const data=await res.json();
+      const reply=data?.choices?.[0]?.message?.content||'؟';
+      toast('✅ اتصال موفق: '+reply.slice(0,80),'success');
+    }
+  }catch(e){ toast('❌ خطای شبکه: '+e.message,'error'); }
+}
+
+/* ============================================================
+   🔔 SMART NOTIFICATIONS
+   ============================================================ */
+async function requestNotificationPermission(){
+  if(!('Notification' in window)){
+    toast('مرورگر شما از نوتیفیکیشن پشتیبانی نمی‌کند','error'); return;
+  }
+  if(Notification.permission === 'granted'){
+    state.settings.notif.enabled = true;
+    save(); updateNotifStatus();
+    toast('✅ نوتیفیکیشن قبلاً فعال شده','success'); return;
+  }
+  if(Notification.permission === 'denied'){
+    toast('شما قبلاً اجازه نوتیف را رد کرده‌اید. از تنظیمات مرورگر اجازه دهید.','error'); return;
+  }
+  const perm = await Notification.requestPermission();
+  if(perm === 'granted'){
+    state.settings.notif.enabled = true; save(); updateNotifStatus();
+    toast('🎉 نوتیفیکیشن با موفقیت فعال شد','success');
+    sendNotif('🎉 سامانه هوشمند کارکرد', 'نوتیفیکیشن فعال شد. از این پس یادآورهای هوشمند دریافت می‌کنید.', 'welcome');
+  } else {
+    toast('اجازه نوتیف داده نشد','error');
+  }
+}
+
+function sendNotif(title, body, tag){
+  if(!state.settings.notif || !state.settings.notif.enabled) return;
+  if(Notification.permission !== 'granted') return;
+  try{
+    const n = new Notification(title, {
+      body: body, tag: tag || 'hrm-default',
+      icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23c9a227'/><text y='.9em' x='50%' text-anchor='middle' font-size='70'>⏰</text></svg>",
+      badge: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23c9a227'/><text y='.9em' x='50%' text-anchor='middle' font-size='70'>⏰</text></svg>",
+      requireInteraction: false, silent: false
+    });
+    setTimeout(() => { try{ n.close(); }catch(e){} }, 8000);
+    n.onclick = () => { window.focus(); n.close(); };
+  }catch(e){
+    console.warn('Notification error:', e);
+    toast(`🔔 ${title} — ${body}`, 'success');
+  }
+}
+
+function testNotification(){
+  if(!state.settings.notif || !state.settings.notif.enabled){
+    toast('ابتدا روی «فعال‌سازی نوتیف مرورگر» بزنید','error'); return;
+  }
+  sendNotif('🧪 تست نوتیفیکیشن', 'اگر این پیام را می‌بینید، نوتیف‌ها به‌درستی کار می‌کنند!', 'test');
+  toast('نوتیف تست ارسال شد','success');
+}
+
+function updateNotifStatus(){
+  const el = document.getElementById('notifStatus');
+  if(!el) return;
+  if(!('Notification' in window)){ el.textContent = '❌ پشتیبانی نمی‌شود'; el.style.color = 'var(--danger)'; }
+  else if(Notification.permission === 'granted' && state.settings.notif && state.settings.notif.enabled){ el.textContent = '✅ فعال'; el.style.color = 'var(--success)'; }
+  else if(Notification.permission === 'denied'){ el.textContent = '🚫 رد شده'; el.style.color = 'var(--danger)'; }
+  else { el.textContent = '⚪ غیرفعال'; el.style.color = 'var(--muted)'; }
+}
+
+function saveNotifSettings(){
+  if(!state.settings.notif) state.settings.notif = {};
+  state.settings.notif.morning = document.getElementById('notifMorning').checked;
+  state.settings.notif.endDay = document.getElementById('notifEndDay').checked;
+  state.settings.notif.entryLate = document.getElementById('notifEntryLate').checked;
+  state.settings.notif.exitLate = document.getElementById('notifExitLate').checked;
+  state.settings.notif.overdueTasks = document.getElementById('notifOverdueTasks').checked;
+  state.settings.notif.deficit = document.getElementById('notifDeficit').checked;
+  state.settings.notif.weekly = document.getElementById('notifWeekly').checked;
+  state.settings.notif.midDay = document.getElementById('notifMidDay').checked;
+  save(); toast('تنظیمات نوتیف ذخیره شد','success');
+}
+
+function loadNotifSettings(){
+  const n = (state.settings && state.settings.notif) || {};
+  const map = {
+    notifMorning: n.morning !== false, notifEndDay: n.endDay !== false,
+    notifEntryLate: n.entryLate !== false, notifExitLate: n.exitLate !== false,
+    notifOverdueTasks: n.overdueTasks !== false, notifDeficit: n.deficit !== false,
+    notifWeekly: n.weekly !== false, notifMidDay: n.midDay !== false
+  };
+  Object.keys(map).forEach(id => { const el = document.getElementById(id); if(el) el.checked = map[id]; });
+  updateNotifStatus();
+}
+
+let _lastNotifMinute = -1;
+function checkSmartNotifications(){
+  if(!state.settings.notif || !state.settings.notif.enabled) return;
+  if(Notification.permission !== 'granted') return;
+  const now = new Date();
+  const hm = now.getHours() * 60 + now.getMinutes();
+  const todayJ = jalaliStr();
+  const entry = state.entries[todayJ] || {};
+  const notifCfg = state.settings.notif;
+  if(_lastNotifMinute === hm) return;
+  let sent = false;
+
+  if(notifCfg.morning && hm === 8*60 && !entry.entry){
+    sendNotif('🌅 صبح بخیر!', 'ساعت کاری شروع شد. لطفاً ورودت را ثبت کن.', 'morning'); sent = true;
+  }
+  if(notifCfg.midDay && hm === 12*60+30 && entry.entry && !entry.exit){
+    const c = computeDay(todayJ);
+    sendNotif('☕ گزارش نیم‌روز', `تا الان ${toHM(c.work)} کارکردی. ادامه بده!`, 'midday'); sent = true;
+  }
+  if(notifCfg.entryLate && hm === 9*60+30 && !entry.entry){
+    sendNotif('⚠️ هشدار تأخیر', 'ساعت ورود امروز هنوز ثبت نشده است!', 'entryLate'); sent = true;
+  }
+  if(notifCfg.endDay && hm === 17*60 && entry.entry && !entry.exit){
+    sendNotif('🌆 پایان ساعت کاری', 'ساعت کاری تمام شد. خروجت را ثبت کن.', 'endDay'); sent = true;
+  }
+  if(notifCfg.exitLate && hm === 17*60+30 && entry.entry && !entry.exit){
+    sendNotif('⚠️ هشدار', 'ساعت خروج امروز ثبت نشده!', 'exitLate'); sent = true;
+  }
+  if(notifCfg.overdueTasks && hm === 10*60){
+    const overdue = state.tasks.filter(t => !t.done && t.date < todayJ);
+    if(overdue.length > 0){ sendNotif('📋 وظایف عقب‌افتاده', `${overdue.length} وظیفه از موعد گذشته!`, 'overdue'); sent = true; }
+  }
+  const wd = (new Date().getDay() + 1) % 7;
+  if(notifCfg.deficit && wd === 6 && hm === 10*60){
+    const days = jalaali.jalaaliMonthLength(currentYear, currentMonth);
+    let totDef = 0;
+    for(let d=1; d<=days; d++){
+      const jstr = `${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
+      totDef += computeDay(jstr).def;
+    }
+    if(totDef > 0){ sendNotif('➖ هشدار کسری کار', `در ماه جاری ${toHM(totDef)} کسری کار داری.`, 'deficit'); sent = true; }
+  }
+  if(notifCfg.weekly && wd === 0 && hm === 9*60){
+    let weekWork = 0, weekOT = 0, weekDef = 0;
+    for(let i = 1; i <= 7; i++){
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const jstr = jalaliStr(d);
+      const c = computeDay(jstr);
+      weekWork += c.work; weekOT += c.ot; weekDef += c.def;
+    }
+    sendNotif('📊 خلاصه هفتگی', `هفته گذشته: کارکرد ${toHM(weekWork)} • اضافه‌کاری ${toHM(weekOT)} • کسری ${toHM(weekDef)}`, 'weekly'); sent = true;
+  }
+  if(sent) _lastNotifMinute = hm;
+}
+
+function startNotificationLoop(){
+  setInterval(checkSmartNotifications, 30 * 1000);
+  setTimeout(checkSmartNotifications, 5000);
+}
+
+/* ============================================================
+   🎨 GRAPHICS ENHANCEMENTS
+   ============================================================ */
+
+function initRipple(){
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('button, .chip, .theme-chip, .menu-btn');
+    if(!btn) return;
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const x = e.clientX - rect.left - size/2;
+    const y = e.clientY - rect.top - size/2;
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    ripple.style.width = ripple.style.height = size + 'px';
+    ripple.style.left = x + 'px';
+    ripple.style.top = y + 'px';
+    btn.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 600);
+  });
+}
+
+function initParticles(){
+  const box = document.getElementById('particles');
+  if(!box) return;
+  box.innerHTML = '';
+  if(!state.settings.particles){ box.classList.add('off'); return; }
+  box.classList.remove('off');
+  const count = window.innerWidth < 640 ? 15 : 30;
+  for(let i = 0; i < count; i++){
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.bottom = '-10px';
+    p.style.setProperty('--dx', (Math.random() * 80 - 40) + 'px');
+    const dur = 15 + Math.random() * 20;
+    p.style.animationDuration = dur + 's';
+    p.style.animationDelay = (-Math.random() * dur) + 's';
+    p.style.opacity = 0.2 + Math.random() * 0.4;
+    p.style.width = p.style.height = (2 + Math.random() * 3) + 'px';
+    box.appendChild(p);
+  }
+}
+function toggleParticles(){
+  state.settings.particles = document.getElementById('particlesToggle').checked;
+  save(); initParticles();
+  toast(state.settings.particles ? '✨ ذرات روشن شد' : 'ذرات خاموش شد', 'success');
+}
+
+function hideSplash(){
+  const s = document.getElementById('splash');
+  if(!s) return;
+  setTimeout(() => s.classList.add('hide'), 1800);
+}
+
+function animateNumber(el, target, formatter){
+  if(!el) return;
+  const duration = 1200;
+  const startTime = performance.now();
+  const startVal = parseFloat(el.dataset.rawValue || 0);
+  function step(now){
+    const t = Math.min((now - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - t, 3);
+    const val = startVal + (target - startVal) * eased;
+    el.textContent = formatter ? formatter(val) : Math.round(val);
+    if(t < 1) requestAnimationFrame(step);
+    else el.dataset.rawValue = target;
+  }
+  requestAnimationFrame(step);
+}
+
+function drawSparkline(containerId, values, color){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  if(!values || values.length < 2){ el.innerHTML = ''; return; }
+  const w = 200, h = 28;
+  const max = Math.max(...values, 1);
+  const min = Math.min(...values, 0);
+  const range = max - min || 1;
+  const step = w / (values.length - 1);
+  let path = '';
+  let area = `M 0 ${h} `;
+  values.forEach((v, i) => {
+    const x = i * step;
+    const y = h - ((v - min) / range) * (h - 4) - 2;
+    path += (i === 0 ? 'M' : 'L') + ` ${x.toFixed(1)} ${y.toFixed(1)} `;
+    area += `L ${x.toFixed(1)} ${y.toFixed(1)} `;
+  });
+  area += `L ${w} ${h} Z`;
+  el.innerHTML = `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <path class="area" d="${area}" ${color ? `style="fill:${color}"` : ''}></path>
+    <path class="line" d="${path}" ${color ? `style="stroke:${color}"` : ''}></path>
+  </svg>`;
+}
+
+function renderKPIsEnhanced(){
+  const days = jalaali.jalaaliMonthLength(currentYear, currentMonth);
+  let totWork = 0, totOT = 0, totDef = 0;
+  for(let d = 1; d <= days; d++){
+    const jstr = `${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
+    const c = computeDay(jstr);
+    totWork += c.work; totOT += c.ot; totDef += c.def;
+  }
+  animateNumber(document.getElementById('kpiTotal'), totWork, v => toHM(v));
+  animateNumber(document.getElementById('kpiOT'), totOT, v => toHM(v));
+  animateNumber(document.getElementById('kpiDef'), totDef, v => toHM(v));
+  animateNumber(document.getElementById('kpiTasks'), state.tasks.filter(t => !t.done).length, v => Math.round(v));
+
+  const last7 = [];
+  for(let i = 6; i >= 0; i--){
+    const dt = new Date(); dt.setDate(dt.getDate() - i);
+    const js = jalaliStr(dt);
+    const c = computeDay(js);
+    last7.push(c.work / 60);
+  }
+  drawSparkline('sparkTotal', last7);
+  drawSparkline('sparkOT', last7.map(v => Math.max(0, v - 9)), 'var(--success)');
+  drawSparkline('sparkDef', last7.map(v => Math.max(0, 9 - v)), 'var(--danger)');
+}
+
+function renderMonthProgress(){
+  const daysInMonth = jalaali.jalaaliMonthLength(currentYear, currentMonth);
+  const n = nowJalali();
+  let monthPct = 0;
+  if(n.jy === currentYear && n.jm === currentMonth) monthPct = (n.jd / daysInMonth) * 100;
+  else if(n.jy > currentYear || (n.jy === currentYear && n.jm > currentMonth)) monthPct = 100;
+  const mpMonthBar = document.getElementById('mpMonthBar');
+  const mpMonthPct = document.getElementById('mpMonthPct');
+  if(mpMonthBar) mpMonthBar.style.width = monthPct.toFixed(1) + '%';
+  if(mpMonthPct) mpMonthPct.textContent = monthPct.toFixed(0) + '%';
+
+  let totWork = 0;
+  for(let d = 1; d <= daysInMonth; d++){
+    const jstr = `${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
+    totWork += computeDay(jstr).work;
+  }
+  const expected = FULL_DAY * Math.max(1, n.jd);
+  const workPct = Math.min(100, (totWork / expected) * 100);
+  const mpWorkBar = document.getElementById('mpWorkBar');
+  const mpWorkPct = document.getElementById('mpWorkPct');
+  if(mpWorkBar) mpWorkBar.style.width = workPct.toFixed(1) + '%';
+  if(mpWorkPct) mpWorkPct.textContent = workPct.toFixed(0) + '%';
+}
+
+function renderAvatar(){
+  const name = state.userName || 'کاربر مهمان';
+  const initial = name.trim().charAt(0) || '؟';
+  const avatarEl = document.getElementById('avatarInitial');
+  if(avatarEl) avatarEl.textContent = initial;
+  let hash = 0;
+  for(let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  const hue = Math.abs(hash) % 360;
+  document.documentElement.style.setProperty('--avatar-bg', `hsl(${hue}, 70%, 45%)`);
+  const today = jalaliStr();
+  const c = computeDay(today);
+  const pct = Math.min(1, c.work / FULL_DAY);
+  const ring = document.getElementById('avatarRing');
+  if(ring) ring.style.setProperty('--progress', (pct * 360).toFixed(0) + 'deg');
+}
+
+function showKpiDetail(type){
+  const days = jalaali.jalaaliMonthLength(currentYear, currentMonth);
+  const rows = [];
+  let total = 0;
+  for(let d = 1; d <= days; d++){
+    const jstr = `${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
+    const c = computeDay(jstr);
+    let val = 0, label = '';
+    if(type === 'total'){ val = c.work; label = toHM(c.work); }
+    if(type === 'ot'){ val = c.ot; label = toHM(c.ot); }
+    if(type === 'def'){ val = c.def; label = toHM(c.def); }
+    if(type === 'tasks') continue;
+    if(val > 0){
+      const wd = dayOfWeekJ(jstr);
+      rows.push(`<tr><td>${JDAYS[wd]}</td><td>${d}</td><td>${label}</td></tr>`);
+      total += val;
+    }
+  }
+  if(type === 'tasks'){
+    const pending = state.tasks.filter(t => !t.done);
+    document.getElementById('kpiModalTitle').textContent = '📋 وظایف باقی‌مانده';
+    document.getElementById('kpiModalBody').innerHTML = pending.length
+      ? `<div style="display:flex;flex-direction:column;gap:8px">${pending.map(t => `
+          <div class="task-item"><div class="task-content">
+            <div class="task-title">${escapeHtml(t.title)}</div>
+            <div class="task-meta">📅 ${t.date}${t.time?' ⏰ '+t.time:''}</div>
+          </div></div>`).join('')}</div>`
+      : '<div class="empty-state"><div class="icon">🎉</div>همه وظایف انجام شده!</div>';
+    openModal('kpiModal'); return;
+  }
+  const titles = { total:'⏱️ مجموع کارکرد', ot:'➕ اضافه‌کاری', def:'➖ کسری کار' };
+  document.getElementById('kpiModalTitle').textContent = titles[type] + ` — مجموع: ${toHM(total)}`;
+  document.getElementById('kpiModalBody').innerHTML = rows.length
+    ? `<div style="max-height:400px;overflow-y:auto"><table style="width:100%;font-size:12px"><thead><tr><th>روز</th><th>تاریخ</th><th>مقدار</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`
+    : '<div class="empty-state"><div class="icon">📭</div>داده‌ای موجود نیست</div>';
+  openModal('kpiModal');
+}
+
+function autoDetectTheme(){
+  if(localStorage.getItem('theme_manual') === 'true') return;
+  if(state.settings.theme && state.settings.theme !== 'midnight-gold') return;
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  state.settings.theme = prefersDark ? 'midnight-gold' : 'light';
+  save(); applyTheme();
+}
+
+/* ============================================================
+   WISDOM
+   ============================================================ */
+const WISDOMS=[
+  {t:'وقت طلاست، اما ارزشمندتر از آن، استفاده‌ی درست از آن است.',a:'بنجامین فرانکلین'},
+  {t:'موفقیت مجموعه‌ای از تلاش‌های کوچک است که هر روز تکرار می‌شوند.',a:'رابرت کولیر'},
+  {t:'هر روزی که با نظم شروع شود، نیمی از پیروزی است.',a:'ضرب‌المثل'},
+  {t:'زمانی که به کارت عشق بورزی، کارت به تو آزادی می‌بخشد.',a:'کنفوسیوس'},
+  {t:'تنها راه انجام کارهای بزرگ، دوست داشتن کاری است که انجام می‌دهی.',a:'استیو جابز'},
+  {t:'انضباط، پلی است بین اهداف و دستاوردها.',a:'جیم ران'},
+  {t:'امروز را طوری زندگی کن که فردا حسرتش را نخوری.',a:'ضرب‌المثل'},
+  {t:'بهترین زمان برای کاشتن درخت، بیست سال پیش بود؛ دومین بهترین زمان، امروز است.',a:'ضرب‌المثل چینی'},
+  {t:'موفقیت، پیشرفت کوچک روزانه است.',a:'رابین شارما'},
+  {t:'آنچه را که می‌توانی امروز انجام ده، به فردا مینداز.',a:'بنجامین فرانکلین'},
+  {t:'زمانی که همه چیز را از دست می‌دهی، به یاد داشته باش که هنوز «زمان» را داری.',a:'ضرب‌المثل'},
+  {t:'نظم و انضباط، آزادی می‌آورد؛ بی‌نظمی، اسارت.',a:'الیور ونتل هلمز'},
+  {t:'آینده متعلق به کسانی است که به زیبایی رویاهایشان باور دارند.',a:'النور روزولت'},
+  {t:'مهم نیست چقدر کند می‌روی، مهم این است که متوقف نشوی.',a:'کنفوسیوس'},
+  {t:'کیفیت زندگی شما، کیفیت سوالات شماست.',a:'آنتونی رابینز'},
+  {t:'اگر می‌خواهی چیزی را تغییر دهی، اول خودت باید تغییر کنی.',a:'لئو تولستوی'},
+  {t:'پشت هر موفقیتی، مجموعه‌ای از شکست‌های کوچک نهفته است.',a:'ضرب‌المثل'},
+  {t:'کار امروز را به فردا مینداز، اما فردا را هم دریاب.',a:'ضرب‌المثل'},
+  {t:'بزرگترین سرمایه‌ی شما، زمانتان است؛ آن را هدر ندهید.',a:'برایان تریسی'},
+  {t:'هر صبح فرصتی تازه برای شروع دوباره است.',a:'ضرب‌المثل'},
+  {t:'هدف بدون برنامه، فقط یک آرزوست.',a:'آنتوان دو سنت‌اگزوپری'},
+  {t:'اگر نمی‌توانی پرواز کنی، بدو؛ اگر نمی‌توانی بدوی، راه برو؛ اما متوقف نشو.',a:'مارتین لوتر کینگ'},
+  {t:'موفقیت یعنی از شکست به شکست، بدون از دست دادن اشتیاق.',a:'وینستون چرچیل'},
+  {t:'بهترین انتقام از دنیا، موفق شدن است.',a:'ضرب‌المثل'},
+  {t:'زندگی ۱۰٪ چیزی است که برایت اتفاق می‌افتد و ۹۰٪ واکنش تو به آن.',a:'چارلز سوایندل'},
+  {t:'بزرگترین ریسک، ریسک نکردن است.',a:'مارک زاکربرگ'},
+  {t:'موفقیت زمانی به دست می‌آید که آماده‌سازی با فرصت تلاقی کند.',a:'سنکا'},
+  {t:'اگر در جاده‌ای نیستی که به هدف می‌رسد، سرعتت اهمیتی ندارد.',a:'استیون کاوی'},
+  {t:'عمل، پل بین رویا و واقعیت است.',a:'ضرب‌المثل'},
+  {t:'زمان شما محدود است، آن را با زندگی کردن در زندگی دیگران هدر ندهید.',a:'استیو جابز'},
+  {t:'مردم آنچه را که می‌بینند باور می‌کنند، نه آنچه را که می‌شنوند.',a:'ضرب‌المثل'},
+  {t:'هر کاری که انجام می‌دهی، آن را با تمام وجود انجام بده.',a:'استیو جابز'},
+  {t:'تنها راه پیش‌بینی آینده، ساختن آن است.',a:'پیتر دراکر'},
+  {t:'با ترس‌هایت روبرو شو و آن‌ها را شکست بده.',a:'ضرب‌المثل'},
+  {t:'رمز موفقیت، شروع کردن است.',a:'مارک تواین'},
+  {t:'در وسط هر مشکلی، فرصتی نهفته است.',a:'آلبرت اینشتین'},
+  {t:'هیچ‌وقت برای شروع دیر نیست.',a:'ضرب‌المثل'},
+  {t:'خودت را باور کن، نیمی از راه را رفته‌ای.',a:'تئودور روزولت'},
+  {t:'دانش قدرت است، اما عمل، ثروت.',a:'ضرب‌المثل'},
+  {t:'بهترین راه برای پیش‌بینی آینده، خلق کردن آن است.',a:'آلن کی'},
+  {t:'اگر می‌خواهی در زندگی موفق شوی، باید یاد بگیری چگونه شکست بخوری.',a:'ضرب‌المثل'},
+  {t:'اهداف کوچک، انگیزه‌های بزرگ می‌سازند.',a:'ضرب‌المثل'},
+  {t:'همیشه بهترین نسخه از خودت باش، نه نسخه‌ای که دیگران می‌خواهند.',a:'ضرب‌المثل'},
+  {t:'سختی‌ها هستند که انسان را می‌سازند، نه راحتی‌ها.',a:'ضرب‌المثل'},
+  {t:'اگر می‌خواهی چیزی را به دست آوری که تا به حال نداشتی، باید کاری کنی که تا به حال نکرده‌ای.',a:'ضرب‌المثل'},
+  {t:'پیروزی متعلق به کسانی است که ادامه می‌دهند.',a:'ضرب‌المثل'},
+  {t:'هیچ‌وقت تسلیم نشو، چون ممکن است همان لحظه، معجزه اتفاق بیفتد.',a:'ضرب‌المثل'},
+  {t:'مسیر موفقیت، همیشه ساده نیست، اما ارزشش را دارد.',a:'ضرب‌المثل'},
+  {t:'بزرگ‌ترین دشمن موفقیت، ترس از شکست است.',a:'ضرب‌المثل'},
+  {t:'با برنامه‌ریزی، رویاها به واقعیت تبدیل می‌شوند.',a:'ضرب‌المثل'},
+  {t:'بهترین سرمایه‌گذاری، سرمایه‌گذاری روی خودت است.',a:'بنجامین فرانکلین'}
+];
+function showWisdom(){
+  if(sessionStorage.getItem('wisdom_shown')) return;
+  const w=WISDOMS[Math.floor(Math.random()*WISDOMS.length)];
+  document.getElementById('wisdomText').textContent='«'+w.t+'»';
+  document.getElementById('wisdomAuthor').textContent='— '+w.a;
+  document.getElementById('wisdomPopup').classList.add('open');
+  sessionStorage.setItem('wisdom_shown','1');
+}
+/* ============================================================
+   🔐 ACCOUNT FUNCTIONS — تغییر رمز و خروج
+   ============================================================ */
+function updateAccountPanel(){
+  const user = getCurrentUser();
+  if(!user) return;
+  const nameEl = document.getElementById('currentUserName');
+  const userEl = document.getElementById('currentUserUsername');
+  if(nameEl) nameEl.textContent = user.name;
+  if(userEl) userEl.textContent = user.username;
+}
+
+function gotoChangePassword(){
+  window.location.href = 'change-pwd.html';
+}
+
+function doLogout(){
+  if(!confirm('از حساب خود خارج می‌شوید؟')) return;
+  localStorage.removeItem('hrm_current_user');
+  sessionStorage.removeItem('hrm_current_user');
+  window.location.href = 'login.html';
+}
+
+function closeWisdom(){ document.getElementById('wisdomPopup').classList.remove('open'); }
+
+/* ============================================================
+   MODAL / TOAST / MENU / BOOT
+   ============================================================ */
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function toast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show '+(type||'');
+  clearTimeout(t._t); t._t=setTimeout(()=>{t.className='toast';},3000);
+}
+function initMenu(){
+  document.querySelectorAll('.menu-btn').forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll('.menu-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('panel-'+btn.dataset.panel).classList.add('active');
+    };
+  });
+}
+function checkLock(){
+  if(state.settings.passEnabled && state.settings.pass){
+    document.getElementById('lockScreen').classList.add('open');
+  } else {
+    boot();
+  }
+}
+function unlock(){
+  const p=document.getElementById('lockPass').value;
+  if(p===state.settings.pass){
+    document.getElementById('lockScreen').classList.remove('open');
+    document.getElementById('lockPass').value='';
+    boot();
+  } else {
+    toast('رمز اشتباه است','error');
+  }
+}
+let _booted=false;
+function boot(){
+  if(_booted) return; _booted=true;
+  autoRecordOnLaunch();
+  applyTheme(); applyBg();
+  renderAll();
+  renderChatFromState();
+  initMenu();
+  initRipple();
+  initParticles();
+  showWisdom();
+  loadNotifSettings();
+  startNotificationLoop();
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', autoDetectTheme);
+  hideSplash();
+  if(liveTimer) clearInterval(liveTimer);
+  liveTimer = setInterval(() => {
+    renderTopbar();
+    renderKPIs();
+    renderKPIsEnhanced();
+    renderMonthProgress();
+    renderAvatar();
+    renderWorkTable();
+  }, 1000);
+  setTimeout(taskReminder, 3000);
+  setInterval(taskReminder, 1000*60*60*6);
+}
+function taskReminder(){
+  const pending=state.tasks.filter(t=>!t.done); if(!pending.length) return;
+  const today=jalaliStr();
+  const last=localStorage.getItem('last_task_reminder');
+  if(last===today) return;
+  localStorage.setItem('last_task_reminder',today);
+  toast(`🔔 ${pending.length} وظیفه باقی‌مانده دارید!`, 'error');
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+(function init(){
+  load();
+  const n=nowJalali();
+  currentYear=n.jy; currentMonth=n.jm;
+  checkLock();
+  document.querySelectorAll('.modal-overlay').forEach(o=>{
+    o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); });
+  });
+})();
+</script>
+</body>
+</html>
