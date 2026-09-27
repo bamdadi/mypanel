@@ -900,16 +900,27 @@ tr.sum-row td{
    🔐 AUTH CHECK — چک لاگین
    ============================================================ */
 (function authGuard(){
-  const user = getCurrentUser();
+  const token = localStorage.getItem('hrm_token');
+  const userData = localStorage.getItem('hrm_user');
   
-  // اگه لاگین نکرده → برو به لاگین
-  if(!user){
+  // اگه توکن یا کاربر نیست → برو لاگین
+  if(!token || !userData){
     window.location.href = 'login.html';
     return;
   }
   
-  // اگه رمز عوض نشده → برو به تغییر رمز
-  if(mustChangePassword(user.username)){
+  let user;
+  try {
+    user = JSON.parse(userData);
+  } catch(e) {
+    localStorage.removeItem('hrm_token');
+    localStorage.removeItem('hrm_user');
+    window.location.href = 'login.html';
+    return;
+  }
+  
+  // اگه باید رمز عوض کنه → برو تغییر رمز
+  if(user.mustChange === true){
     window.location.href = 'change-pwd.html?force=1';
     return;
   }
@@ -919,6 +930,8 @@ tr.sum-row td{
     window.location.href = 'manager.html';
     return;
   }
+  
+  // همه چیز درست — اجازه بده لود بشه
 })();
 
 /* ============================================================
@@ -1087,9 +1100,13 @@ function renderTopbar(){
   document.getElementById('topClock').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');
   document.getElementById('topDate').textContent=jalaliPretty(d);
   
-  // 🔐 نمایش نام کاربر واقعی از لاگین
-  const user = getCurrentUser();
-  const displayName = user ? user.name : (state.userName || 'کاربر مهمان');
+  // نمایش نام کاربر از localStorage
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem('hrm_user') || 'null');
+  } catch(e) {}
+  
+  const displayName = user ? user.name : 'کاربر مهمان';
   document.getElementById('topUserName').textContent = displayName;
   document.getElementById('avatarInitial').textContent = displayName.trim().charAt(0) || '؟';
 }
@@ -2281,8 +2298,13 @@ function showWisdom(){
    🔐 ACCOUNT FUNCTIONS — تغییر رمز و خروج
    ============================================================ */
 function updateAccountPanel(){
-  const user = getCurrentUser();
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem('hrm_user') || 'null');
+  } catch(e) {}
+  
   if(!user) return;
+  
   const nameEl = document.getElementById('currentUserName');
   const userEl = document.getElementById('currentUserUsername');
   if(nameEl) nameEl.textContent = user.name;
@@ -2293,10 +2315,24 @@ function gotoChangePassword(){
   window.location.href = 'change-pwd.html';
 }
 
-function doLogout(){
+async function doLogout(){
   if(!confirm('از حساب خود خارج می‌شوید؟')) return;
-  localStorage.removeItem('hrm_current_user');
-  sessionStorage.removeItem('hrm_current_user');
+  
+  const token = localStorage.getItem('hrm_token');
+  
+  if(token){
+    try {
+      await fetch('https://mypanel-api.bamdad-roozegar.workers.dev/api/logout', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+    } catch(e) {
+      console.warn('Logout API failed:', e);
+    }
+  }
+  
+  localStorage.removeItem('hrm_token');
+  localStorage.removeItem('hrm_user');
   window.location.href = 'login.html';
 }
 
@@ -2342,6 +2378,8 @@ function unlock(){
 let _booted=false;
 function boot(){
   if(_booted) return; _booted=true;
+    // 🔥 پاک کردن نام کاربر قدیمی
+  state.userName = '';
   autoRecordOnLaunch();
   applyTheme(); applyBg();
   renderAll();
