@@ -2489,14 +2489,26 @@ function unlock(){
 }
 let _booted=false;
 let _booted=false;
+let _booted=false;
 async function boot(){
   if(_booted) return; _booted=true;
   
-  // بارگذاری از D1 (و localStorage)
-  await load();
+  // اول مخفی کردن Splash (تا اگه D1 خطا داد، صفحه گیر نکنه)
+  hideSplash();
+  
+  // بارگذاری از D1 با timeout
+  try {
+    await Promise.race([
+      load(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+    ]);
+  } catch(e) {
+    console.warn('⚠️ Load timeout or error:', e.message);
+  }
   
   autoRecordOnLaunch();
-  applyTheme(); applyBg();
+  applyTheme(); 
+  applyBg();
   renderAll();
   renderChatFromState();
   initMenu();
