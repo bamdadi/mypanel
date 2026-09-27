@@ -6,7 +6,6 @@
 <title>تغییر رمز عبور | سامانه کارکرد</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔑</text></svg>">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
-<script src="users.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 
@@ -26,7 +25,6 @@ body{
   min-height:100vh;position:relative;padding:20px;
 }
 
-/* 🌈 پس‌زمینه گرادیان */
 .bg-gradient{
   position:fixed;inset:0;z-index:-2;
   background:
@@ -37,12 +35,8 @@ body{
   background-size:200% 200%;
   animation:bgShift 20s ease infinite;
 }
-@keyframes bgShift{
-  0%,100%{background-position:0% 0%}
-  50%{background-position:100% 100%}
-}
+@keyframes bgShift{0%,100%{background-position:0% 0%}50%{background-position:100% 100%}}
 
-/* ✨ ذرات */
 #particles{position:fixed;inset:0;z-index:-1;pointer-events:none}
 .particle{
   position:absolute;width:3px;height:3px;border-radius:50%;
@@ -51,32 +45,26 @@ body{
 }
 @keyframes float-particle{
   0%{transform:translate(0,0) scale(1);opacity:0}
-  10%{opacity:.8}
-  90%{opacity:.4}
+  10%{opacity:.8}90%{opacity:.4}
   100%{transform:translate(var(--dx,30px),-100vh) scale(.3);opacity:0}
 }
 
-/* 💎 کارت شیشه‌ای */
 .pwd-card{
   width:100%;max-width:460px;
   background:linear-gradient(135deg,rgba(20,30,50,.85),rgba(30,45,70,.7));
   backdrop-filter:blur(24px) saturate(180%);
   -webkit-backdrop-filter:blur(24px) saturate(180%);
-  border:1px solid var(--border);
-  border-radius:24px;
+  border:1px solid var(--border);border-radius:24px;
   padding:38px 32px;
   box-shadow:
     0 30px 80px rgba(0,0,0,.6),
     0 0 60px rgba(0,212,255,.15),
     inset 0 1px 0 rgba(255,255,255,.08);
-  position:relative;
-  overflow:hidden;
+  position:relative;overflow:hidden;
   animation:cardIn .8s cubic-bezier(.2,.9,.3,1.1);
 }
-@keyframes cardIn{
-  from{opacity:0;transform:translateY(40px) scale(.95)}
-  to{opacity:1;transform:translateY(0) scale(1)}
-}
+@keyframes cardIn{from{opacity:0;transform:translateY(40px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+
 .pwd-card::before{
   content:"";position:absolute;top:0;right:0;left:0;height:2px;
   background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),var(--accent3),transparent);
@@ -85,11 +73,9 @@ body{
 }
 @keyframes shine{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-/* آیکون بالای کارت */
 .pwd-icon{
   width:76px;height:76px;margin:0 auto 18px;
-  border-radius:20px;
-  display:flex;align-items:center;justify-content:center;
+  border-radius:20px;display:flex;align-items:center;justify-content:center;
   font-size:36px;
   box-shadow:0 10px 40px rgba(0,212,255,.5),inset 0 2px 10px rgba(255,255,255,.2);
 }
@@ -102,14 +88,8 @@ body{
   background:linear-gradient(135deg,var(--accent),var(--accent3));
   animation:logoPulse 3s ease-in-out infinite;
 }
-@keyframes warnPulse{
-  0%,100%{transform:scale(1);box-shadow:0 10px 40px rgba(245,158,11,.5),inset 0 2px 10px rgba(255,255,255,.2)}
-  50%{transform:scale(1.05);box-shadow:0 15px 60px rgba(245,158,11,.8),inset 0 2px 10px rgba(255,255,255,.2)}
-}
-@keyframes logoPulse{
-  0%,100%{transform:scale(1)}
-  50%{transform:scale(1.05)}
-}
+@keyframes warnPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes logoPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 
 .pwd-title{
   text-align:center;font-size:21px;font-weight:800;
@@ -123,30 +103,20 @@ body{
   margin-bottom:24px;line-height:1.9;
 }
 
-/* بنر هشدار اجباری */
 .force-banner{
   display:none;
   background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(239,68,68,.15));
   border:1.5px solid rgba(245,158,11,.4);
-  color:#fbbf24;
-  padding:14px 16px;
-  border-radius:12px;
-  font-size:12.5px;
-  font-weight:600;
-  line-height:1.9;
-  margin-bottom:20px;
-  text-align:center;
+  color:#fbbf24;padding:14px 16px;border-radius:12px;
+  font-size:12.5px;font-weight:600;line-height:1.9;
+  margin-bottom:20px;text-align:center;
   animation:fadeIn .4s;
 }
 .force-banner.show{display:block}
 .force-banner strong{color:#fcd34d;font-weight:800}
 
-/* فرم */
 .form-group{margin-bottom:16px;position:relative}
-.form-label{
-  display:block;font-size:12px;font-weight:700;color:var(--muted);
-  margin-bottom:8px;
-}
+.form-label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px}
 .input-wrap{position:relative;display:flex;align-items:center}
 .form-input{
   width:100%;
@@ -155,8 +125,7 @@ body{
   border-radius:12px;
   padding:14px 46px 14px 46px;
   font-size:15px;font-weight:600;
-  color:var(--text);
-  outline:none;transition:.25s;
+  color:var(--text);outline:none;transition:.25s;
   font-family:inherit;
 }
 .form-input::placeholder{color:var(--muted);font-weight:400;font-size:13px}
@@ -165,19 +134,10 @@ body{
   background:rgba(10,20,40,.95);
   box-shadow:0 0 0 4px rgba(0,212,255,.15),var(--glow);
 }
-.form-input.error{
-  border-color:var(--danger);
-  box-shadow:0 0 0 4px rgba(239,68,68,.15);
-}
-.form-input.success{
-  border-color:var(--success);
-  box-shadow:0 0 0 4px rgba(16,185,129,.15);
-}
+.form-input.error{border-color:var(--danger);box-shadow:0 0 0 4px rgba(239,68,68,.15)}
+.form-input.success{border-color:var(--success);box-shadow:0 0 0 4px rgba(16,185,129,.15)}
 
-.input-icon{
-  position:absolute;right:14px;font-size:17px;opacity:.6;
-  pointer-events:none;
-}
+.input-icon{position:absolute;right:14px;font-size:17px;opacity:.6;pointer-events:none}
 .toggle-pwd{
   position:absolute;left:14px;background:transparent;border:none;
   font-size:16px;cursor:pointer;color:var(--muted);
@@ -185,73 +145,33 @@ body{
 }
 .toggle-pwd:hover{color:var(--accent)}
 
-/* نشانگر قدرت رمز */
-.strength-bar{
-  height:5px;background:rgba(255,255,255,.08);border-radius:3px;
-  margin-top:8px;overflow:hidden;
-}
-.strength-fill{
-  height:100%;width:0;border-radius:3px;
-  transition:.3s;
-}
-.strength-text{
-  font-size:10.5px;color:var(--muted);margin-top:6px;
-  text-align:left;
-}
+.strength-bar{height:5px;background:rgba(255,255,255,.08);border-radius:3px;margin-top:8px;overflow:hidden}
+.strength-fill{height:100%;width:0;border-radius:3px;transition:.3s}
+.strength-text{font-size:10.5px;color:var(--muted);margin-top:6px;text-align:left}
 
-/* قوانین رمز */
-.rules{
-  display:flex;flex-direction:column;gap:5px;
-  margin-top:10px;font-size:11.5px;
-}
-.rule{
-  display:flex;align-items:center;gap:7px;
-  color:var(--muted);transition:.2s;
-}
+.rules{display:flex;flex-direction:column;gap:5px;margin-top:10px;font-size:11.5px}
+.rule{display:flex;align-items:center;gap:7px;color:var(--muted);transition:.2s}
 .rule.valid{color:var(--success)}
 .rule-icon{
   width:14px;height:14px;border-radius:50%;
   border:1.5px solid currentColor;
   display:flex;align-items:center;justify-content:center;
-  font-size:9px;font-weight:900;
-  flex-shrink:0;
+  font-size:9px;font-weight:900;flex-shrink:0;
 }
-.rule.valid .rule-icon{
-  background:var(--success);
-  border-color:var(--success);
-  color:#fff;
-}
+.rule.valid .rule-icon{background:var(--success);border-color:var(--success);color:#fff}
 .rule.valid .rule-icon::after{content:"✓"}
 
-/* خطا / موفقیت */
 .alert-box{
   padding:12px 16px;border-radius:10px;
   font-size:13px;font-weight:600;margin-bottom:16px;
   display:none;animation:shake .4s;
 }
 .alert-box.show{display:block}
-.alert-box.error{
-  background:rgba(239,68,68,.15);
-  border:1px solid rgba(239,68,68,.4);
-  color:#fca5a5;
-}
-.alert-box.success{
-  background:rgba(16,185,129,.15);
-  border:1px solid rgba(16,185,129,.4);
-  color:#6ee7b7;
-  animation:slideDown .4s;
-}
-@keyframes shake{
-  0%,100%{transform:translateX(0)}
-  25%{transform:translateX(-6px)}
-  75%{transform:translateX(6px)}
-}
-@keyframes slideDown{
-  from{opacity:0;transform:translateY(-10px)}
-  to{opacity:1;transform:translateY(0)}
-}
+.alert-box.error{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:#fca5a5}
+.alert-box.success{background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.4);color:#6ee7b7;animation:slideDown .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
 
-/* دکمه‌ها */
 .btn{
   width:100%;padding:15px;
   background:linear-gradient(135deg,var(--accent),var(--accent2),var(--accent3));
@@ -261,28 +181,15 @@ body{
   cursor:pointer;transition:.3s;
   box-shadow:0 8px 30px rgba(0,212,255,.4);
   position:relative;overflow:hidden;
-  font-family:inherit;
-  letter-spacing:.3px;
-  margin-bottom:10px;
+  font-family:inherit;letter-spacing:.3px;margin-bottom:10px;
 }
-.btn:hover{
-  transform:translateY(-2px);
-  box-shadow:0 12px 40px rgba(0,212,255,.6);
-  background-position:100% 0;
-}
-.btn:disabled{
-  opacity:.6;cursor:not-allowed;transform:none;
-}
+.btn:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,212,255,.6);background-position:100% 0}
+.btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
 .btn-ghost{
-  background:rgba(255,255,255,.05);
-  border:1px solid var(--border);
-  color:var(--text);
-  box-shadow:none;
+  background:rgba(255,255,255,.05);border:1px solid var(--border);
+  color:var(--text);box-shadow:none;
 }
-.btn-ghost:hover{
-  background:rgba(255,255,255,.1);
-  box-shadow:none;
-}
+.btn-ghost:hover{background:rgba(255,255,255,.1);box-shadow:none}
 .btn .spinner{
   display:inline-block;width:16px;height:16px;
   border:2px solid rgba(255,255,255,.3);
@@ -292,19 +199,8 @@ body{
 }
 @keyframes spin{to{transform:rotate(360deg)}}
 
-.ripple{
-  position:absolute;border-radius:50%;background:rgba(255,255,255,.5);
-  transform:scale(0);animation:ripple-anim .6s linear;pointer-events:none;
-}
-@keyframes ripple-anim{to{transform:scale(4);opacity:0}}
+.footer{text-align:center;margin-top:22px;font-size:11px;color:var(--muted);opacity:.6}
 
-/* footer */
-.footer{
-  text-align:center;margin-top:22px;
-  font-size:11px;color:var(--muted);opacity:.6;
-}
-
-/* 📱 موبایل */
 @media (max-width:520px){
   .pwd-card{padding:28px 20px;border-radius:20px}
   .pwd-icon{width:64px;height:64px;font-size:30px}
@@ -316,32 +212,22 @@ body{
 </head>
 <body>
 
-<!-- 🌈 پس‌زمینه -->
 <div class="bg-gradient"></div>
 <div id="particles"></div>
 
-<!-- 💎 کارت تغییر رمز -->
 <div class="pwd-card">
-
-  <!-- آیکون بالای کارت -->
   <div class="pwd-icon" id="pwdIcon">🔑</div>
-
-  <!-- عنوان -->
   <h1 class="pwd-title" id="pwdTitle">تغییر رمز عبور</h1>
   <p class="pwd-sub" id="pwdSub">برای امنیت بیشتر، رمز جدید خود را تعیین کنید.</p>
 
-  <!-- بنر هشدار اجباری -->
   <div class="force-banner" id="forceBanner">
     ⚠️ <strong>توجه:</strong> این اولین ورود شماست. برای ادامه کار با سامانه، لازم است رمز پیش‌فرض را تغییر دهید.
   </div>
 
-  <!-- آلرت خطا / موفقیت -->
   <div class="alert-box" id="alertBox"></div>
 
-  <!-- فرم -->
   <form id="pwdForm" onsubmit="handleChangePassword(event)">
 
-    <!-- رمز فعلی (فقط اگه از پنل باشه) -->
     <div class="form-group" id="currentPwdGroup" style="display:none">
       <label class="form-label" for="currentPwd">رمز فعلی</label>
       <div class="input-wrap">
@@ -351,7 +237,6 @@ body{
       </div>
     </div>
 
-    <!-- رمز جدید -->
     <div class="form-group">
       <label class="form-label" for="newPwd">رمز جدید</label>
       <div class="input-wrap">
@@ -359,12 +244,8 @@ body{
         <span class="input-icon">🔑</span>
         <button type="button" class="toggle-pwd" onclick="togglePassword('newPwd', this)">👁️</button>
       </div>
-      <!-- نشانگر قدرت -->
-      <div class="strength-bar">
-        <div class="strength-fill" id="strengthFill"></div>
-      </div>
+      <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
       <div class="strength-text" id="strengthText">قدرت رمز: خیلی ضعیف</div>
-      <!-- قوانین -->
       <div class="rules" id="rules">
         <div class="rule" data-rule="length"><span class="rule-icon"></span>حداقل ۶ کاراکتر</div>
         <div class="rule" data-rule="lower"><span class="rule-icon"></span>حرف کوچک انگلیسی</div>
@@ -373,7 +254,6 @@ body{
       </div>
     </div>
 
-    <!-- تکرار رمز جدید -->
     <div class="form-group">
       <label class="form-label" for="confirmPwd">تکرار رمز جدید</label>
       <div class="input-wrap">
@@ -383,71 +263,83 @@ body{
       </div>
     </div>
 
-    <!-- دکمه اصلی -->
-    <button type="submit" class="btn" id="submitBtn">
-      تغییر رمز
-    </button>
+    <button type="submit" class="btn" id="submitBtn">تغییر رمز</button>
 
-    <!-- دکمه انصراف (فقط اگه از پنل اومده باشه) -->
     <button type="button" class="btn btn-ghost" id="cancelBtn" style="display:none" onclick="cancelChange()">
       انصراف و بازگشت
     </button>
   </form>
 
-  <div class="footer">
-    نسخه ۳.۰ | سامانه کارکرد ماهیانه
-  </div>
-
+  <div class="footer">نسخه ۳.۰ | سامانه کارکرد ماهیانه</div>
 </div>
 
 <script>
 /* ============================================================
-   INIT
+   🔗 API Configuration
    ============================================================ */
+const API_URL = 'https://mypanel-api.bamdad-roozegar.workers.dev';
 
-let isForced = false; // آیا تغییر اجباری است؟
+/* ============================================================
+   🎯 State
+   ============================================================ */
+let isForced = false;
+let currentUser = null;
 
+/* ============================================================
+   🔐 INIT — چک لاگین
+   ============================================================ */
 (function init(){
-  // چک لاگین
-  const user = getCurrentUser();
-  if(!user){
+  const token = localStorage.getItem('hrm_token');
+  const userData = localStorage.getItem('hrm_user');
+
+  if(!token || !userData){
+    // لاگین نکرده → برو به لاگین
     window.location.href = 'login.html';
     return;
   }
 
-  // چک پارامتر force
-  const params = new URLSearchParams(window.location.search);
-  isForced = params.get('force') === '1';
-
-  // اگه اجباری است، ولی کاربر قبلاً رمز رو عوض کرده → بره پنل
-  if(isForced && !mustChangePassword(user.username)){
-    redirectToPanel(user);
+  try {
+    currentUser = JSON.parse(userData);
+  } catch(e) {
+    localStorage.removeItem('hrm_token');
+    localStorage.removeItem('hrm_user');
+    window.location.href = 'login.html';
     return;
   }
 
-  // اگه اختیاریه، گروه رمز فعلی رو نشون بده
-  if(!isForced){
+  // چک پارامتر force در URL
+  const params = new URLSearchParams(window.location.search);
+  isForced = params.get('force') === '1';
+
+  // اگه اجباری است ولی کاربر قبلاً رمز رو عوض کرده → بره پنل
+  if(isForced && currentUser.mustChange === false){
+    redirectToPanel();
+    return;
+  }
+
+  // تنظیم ظاهر بر اساس حالت
+  if(isForced){
+    document.getElementById('forceBanner').classList.add('show');
+    document.getElementById('pwdIcon').className = 'pwd-icon force';
+    document.getElementById('pwdIcon').textContent = '⚠️';
+    document.getElementById('pwdTitle').textContent = 'تغییر اجباری رمز';
+    document.getElementById('pwdSub').innerHTML = `سلام <strong style="color:var(--accent)">${escapeHtml(currentUser.name)}</strong>، برای ادامه کار، رمز پیش‌فرض خود را تغییر دهید.`;
+  } else {
     document.getElementById('currentPwdGroup').style.display = 'block';
     document.getElementById('cancelBtn').style.display = 'block';
     document.getElementById('pwdIcon').className = 'pwd-icon normal';
     document.getElementById('pwdIcon').textContent = '🔑';
     document.getElementById('pwdTitle').textContent = 'تغییر رمز عبور';
     document.getElementById('pwdSub').textContent = 'رمز جدید خود را برای امنیت بیشتر تعیین کنید.';
-  } else {
-    // اجباری
-    document.getElementById('forceBanner').classList.add('show');
-    document.getElementById('pwdIcon').className = 'pwd-icon force';
-    document.getElementById('pwdIcon').textContent = '⚠️';
-    document.getElementById('pwdTitle').textContent = 'تغییر اجباری رمز';
-    document.getElementById('pwdSub').innerHTML = `سلام <strong style="color:var(--accent)">${user.name}</strong>، برای ادامه کار، رمز پیش‌فرض خود را تغییر دهید.`;
   }
 
-  // ذرات
   initParticles();
-
-  // فوکوس روی رمز جدید
-  setTimeout(()=>document.getElementById('newPwd').focus(), 300);
+  setTimeout(() => document.getElementById('newPwd').focus(), 300);
 })();
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 
 function initParticles(){
   const box = document.getElementById('particles');
@@ -467,35 +359,23 @@ function initParticles(){
   }
 }
 
-function redirectToPanel(user){
-  if(user.role === 'admin'){
+/* ============================================================
+   🚀 Redirect
+   ============================================================ */
+function redirectToPanel(){
+  if(currentUser && currentUser.role === 'admin'){
     window.location.href = 'manager.html';
   } else {
     window.location.href = 'index.html';
   }
 }
 
-/* ============================================================
-   RIPPLE
-   ============================================================ */
-document.addEventListener('click', function(e){
-  const btn = e.target.closest('button');
-  if(!btn) return;
-  const rect = btn.getBoundingClientRect();
-  const size = Math.max(rect.width, rect.height);
-  const x = e.clientX - rect.left - size/2;
-  const y = e.clientY - rect.top - size/2;
-  const ripple = document.createElement('span');
-  ripple.className = 'ripple';
-  ripple.style.width = ripple.style.height = size + 'px';
-  ripple.style.left = x + 'px';
-  ripple.style.top = y + 'px';
-  btn.appendChild(ripple);
-  setTimeout(()=>ripple.remove(), 600);
-});
+function cancelChange(){
+  redirectToPanel();
+}
 
 /* ============================================================
-   PASSWORD VISIBILITY
+   👁️ Password Toggle
    ============================================================ */
 function togglePassword(inputId, btn){
   const inp = document.getElementById(inputId);
@@ -509,7 +389,7 @@ function togglePassword(inputId, btn){
 }
 
 /* ============================================================
-   VALIDATION / STRENGTH
+   ✅ Validation & Strength
    ============================================================ */
 function checkRules(pwd){
   return {
@@ -527,7 +407,7 @@ function calcStrength(pwd){
   if(r.lower && r.upper) score++;
   if(r.digit) score++;
   if(pwd.length >= 10) score++;
-  return score; // 0..4
+  return score;
 }
 
 function onNewPwdInput(){
@@ -535,15 +415,11 @@ function onNewPwdInput(){
   const rules = checkRules(pwd);
   const score = calcStrength(pwd);
 
-  // آپدیت قوانین
-  ['length','lower','upper','digit'].forEach(ruleName=>{
+  ['length','lower','upper','digit'].forEach(ruleName => {
     const el = document.querySelector(`.rule[data-rule="${ruleName}"]`);
-    if(el){
-      el.classList.toggle('valid', rules[ruleName]);
-    }
+    if(el) el.classList.toggle('valid', rules[ruleName]);
   });
 
-  // نشانگر قدرت
   const fill = document.getElementById('strengthFill');
   const text = document.getElementById('strengthText');
   const colors = ['#ef4444','#f59e0b','#f59e0b','#10b981','#059669'];
@@ -554,7 +430,6 @@ function onNewPwdInput(){
   text.textContent = 'قدرت رمز: ' + labels[score];
   text.style.color = colors[score];
 
-  // چک تطابق
   onConfirmInput();
 }
 
@@ -578,13 +453,12 @@ function onConfirmInput(){
 }
 
 /* ============================================================
-   ALERTS
+   📢 Alerts
    ============================================================ */
 function showAlert(msg, type){
   const el = document.getElementById('alertBox');
   el.textContent = msg;
   el.className = 'alert-box show ' + type;
-  // اسکرول به بالا
   el.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 function hideAlert(){
@@ -593,14 +467,14 @@ function hideAlert(){
 }
 
 /* ============================================================
-   CHANGE PASSWORD
+   🔑 Change Password (via API)
    ============================================================ */
 async function handleChangePassword(e){
   e.preventDefault();
   hideAlert();
 
-  const user = getCurrentUser();
-  if(!user){
+  const token = localStorage.getItem('hrm_token');
+  if(!token){
     window.location.href = 'login.html';
     return;
   }
@@ -625,64 +499,58 @@ async function handleChangePassword(e){
     return;
   }
 
-  // چک قوانین امنیتی
   const rules = checkRules(newPwd);
   if(!rules.lower || !rules.upper || !rules.digit){
     showAlert('⚠️ رمز باید شامل حرف کوچک، حرف بزرگ و عدد باشد', 'error');
     return;
   }
 
-  // اگه اجباری نیست، رمز فعلی رو چک کن
   if(!isForced && !currentPwd){
     showAlert('⚠️ لطفاً رمز فعلی خود را وارد کنید', 'error');
     return;
   }
 
-  // دکمه loading
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
   btn.innerHTML = 'در حال ذخیره... <span class="spinner"></span>';
 
-  try{
-    // اگه اجباری: رمز فعلی = رمز پیش‌فرض کاربر
-    let oldPwd = currentPwd;
-    if(isForced){
-      oldPwd = DEFAULT_PASSWORDS[user.username];
-    }
+  try {
+    const res = await fetch(API_URL + '/api/change-pwd', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({
+        oldPassword: isForced ? '' : currentPwd,
+        newPassword: newPwd
+      })
+    });
 
-    const result = await changePassword(user.username, oldPwd, newPwd);
+    const data = await res.json();
 
-    if(!result.ok){
-      showAlert('⚠️ ' + result.error, 'error');
+    if(!res.ok || !data.ok){
+      showAlert('⚠️ ' + (data.error || 'خطا در تغییر رمز'), 'error');
       btn.disabled = false;
       btn.textContent = 'تغییر رمز';
       return;
     }
 
-    // موفق
+    // آپدیت mustChange در localStorage
+    currentUser.mustChange = false;
+    localStorage.setItem('hrm_user', JSON.stringify(currentUser));
+
     showAlert('✅ رمز عبور با موفقیت تغییر یافت! در حال انتقال...', 'success');
     btn.innerHTML = 'انتقال به پنل... <span class="spinner"></span>';
 
-    setTimeout(()=>{
-      redirectToPanel(user);
+    setTimeout(() => {
+      redirectToPanel();
     }, 1200);
 
-  }catch(err){
-    showAlert('⚠️ خطای سیستمی: ' + err.message, 'error');
+  } catch(err){
+    showAlert('⚠️ خطای شبکه: ' + err.message + ' — اتصال اینترنت را بررسی کنید', 'error');
     btn.disabled = false;
     btn.textContent = 'تغییر رمز';
-  }
-}
-
-/* ============================================================
-   CANCEL
-   ============================================================ */
-function cancelChange(){
-  const user = getCurrentUser();
-  if(user){
-    redirectToPanel(user);
-  } else {
-    window.location.href = 'login.html';
   }
 }
 </script>
