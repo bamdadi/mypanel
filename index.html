@@ -625,6 +625,7 @@ tr.sum-row td{
         <button class="btn btn-ghost btn-sm no-flex" onclick="exportExcel()">📗 اکسل</button>
         <button class="btn btn-ghost btn-sm no-flex" onclick="exportPDF()">📕 PDF (پرینت)</button>
         <button class="btn btn-ghost btn-sm no-flex" onclick="exportWord()">📘 Word</button>
+        <button class="btn btn-success btn-sm no-flex" onclick="sendTimeSheet()" id="sendTimeSheetBtn">📤 ارسال تایم‌شیت به کارفرما</button>
       </div>
     </div>
 
@@ -1708,6 +1709,84 @@ function exportWord(){
 function exportPDF(){
   toast('در پنجره باز شده، "Save as PDF" را انتخاب کنید','success');
   setTimeout(()=>{ window.print(); }, 500);
+}
+  
+/* ============================================================
+   📤 ارسال تایم‌شیت به کارفرما
+   ============================================================ */
+async function sendTimeSheet(){
+  const token = getToken();
+  if(!token){
+    toast('ابتدا وارد شوید', 'error');
+    return;
+  }
+  
+  // ماه جاری
+  const month = `${currentYear}/${String(currentMonth).padStart(2,'0')}`;
+  const monthLabel = `${JMONTHS[currentMonth-1]} ${currentYear}`;
+  
+  // چک کن که کارکردی هست
+  const days = jalaali.jalaaliMonthLength(currentYear, currentMonth);
+  let hasData = false;
+  for(let d = 1; d <= days; d++){
+    const jstr = `${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
+    const e = state.entries[jstr];
+    if(e && (e.entry || e.exit || e.desc)){
+      hasData = true;
+      break;
+    }
+  }
+  
+  if(!hasData){
+    toast(`برای ${monthLabel} هیچ کارکردی ثبت نشده`, 'error');
+    return;
+  }
+  
+  if(!confirm(`تایم‌شیت ${monthLabel} برای کارفرما ارسال شود؟\n\nاگه قبلاً ارسال کرده باشی، جایگزین می‌شه.`)) return;
+  
+  const btn = document.getElementById('sendTimeSheetBtn');
+  const originalText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = 'در حال ارسال...';
+  
+  try {
+    // ۱. اول سینک همه entries به D1
+    await syncToD1();
+    
+    // ۲. ارسال تایم‌شیت
+    const res = await apiRequest('/api/reports', {
+      method: 'POST',
+      body: JSON.stringify({ month })
+    });
+    
+    if(!res){
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+      return;
+    }
+    
+    const data = await res.json();
+    
+    if(!res.ok || !data.ok){
+      toast('⚠️ ' + (data.error || 'خطا در ارسال'), 'error');
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+      return;
+    }
+    
+    toast(`✅ تایم‌شیت ${monthLabel} با موفقیت ارسال شد (${data.entriesCount} روز)`, 'success');
+    btn.innerHTML = '✅ ارسال شد';
+    
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }, 3000);
+    
+  } catch(e) {
+    toast('⚠️ خطای شبکه: ' + e.message, 'error');
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+  }
 }
 
 /* ============================================================
