@@ -452,6 +452,44 @@ tr.official-holiday td{color:#ff8a80}
 .theme-chip:hover{transform:translateY(-2px);border-color:var(--accent)}
 .theme-chip.active{border-color:var(--accent);background:var(--holiday);box-shadow:var(--glow)}
 .theme-dot{width:16px;height:16px;border-radius:50%;box-shadow:0 0 10px currentColor}
+  /* 👥 کارت کاربر */
+.user-card{
+  background:linear-gradient(135deg,var(--card2),var(--card));
+  border:1px solid var(--border);border-radius:14px;padding:14px 16px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  transition:.25s;
+}
+.user-card:hover{border-color:var(--accent);box-shadow:0 8px 24px rgba(14,165,233,.15)}
+.user-card-avatar{
+  width:46px;height:46px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--accent3));
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:800;font-size:18px;
+}
+.user-card-info{flex:1;min-width:180px}
+.user-card-name{font-weight:800;font-size:14px}
+.user-card-username{
+  font-size:12px;color:var(--muted);margin-top:3px;
+  font-family:monospace;direction:ltr;text-align:right;
+}
+.user-card-role{
+  display:inline-block;padding:3px 10px;border-radius:12px;font-size:10px;
+  font-weight:800;margin-top:5px;
+}
+.user-card-role.admin{background:rgba(14,165,233,.18);color:var(--accent)}
+.user-card-role.employee{background:rgba(52,152,219,.15);color:var(--info)}
+.user-card-actions{display:flex;gap:6px;flex-wrap:wrap}
+.user-badge-must-change{
+  display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;
+  font-weight:700;background:rgba(245,158,11,.18);color:var(--warn);
+  margin-right:6px;
+}
+@media (max-width:640px){
+  .user-card{flex-direction:column;align-items:stretch;text-align:center}
+  .user-card-avatar{margin:0 auto}
+  .user-card-actions{justify-content:center}
+  .user-card-username{text-align:center}
+}
 
 /* Empty state */
 .empty{text-align:center;padding:80px 24px;color:var(--muted)}
@@ -764,6 +802,18 @@ tr.official-holiday td{color:#ff8a80}
     <button class="btn btn-info no-flex" onclick="gotoChangePassword()">🔑 تغییر رمز عبور</button>
     <button class="btn btn-danger no-flex" onclick="doLogout()">🚪 خروج از حساب</button>
   </div>
+</div>
+      <!-- 👥 مدیریت کاربران -->
+<div class="section">
+  <div class="section-title">👥 مدیریت کاربران</div>
+  
+  <div class="row" style="margin-bottom:14px">
+    <button class="btn no-flex" onclick="openAddUserModal()">➕ افزودن کاربر جدید</button>
+    <button class="btn btn-ghost no-flex" onclick="loadUsers()">🔄 بروزرسانی لیست</button>
+    <span id="usersCount" style="font-size:12px;color:var(--muted);align-self:center"></span>
+  </div>
+  
+  <div id="usersList" style="display:flex;flex-direction:column;gap:10px"></div>
 </div>
       <div class="section">
         <div class="section-title">💾 پشتیبان‌گیری پنل</div>
@@ -1344,6 +1394,8 @@ function renderSettings(){
     el.classList.toggle('active', el.dataset.themeVal === mgrState.settings.theme);
   });
   updateAccountPanel();
+    // 👥 بارگذاری لیست کاربران
+  loadUsers();
 }
 /* ============================================================
    🔐 ACCOUNT FUNCTIONS — تغییر رمز و خروج
@@ -2313,7 +2365,370 @@ function bootManager(){
     if(tg) tg.textContent = '☰';
   });
 }
+/* ============================================================
+   👥 USER MANAGEMENT — مدیریت کاربران (اتصال به API)
+   ============================================================ */
 
+const API_URL = 'https://mypanel-api.bamdad-roozegar.workers.dev';
+
+/* گرفتن توکن */
+function getToken(){
+  return localStorage.getItem('hrm_token');
+}
+
+/* گرفتن اطلاعات کاربر لاگین‌شده */
+function getUser(){
+  try {
+    return JSON.parse(localStorage.getItem('hrm_user') || 'null');
+  } catch(e) { return null; }
+}
+
+/* درخواست به API با احراز هویت */
+async function apiRequest(path, options = {}){
+  const token = getToken();
+  if(!token){
+    window.location.href = 'login.html';
+    return null;
+  }
+  
+  const res = await fetch(API_URL + path, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token,
+      ...(options.headers || {})
+    }
+  });
+  
+  if(res.status === 401){
+    // توکن منقضی شده
+    localStorage.removeItem('hrm_token');
+    localStorage.removeItem('hrm_user');
+    window.location.href = 'login.html';
+    return null;
+  }
+  
+  return res;
+}
+
+/* بارگذاری لیست کاربران از API */
+async function loadUsers(){
+  const listEl = document.getElementById('usersList');
+  const countEl = document.getElementById('usersCount');
+  if(!listEl) return;
+  
+  listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted)">در حال بارگذاری...</div>';
+  
+  try {
+    const res = await apiRequest('/api/users');
+    if(!res) return;
+    
+    const data = await res.json();
+    
+    if(!data.ok){
+      listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--danger)">' + (data.error || 'خطا') + '</div>';
+      return;
+    }
+    
+    const users = data.users || [];
+    if(countEl) countEl.textContent = '(' + users.length + ' کاربر)';
+    
+    if(!users.length){
+      listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted)">هیچ کاربری نیست</div>';
+      return;
+    }
+    
+    listEl.innerHTML = users.map(u => renderUserCard(u)).join('');
+  } catch(e) {
+    listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--danger)">خطای شبکه: ' + e.message + '</div>';
+  }
+}
+
+/* رندر کارت کاربر */
+function renderUserCard(user){
+  const initial = (user.name || '؟').trim().charAt(0) || '؟';
+  const isAdmin = user.role === 'admin';
+  const mustChange = user.must_change === 1;
+  const isSelf = (getUser() && getUser().id === user.id);
+  
+  return `
+    <div class="user-card">
+      <div class="user-card-avatar">${escapeHtml(initial)}</div>
+      <div class="user-card-info">
+        <div class="user-card-name">${escapeHtml(user.name)}</div>
+        <div class="user-card-username">@${escapeHtml(user.username)}</div>
+        <div>
+          <span class="user-card-role ${isAdmin ? 'admin' : 'employee'}">
+            ${isAdmin ? '👔 مدیر' : '👤 کارمند'}
+          </span>
+          ${mustChange ? '<span class="user-badge-must-change">⚠️ رمز پیش‌فرض</span>' : ''}
+          ${isSelf ? '<span style="font-size:10px;color:var(--muted);margin-right:6px">(شما)</span>' : ''}
+        </div>
+      </div>
+      <div class="user-card-actions">
+        <button class="btn btn-ghost btn-sm" onclick="openEditUserModal(${user.id}, '${escapeHtml(user.name)}', '${user.role}')">✏️ ویرایش</button>
+        <button class="btn btn-warn btn-sm" onclick="openResetPwdModal(${user.id}, '${escapeHtml(user.name)}')">🔑 ریست رمز</button>
+        ${!isSelf ? `<button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id}, '${escapeHtml(user.name)}')">🗑️ حذف</button>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+/* باز کردن مودال افزودن کاربر */
+function openAddUserModal(){
+  const html = `
+    <div style="padding:6px">
+      <div class="section-title" style="margin-bottom:16px">➕ افزودن کاربر جدید</div>
+      
+      <div class="row">
+        <label style="flex:1">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">نام کامل:</div>
+          <input id="newUserName" placeholder="مثلاً احمد رضایی" required>
+        </label>
+      </div>
+      
+      <div class="row">
+        <label style="flex:1">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">نام کاربری (انگلیسی):</div>
+          <input id="newUserUsername" placeholder="مثلاً ahmad" dir="ltr" required>
+        </label>
+      </div>
+      
+      <div class="row">
+        <label style="flex:1">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">رمز اولیه:</div>
+          <input id="newUserPassword" placeholder="حداقل ۶ کاراکتر" dir="ltr" required>
+        </label>
+      </div>
+      
+      <div class="row">
+        <label style="flex:1">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">نقش:</div>
+          <select id="newUserRole">
+            <option value="employee">👤 کارمند</option>
+            <option value="admin">👔 مدیر</option>
+          </select>
+        </label>
+      </div>
+      
+      <div id="addUserError" style="display:none;padding:10px;border-radius:8px;background:rgba(239,68,68,.15);color:#fca5a5;font-size:13px;margin-top:10px"></div>
+      
+      <div class="modal-actions" style="margin-top:20px">
+        <button class="btn btn-ghost" onclick="closeModal('addUserModal')">انصراف</button>
+        <button class="btn" onclick="submitAddUser()">➕ افزودن</button>
+      </div>
+    </div>
+  `;
+  
+  // ساخت مودال داینامیک
+  createModal('addUserModal', html);
+}
+
+/* ارسال درخواست افزودن کاربر */
+async function submitAddUser(){
+  const name = document.getElementById('newUserName').value.trim();
+  const username = document.getElementById('newUserUsername').value.trim().toLowerCase();
+  const password = document.getElementById('newUserPassword').value;
+  const role = document.getElementById('newUserRole').value;
+  const errEl = document.getElementById('addUserError');
+  
+  errEl.style.display = 'none';
+  
+  if(!name || !username || !password){
+    errEl.textContent = '⚠️ همه فیلدها الزامی است';
+    errEl.style.display = 'block';
+    return;
+  }
+  
+  try {
+    const res = await apiRequest('/api/users', {
+      method: 'POST',
+      body: JSON.stringify({ name, username, password, role })
+    });
+    
+    if(!res) return;
+    
+    const data = await res.json();
+    
+    if(!data.ok){
+      errEl.textContent = '⚠️ ' + (data.error || 'خطا در افزودن کاربر');
+      errEl.style.display = 'block';
+      return;
+    }
+    
+    closeModal('addUserModal');
+    toast('✅ کاربر جدید اضافه شد', 'success');
+    loadUsers();
+  } catch(e) {
+    errEl.textContent = '⚠️ خطای شبکه: ' + e.message;
+    errEl.style.display = 'block';
+  }
+}
+
+/* باز کردن مودال ویرایش کاربر */
+function openEditUserModal(id, name, role){
+  const html = `
+    <div style="padding:6px">
+      <div class="section-title" style="margin-bottom:16px">✏️ ویرایش کاربر</div>
+      
+      <div class="row">
+        <label style="flex:1">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">نام کامل:</div>
+          <input id="editUserName" value="${escapeHtml(name)}" required>
+        </label>
+      </div>
+      
+      <div class="row">
+        <label style="flex:1">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">نقش:</div>
+          <select id="editUserRole">
+            <option value="employee" ${role === 'employee' ? 'selected' : ''}>👤 کارمند</option>
+            <option value="admin" ${role === 'admin' ? 'selected' : ''}>👔 مدیر</option>
+          </select>
+        </label>
+      </div>
+      
+      <div class="modal-actions" style="margin-top:20px">
+        <button class="btn btn-ghost" onclick="closeModal('editUserModal')">انصراف</button>
+        <button class="btn" onclick="submitEditUser(${id})">💾 ذخیره</button>
+      </div>
+    </div>
+  `;
+  
+  createModal('editUserModal', html);
+}
+
+/* ارسال ویرایش کاربر */
+async function submitEditUser(id){
+  const name = document.getElementById('editUserName').value.trim();
+  const role = document.getElementById('editUserRole').value;
+  
+  if(!name){
+    toast('نام الزامی است', 'error');
+    return;
+  }
+  
+  try {
+    const res = await apiRequest('/api/users/' + id, {
+      method: 'PUT',
+      body: JSON.stringify({ name, role })
+    });
+    
+    if(!res) return;
+    const data = await res.json();
+    
+    if(!data.ok){
+      toast(data.error || 'خطا', 'error');
+      return;
+    }
+    
+    closeModal('editUserModal');
+    toast('✅ کاربر ویرایش شد', 'success');
+    loadUsers();
+  } catch(e) {
+    toast('خطای شبکه: ' + e.message, 'error');
+  }
+}
+
+/* باز کردن مودال ریست رمز */
+function openResetPwdModal(id, name){
+  const html = `
+    <div style="padding:6px">
+      <div class="section-title" style="margin-bottom:16px">🔑 ریست رمز</div>
+      
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">
+        رمز جدید برای <strong style="color:var(--accent)">${escapeHtml(name)}</strong>:
+      </p>
+      
+      <div class="row">
+        <input id="resetPwdInput" placeholder="حداقل ۶ کاراکتر" dir="ltr" required>
+      </div>
+      
+      <div style="font-size:11px;color:var(--muted);margin-top:8px">
+        ⚠️ کاربر پس از ورود، مجبور به تغییر رمز خواهد بود.
+      </div>
+      
+      <div class="modal-actions" style="margin-top:20px">
+        <button class="btn btn-ghost" onclick="closeModal('resetPwdModal')">انصراف</button>
+        <button class="btn btn-warn" onclick="submitResetPwd(${id})">🔑 ریست کن</button>
+      </div>
+    </div>
+  `;
+  
+  createModal('resetPwdModal', html);
+}
+
+/* ارسال ریست رمز */
+async function submitResetPwd(id){
+  const newPassword = document.getElementById('resetPwdInput').value;
+  
+  if(!newPassword || newPassword.length < 6){
+    toast('رمز باید حداقل ۶ کاراکتر باشد', 'error');
+    return;
+  }
+  
+  try {
+    const res = await apiRequest('/api/users/' + id + '/reset-pwd', {
+      method: 'POST',
+      body: JSON.stringify({ newPassword })
+    });
+    
+    if(!res) return;
+    const data = await res.json();
+    
+    if(!data.ok){
+      toast(data.error || 'خطا', 'error');
+      return;
+    }
+    
+    closeModal('resetPwdModal');
+    toast('✅ رمز کاربر ریست شد', 'success');
+    loadUsers();
+  } catch(e) {
+    toast('خطای شبکه: ' + e.message, 'error');
+  }
+}
+
+/* حذف کاربر */
+async function deleteUser(id, name){
+  if(!confirm('حذف «' + name + '»؟')) return;
+  if(!confirm('تایید نهایی: این کاربر و تمام داده‌هایش حذف می‌شوند.')) return;
+  
+  try {
+    const res = await apiRequest('/api/users/' + id, { method: 'DELETE' });
+    if(!res) return;
+    const data = await res.json();
+    
+    if(!data.ok){
+      toast(data.error || 'خطا', 'error');
+      return;
+    }
+    
+    toast('✅ کاربر حذف شد', 'success');
+    loadUsers();
+  } catch(e) {
+    toast('خطای شبکه: ' + e.message, 'error');
+  }
+}
+
+/* ساخت مودال داینامیک */
+function createModal(id, content){
+  // حذف مودال قبلی با همین id
+  const existing = document.getElementById(id);
+  if(existing) existing.remove();
+  
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = id;
+  modal.innerHTML = `
+    <div class="modal" style="max-width:520px">
+      <button class="modal-close" onclick="closeModal('${id}')">✕</button>
+      ${content}
+    </div>
+  `;
+  document.body.appendChild(modal);
+  setTimeout(() => modal.classList.add('open'), 10);
+}
 /* ============================================================
    INIT
    ============================================================ */
