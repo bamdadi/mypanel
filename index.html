@@ -1055,8 +1055,7 @@ async function save(){
   }
 }
 
-async function load(){
-  // ۱. اول از localStorage
+function load(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
     if(raw){
@@ -1066,40 +1065,6 @@ async function load(){
     }
   } catch(e){ 
     console.warn('Local load error', e); 
-  }
-  
-  // ۲. آپدیت از D1
-  const token = getToken();
-  if(!token) return;
-  
-  try {
-    const res = await apiRequest('/api/entries');
-    if(!res || !res.ok) return;
-    
-    const data = await res.json();
-    if(!data.ok || !Array.isArray(data.entries)) return;
-    
-    const newEntries = {};
-    data.entries.forEach(e => {
-      newEntries[e.date] = {
-        entry: e.entry || '',
-        exit: e.exit || '',
-        desc: e.desc || '',
-        type: e.type || 'normal'
-      };
-    });
-    
-    // ادغام: D1 اولویت داره
-    state.entries = { ...state.entries, ...newEntries };
-    
-    console.log('✅ Loaded', data.entries.length, 'entries from D1');
-    
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch(e) {}
-    
-  } catch(e) {
-    console.warn('⚠️ D1 load failed (offline?):', e.message);
   }
 }
 
@@ -2190,7 +2155,6 @@ function hideSplash(){
   if(!s) return;
   setTimeout(() => {
     s.classList.add('hide');
-    // حذف کامل بعد از انیمیشن
     setTimeout(() => s.remove(), 800);
   }, 1600);
 }
@@ -2494,21 +2458,15 @@ function unlock(){
 let _booted=false;
 let _booted=false;
 let _booted=false;
-async function boot(){
+let _booted=false;
+function boot(){
   if(_booted) return; _booted=true;
   
-  // اول مخفی کردن Splash (تا اگه D1 خطا داد، صفحه گیر نکنه)
+  // 🔥 مهم: اول Splash رو محو کن
   hideSplash();
   
-  // بارگذاری از D1 با timeout
-  try {
-    await Promise.race([
-      load(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
-    ]);
-  } catch(e) {
-    console.warn('⚠️ Load timeout or error:', e.message);
-  }
+  // بارگذاری از localStorage (سریع)
+  load();
   
   autoRecordOnLaunch();
   applyTheme(); 
@@ -2519,6 +2477,9 @@ async function boot(){
   initRipple();
   initParticles();
   showWisdom();
+  
+  // بعد سینک با D1 در پس‌زمینه
+  syncFromD1();
   
   if(liveTimer) clearInterval(liveTimer);
   liveTimer = setInterval(() => {
@@ -2532,6 +2493,43 @@ async function boot(){
   
   setTimeout(taskReminder, 3000);
   setInterval(taskReminder, 1000*60*60*6);
+}
+
+// سینک با D1 در پس‌زمینه
+async function syncFromD1(){
+  const token = getToken();
+  if(!token) return;
+  
+  try {
+    const res = await apiRequest('/api/entries');
+    if(!res || !res.ok) return;
+    
+    const data = await res.json();
+    if(!data.ok || !Array.isArray(data.entries)) return;
+    
+    const newEntries = {};
+    data.entries.forEach(e => {
+      newEntries[e.date] = {
+        entry: e.entry || '',
+        exit: e.exit || '',
+        desc: e.desc || '',
+        type: e.type || 'normal'
+      };
+    });
+    
+    state.entries = { ...state.entries, ...newEntries };
+    
+    console.log('✅ Loaded', data.entries.length, 'entries from D1');
+    
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch(e) {}
+    
+    renderAll();
+    
+  } catch(e) {
+    console.warn('⚠️ D1 sync failed:', e.message);
+  }
 }
 function taskReminder(){
   const pending=state.tasks.filter(t=>!t.done); if(!pending.length) return;
