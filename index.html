@@ -2188,7 +2188,11 @@ function toggleParticles(){
 function hideSplash(){
   const s = document.getElementById('splash');
   if(!s) return;
-  setTimeout(() => s.classList.add('hide'), 1800);
+  setTimeout(() => {
+    s.classList.add('hide');
+    // حذف کامل بعد از انیمیشن
+    setTimeout(() => s.remove(), 800);
+  }, 1600);
 }
 
 function animateNumber(el, target, formatter){
