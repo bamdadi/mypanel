@@ -4,9 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>ورود به سامانه | کارکرد ماهیانه</title>
+  <script>
+  // 🔗 آدرس Worker API
+  const API_URL = 'https://mypanel-api.bamdad-roozegar.workers.dev';
+</script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
-<script src="users.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 
@@ -234,17 +237,6 @@ body{
   75%{transform:translateX(6px)}
 }
 
-/* اطلاعات ورود آزمایشی */
-.demo-info{
-  margin-top:22px;padding:14px;
-  background:rgba(0,212,255,.08);
-  border:1px dashed rgba(0,212,255,.3);
-  border-radius:10px;
-  font-size:11.5px;color:var(--muted);line-height:1.9;
-  text-align:center;
-}
-.demo-info strong{color:var(--accent);font-weight:800}
-
 /* فوتر */
 .footer{
   text-align:center;margin-top:24px;
@@ -356,17 +348,23 @@ body{
 
 <script>
 /* ============================================================
-   INIT
+   INIT — چک لاگین قبلی
    ============================================================ */
-
-// اگه کاربر قبلاً لاگین کرده، برو به پنل مناسب
 (function checkAlreadyLoggedIn(){
-  const user = getCurrentUser();
-  if(user){
-    if(user.role === 'admin'){
-      window.location.href = 'manager.html';
-    } else {
-      window.location.href = 'index.html';
+  const token = localStorage.getItem('hrm_token');
+  const userData = localStorage.getItem('hrm_user');
+  
+  if(token && userData){
+    try {
+      const user = JSON.parse(userData);
+      if(user.role === 'admin'){
+        window.location.href = 'manager.html';
+      } else {
+        window.location.href = 'index.html';
+      }
+    } catch(e){
+      localStorage.removeItem('hrm_token');
+      localStorage.removeItem('hrm_user');
     }
   }
 })();
@@ -429,60 +427,67 @@ function togglePassword(){
    ============================================================ */
 async function handleLogin(e){
   e.preventDefault();
+  
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value;
-  const rememberMe = document.getElementById('rememberMe').checked;
   const btn = document.getElementById('loginBtn');
   const errorBox = document.getElementById('errorBox');
-
+  
   // پاک کردن خطای قبلی
   errorBox.classList.remove('show');
   errorBox.textContent = '';
-
+  
   // چک اعتبار فرم
   if(!username || !password){
     showError('لطفاً نام کاربری و رمز عبور را وارد کنید');
     return;
   }
-
+  
   // حالت loading
   btn.disabled = true;
   btn.innerHTML = 'در حال بررسی... <span class="spinner"></span>';
-
-  try{
-    const result = await checkPassword(username, password);
-
-    if(!result.ok){
-      showError(result.error || 'خطا در ورود');
+  
+  try {
+    const res = await fetch(API_URL + '/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    
+    const data = await res.json();
+    
+    if(!res.ok || !data.ok){
+      showError(data.error || 'خطا در ورود');
       btn.disabled = false;
       btn.textContent = 'ورود به سامانه';
       return;
     }
-
-    // ذخیره کاربر
-    saveCurrentUser(result.user, rememberMe);
-
-    // اگه باید رمز عوض کنه → برو به صفحه تغییر رمز
-    if(mustChangePassword(result.user.username)){
-      btn.innerHTML = 'در حال انتقال...';
+    
+    // ذخیره توکن و اطلاعات کاربر
+    localStorage.setItem('hrm_token', data.token);
+    localStorage.setItem('hrm_user', JSON.stringify(data.user));
+    
+    // اگه باید رمز عوض کنه
+    if(data.user.mustChange){
+      btn.innerHTML = 'انتقال به تغییر رمز...';
       setTimeout(()=>{
         window.location.href = 'change-pwd.html?force=1';
       }, 500);
       return;
     }
-
-    // اگه همه چیز درسته → برو به پنل مناسب
+    
+    // برو به پنل مناسب
     btn.innerHTML = 'خوش آمدید! ✅';
     setTimeout(()=>{
-      if(result.user.role === 'admin'){
+      if(data.user.role === 'admin'){
         window.location.href = 'manager.html';
       } else {
         window.location.href = 'index.html';
       }
     }, 600);
-
-  }catch(err){
-    showError('خطای سیستمی: ' + err.message);
+    
+  } catch(err){
+    showError('خطای شبکه: ' + err.message + ' — اتصال اینترنت را بررسی کنید');
     btn.disabled = false;
     btn.textContent = 'ورود به سامانه';
   }
