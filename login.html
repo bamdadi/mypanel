@@ -468,13 +468,13 @@ async function handleLogin(e){
     localStorage.setItem('hrm_user', JSON.stringify(data.user));
     
     // اگه باید رمز عوض کنه
-    if(data.user.mustChange){
-      btn.innerHTML = 'انتقال به تغییر رمز...';
-      setTimeout(()=>{
-        window.location.href = 'change-pwd.html?force=1';
-      }, 500);
-      return;
-    }
+  //  if(data.user.mustChange){
+     // btn.innerHTML = 'انتقال به تغییر رمز...';
+     // setTimeout(()=>{
+     //   window.location.href = 'change-pwd.html?force=1';
+   //   }, 500);
+   //   return;
+   // }
     
     // برو به پنل مناسب
     btn.innerHTML = 'خوش آمدید! ✅';
