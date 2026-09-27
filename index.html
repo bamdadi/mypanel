@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>سامانه هوشمند کارکرد ماهیانه</title>
-<script src="users.js"></script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏰</text></svg>">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
 <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
@@ -12,7 +11,6 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 
-/* 🎨 متغیرهای ۷ تم */
 :root{
   --bg:#0a0a12;--bg2:#12121c;--card:#1a1a26;--card2:#22222f;--text:#e8e8f0;
   --muted:#8b8b9e;--accent:#d4af37;--accent2:#f0c75e;
@@ -469,7 +467,6 @@ tr.sum-row td{
 </head>
 <body>
 
-<!-- 🎯 Splash Screen -->
 <div id="splash">
   <div class="splash-logo">⏰</div>
   <div class="splash-title">سامانه هوشمند کارکرد ماهیانه</div>
@@ -477,10 +474,8 @@ tr.sum-row td{
   <div class="splash-sub">در حال آماده‌سازی...</div>
 </div>
 
-<!-- ✨ ذرات متحرک پس‌زمینه -->
 <div id="particles"></div>
 
-<!-- Wisdom Popup -->
 <div class="wisdom" id="wisdomPopup">
   <div class="wisdom-card">
     <div class="wisdom-icon">✨</div>
@@ -490,7 +485,6 @@ tr.sum-row td{
   </div>
 </div>
 
-<!-- Lock Screen -->
 <div class="modal-overlay" id="lockScreen">
   <div class="modal" style="max-width:380px;text-align:center">
     <div style="font-size:48px;margin-bottom:10px">🔒</div>
@@ -501,7 +495,6 @@ tr.sum-row td{
   </div>
 </div>
 
-<!-- Recovery Modal -->
 <div class="modal-overlay" id="recoveryModal">
   <div class="modal" style="max-width:400px">
     <button class="modal-close" onclick="closeModal('recoveryModal')">✕</button>
@@ -510,7 +503,6 @@ tr.sum-row td{
   </div>
 </div>
 
-<!-- KPI Detail Modal -->
 <div class="modal-overlay" id="kpiModal">
   <div class="modal" style="max-width:520px">
     <button class="modal-close" onclick="closeModal('kpiModal')">✕</button>
@@ -519,7 +511,6 @@ tr.sum-row td{
   </div>
 </div>
 
-<!-- Jalali Picker Modal -->
 <div class="modal-overlay" id="jalaliPickerModal">
   <div class="modal" style="max-width:400px">
     <button class="modal-close" onclick="closeModal('jalaliPickerModal')">✕</button>
@@ -541,7 +532,6 @@ tr.sum-row td{
   </div>
 </div>
 
-<!-- Time Edit Modal -->
 <div class="modal-overlay" id="timeEditModal">
   <div class="modal" style="max-width:380px">
     <button class="modal-close" onclick="closeModal('timeEditModal')">✕</button>
@@ -550,10 +540,8 @@ tr.sum-row td{
   </div>
 </div>
 
-<!-- 📱 اپ اصلی -->
 <div class="app" id="appRoot">
 
-  <!-- Topbar با آواتار پویا -->
   <div class="topbar">
     <div class="user-info">
       <div class="avatar-wrap">
@@ -574,7 +562,6 @@ tr.sum-row td{
     </div>
   </div>
 
-  <!-- KPIs تعاملی با Sparkline -->
   <div class="kpis">
     <div class="kpi" data-tip="مجموع ساعات کارکرد این ماه" onclick="showKpiDetail('total')">
       <div class="kpi-label">⏱️ مجموع کارکرد ماه</div>
@@ -602,7 +589,6 @@ tr.sum-row td{
     </div>
   </div>
 
-  <!-- Progress Bar ماه -->
   <div class="month-progress">
     <div class="mp-row">
       <div class="mp-label"><span>📅 پیشرفت ماه</span><strong id="mpMonthPct">0%</strong></div>
@@ -614,7 +600,6 @@ tr.sum-row td{
     </div>
   </div>
 
-  <!-- Menu -->
   <div class="menu">
     <button class="menu-btn active" data-panel="work"><span class="icon">📊</span> کارکرد ماهیانه</button>
     <button class="menu-btn" data-panel="tasks"><span class="icon">✅</span> وظایف و یادآور</button>
@@ -623,7 +608,6 @@ tr.sum-row td{
     <button class="menu-btn" data-panel="settings"><span class="icon">⚙️</span> تنظیمات</button>
   </div>
 
-  <!-- Panel: Work -->
   <div class="panel active" id="panel-work">
     <div class="section">
       <div class="row">
@@ -668,7 +652,6 @@ tr.sum-row td{
     </div>
   </div>
 
-  <!-- Panel: Tasks -->
   <div class="panel" id="panel-tasks">
     <div class="section">
       <div class="section-title">➕ افزودن وظیفه / یادآور</div>
@@ -693,7 +676,6 @@ tr.sum-row td{
     </div>
   </div>
 
-  <!-- Panel: Manage -->
   <div class="panel" id="panel-manage">
     <div class="section">
       <div class="section-title">🎉 ثبت روز تعطیل</div>
@@ -737,7 +719,6 @@ tr.sum-row td{
     </div>
   </div>
 
-  <!-- Panel: Chat -->
   <div class="panel" id="panel-chat">
     <div class="section">
       <div class="section-title">🤖 دستیار هوشمند GapGPT</div>
@@ -755,7 +736,6 @@ tr.sum-row td{
     </div>
   </div>
 
-  <!-- Panel: Settings -->
   <div class="panel" id="panel-settings">
     <div class="section">
       <div class="section-title">🎨 تم و ظاهر</div>
@@ -861,24 +841,26 @@ tr.sum-row td{
         <button class="btn btn-ghost" onclick="testAI()">🔌 تست اتصال</button>
       </div>
     </div>
-<div class="section">
-  <div class="section-title">👤 حساب کاربری</div>
-  <div class="row">
-    <div style="flex:1">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:6px">کاربر فعلی:</div>
-      <div style="font-weight:800;color:var(--accent);font-size:15px" id="currentUserName">—</div>
+
+    <div class="section">
+      <div class="section-title">👤 حساب کاربری</div>
+      <div class="row">
+        <div style="flex:1">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">کاربر فعلی:</div>
+          <div style="font-weight:800;color:var(--accent);font-size:15px" id="currentUserName">—</div>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">نام کاربری:</div>
+          <div style="font-weight:700;font-size:14px" id="currentUserUsername">—</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="row">
+        <button class="btn btn-info no-flex" onclick="gotoChangePassword()">🔑 تغییر رمز عبور</button>
+        <button class="btn btn-danger no-flex" onclick="doLogout()">🚪 خروج از حساب</button>
+      </div>
     </div>
-    <div style="flex:1">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:6px">نام کاربری:</div>
-      <div style="font-weight:700;font-size:14px" id="currentUserUsername">—</div>
-    </div>
-  </div>
-  <div class="divider"></div>
-  <div class="row">
-    <button class="btn btn-info no-flex" onclick="gotoChangePassword()">🔑 تغییر رمز عبور</button>
-    <button class="btn btn-danger no-flex" onclick="doLogout()">🚪 خروج از حساب</button>
-  </div>
-</div>
+
     <div class="section">
       <div class="section-title">💾 پشتیبان‌گیری</div>
       <div class="row">
@@ -895,20 +877,20 @@ tr.sum-row td{
 </div>
 
 <div class="toast" id="toast"></div>
+
 <script>
-  /* ============================================================
-   🔐 AUTH CHECK — چک لاگین
+/* ============================================================
+   🔐 AUTH CHECK
    ============================================================ */
 (function authGuard(){
   const token = localStorage.getItem('hrm_token');
   const userData = localStorage.getItem('hrm_user');
-  
-  // اگه توکن یا کاربر نیست → برو لاگین
+
   if(!token || !userData){
     window.location.href = 'login.html';
     return;
   }
-  
+
   let user;
   try {
     user = JSON.parse(userData);
@@ -918,25 +900,61 @@ tr.sum-row td{
     window.location.href = 'login.html';
     return;
   }
-  
-  // اگه باید رمز عوض کنه → برو تغییر رمز
+
   if(user.mustChange === true){
     window.location.href = 'change-pwd.html?force=1';
     return;
   }
-  
-  // اگه کارفرما وارد پنل کارمند شده → بره پنل خودش
+
   if(user.role === 'admin'){
     window.location.href = 'manager.html';
     return;
   }
-  
-  // همه چیز درست — اجازه بده لود بشه
 })();
+
+/* ============================================================
+   API
+   ============================================================ */
+const API_URL = 'https://mypanel-api.bamdad-roozegar.workers.dev';
+
+function getToken(){
+  return localStorage.getItem('hrm_token');
+}
+
+function getCurrentUserFromStorage(){
+  try { return JSON.parse(localStorage.getItem('hrm_user') || 'null'); }
+  catch(e) { return null; }
+}
+
+async function apiRequest(path, options = {}){
+  const token = getToken();
+  if(!token){
+    window.location.href = 'login.html';
+    return null;
+  }
+  const res = await fetch(API_URL + path, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token,
+      ...(options.headers || {})
+    }
+  });
+  if(res.status === 401){
+    localStorage.removeItem('hrm_token');
+    localStorage.removeItem('hrm_user');
+    window.location.href = 'login.html';
+    return null;
+  }
+  return res;
+}
 
 /* ============================================================
    JALALI DATE
    ============================================================ */
+const JMONTHS=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+const JDAYS=['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
+
 function nowJalali(){ const d = new Date(); const j = jalaali.toJalaali(d); return { jy: j.jy, jm: j.jm, jd: j.jd }; }
 function jalaliStr(d = new Date()){ const j = jalaali.toJalaali(d); return `${j.jy}/${String(j.jm).padStart(2,'0')}/${String(j.jd).padStart(2,'0')}`; }
 function jalaliPretty(d = new Date()){ const j = jalaali.toJalaali(d); const wd = (d.getDay() + 1) % 7; return `${JDAYS[wd]} ${j.jd} ${JMONTHS[j.jm-1]} ${j.jy}`; }
@@ -972,59 +990,23 @@ const DEFAULT_STATE={
   },
   chat:[]
 };
-let state=JSON.parse(JSON.stringify(DEFAULT_STATE));
+let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
 let currentYear, currentMonth;
-let taskFilter='all';
-const STORAGE_KEY='hrm_system_v4';
-  // 🔗 API Configuration
-const API_URL = 'https://mypanel-api.bamdad-roozegar.workers.dev';
-const JMONTHS=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
-const JDAYS=['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
-/* ============================================================
-   🔗 API Helpers
-   ============================================================ */
-function getToken(){
-  return localStorage.getItem('hrm_token');
+let taskFilter = 'all';
+const STORAGE_KEY = 'hrm_system_v4';
+const WORK_START = 8*60, WORK_END = 17*60, FULL_DAY = WORK_END - WORK_START;
+
+function save(){
+  // ذخیره در localStorage
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch(e){ console.warn('Local save error', e); }
+  // سینک D1 (بی‌صدا)
+  syncToD1();
 }
 
-async function apiRequest(path, options = {}){
-  const token = getToken();
-  if(!token){
-    window.location.href = 'login.html';
-    return null;
-  }
-  
-  const res = await fetch(API_URL + path, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + token,
-      ...(options.headers || {})
-    }
-  });
-  
-  if(res.status === 401){
-    localStorage.removeItem('hrm_token');
-    localStorage.removeItem('hrm_user');
-    window.location.href = 'login.html';
-    return null;
-  }
-  
-  return res;
-}
-
-async function save(){
-  // ۱. ذخیره در localStorage (پشتیبان محلی)
-  try{ 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); 
-  } catch(e){ 
-    console.warn('Local save error', e); 
-  }
-  
-  // ۲. ارسال به D1
+async function syncToD1(){
   const token = getToken();
   if(!token) return;
-  
   try {
     const entries = [];
     Object.keys(state.entries || {}).forEach(date => {
@@ -1039,20 +1021,13 @@ async function save(){
         });
       }
     });
-    
     if(entries.length === 0) return;
-    
     const res = await apiRequest('/api/entries', {
       method: 'POST',
       body: JSON.stringify({ entries })
     });
-    
-    if(res && res.ok){
-      console.log('✅ Synced', entries.length, 'entries to D1');
-    }
-  } catch(e) {
-    console.warn('⚠️ D1 sync failed (offline?):', e.message);
-  }
+    if(res && res.ok) console.log('✅ Synced', entries.length, 'entries');
+  } catch(e){ console.warn('⚠️ Sync failed:', e.message); }
 }
 
 function load(){
@@ -1063,9 +1038,31 @@ function load(){
       state = {...DEFAULT_STATE, ...d, settings:{...DEFAULT_STATE.settings, ...(d.settings||{})}};
       if(!state.settings.notif) state.settings.notif = {...DEFAULT_STATE.settings.notif};
     }
-  } catch(e){ 
-    console.warn('Local load error', e); 
-  }
+  }catch(e){ console.warn('Local load error', e); }
+}
+
+async function syncFromD1(){
+  const token = getToken();
+  if(!token) return;
+  try {
+    const res = await apiRequest('/api/entries');
+    if(!res || !res.ok) return;
+    const data = await res.json();
+    if(!data.ok || !Array.isArray(data.entries)) return;
+    const newEntries = {};
+    data.entries.forEach(e => {
+      newEntries[e.date] = {
+        entry: e.entry || '',
+        exit: e.exit || '',
+        desc: e.desc || '',
+        type: e.type || 'normal'
+      };
+    });
+    state.entries = { ...state.entries, ...newEntries };
+    console.log('✅ Loaded', data.entries.length, 'entries from D1');
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+    renderAll();
+  } catch(e){ console.warn('⚠️ D1 load failed:', e.message); }
 }
 
 /* ============================================================
@@ -1115,7 +1112,6 @@ async function loadOfficialHolidays(year){
 /* ============================================================
    WORK CALCULATION
    ============================================================ */
-const WORK_START=8*60, WORK_END=17*60, FULL_DAY=WORK_END-WORK_START;
 function computeDay(jstr){
   const e=state.entries[jstr]||{}; const w=dayOfWeekJ(jstr); const weekend=w>=5;
   const holidayTitle=state.holidays[jstr]; const leave=state.leaves[jstr]; const mission=state.missions[jstr];
@@ -1176,13 +1172,8 @@ function renderTopbar(){
   const d=new Date();
   document.getElementById('topClock').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');
   document.getElementById('topDate').textContent=jalaliPretty(d);
-  
-  // نمایش نام کاربر از localStorage
-  let user = null;
-  try {
-    user = JSON.parse(localStorage.getItem('hrm_user') || 'null');
-  } catch(e) {}
-  
+
+  const user = getCurrentUserFromStorage();
   const displayName = user ? user.name : 'کاربر مهمان';
   document.getElementById('topUserName').textContent = displayName;
   document.getElementById('avatarInitial').textContent = displayName.trim().charAt(0) || '؟';
@@ -1555,7 +1546,7 @@ function renderSettingsInputs(){
   document.querySelectorAll('.theme-chip').forEach(el => {
     el.classList.toggle('active', el.dataset.themeVal === state.settings.theme);
   });
-    loadNotifSettings();
+  loadNotifSettings();
   updateAccountPanel();
 }
 function setTheme(t){
@@ -1632,14 +1623,10 @@ function buildExportData(){
     const p=jstr.split('/');
     const dateFormatted=`${p[2]}/${p[1]}/${p[0]}`;
     rows.push({
-      day:JDAYS[wd],
-      date:dateFormatted,
-      entry:e.entry?hhmm12(e.entry):'',
-      exit:e.exit?hhmm12(e.exit):'',
-      work:c.work>0?toHM(c.work):'',
-      ot:c.ot>0?toHM(c.ot):'',
-      def:c.def>0?'-'+toHM(c.def):'',
-      desc:e.desc||c.desc||''
+      day:JDAYS[wd], date:dateFormatted,
+      entry:e.entry?hhmm12(e.entry):'', exit:e.exit?hhmm12(e.exit):'',
+      work:c.work>0?toHM(c.work):'', ot:c.ot>0?toHM(c.ot):'',
+      def:c.def>0?'-'+toHM(c.def):'', desc:e.desc||c.desc||''
     });
   }
   return {rows,sumWork,sumOT,sumDef,title:`کارکرد ${JMONTHS[currentMonth-1]} ${currentYear}`,name:state.userName||'کاربر'};
@@ -1691,12 +1678,9 @@ function exportWord(){
         </thead>
         <tbody>
           ${data.rows.map(r=>`<tr>
-            <td>${r.day}</td>
-            <td>${r.date}</td>
-            <td>${r.entry||'—'}</td>
-            <td>${r.exit||'—'}</td>
-            <td>${r.work||'—'}</td>
-            <td>${r.ot||'—'}</td>
+            <td>${r.day}</td><td>${r.date}</td>
+            <td>${r.entry||'—'}</td><td>${r.exit||'—'}</td>
+            <td>${r.work||'—'}</td><td>${r.ot||'—'}</td>
             <td>${r.def||'—'}</td>
             <td style="text-align:right">${escapeHtml(r.desc)}</td>
           </tr>`).join('')}
@@ -1725,6 +1709,7 @@ function exportPDF(){
   toast('در پنجره باز شده، "Save as PDF" را انتخاب کنید','success');
   setTimeout(()=>{ window.print(); }, 500);
 }
+
 /* ============================================================
    AI CHAT
    ============================================================ */
@@ -1751,7 +1736,6 @@ function mdToHtml(text){
   html = html.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
   html = html.replace(/(?<!\*)\*(?!\s)(.+?)(?<!\s)\*(?!\*)/g,'<em>$1</em>');
   html = html.replace(/`(.+?)`/g,'<code>$1</code>');
-
   const lines = html.split('\n');
   const result = [];
   let i = 0;
@@ -1763,8 +1747,7 @@ function mdToHtml(text){
       i += 2;
       while(i < lines.length && /^\s*\|.+\|\s*$/.test(lines[i])){
         const cells = lines[i].split('|').slice(1,-1).map(c=>c.trim());
-        tableRows.push(cells);
-        i++;
+        tableRows.push(cells); i++;
       }
       let tableHtml = '<table><thead><tr>';
       headerCells.forEach(h => { tableHtml += `<th>${h}</th>`; });
@@ -1775,11 +1758,9 @@ function mdToHtml(text){
         tableHtml += '</tr>';
       });
       tableHtml += '</tbody></table>';
-      result.push(tableHtml);
-      continue;
+      result.push(tableHtml); continue;
     }
-    result.push(line);
-    i++;
+    result.push(line); i++;
   }
   html = result.join('\n');
   html = html.replace(/^[-•*] (.+)$/gm,'&nbsp;&nbsp;• $1');
@@ -1816,26 +1797,14 @@ async function sendChat(text){
   try{
     const ctx=buildAIContext();
     const url=normalizeAIUrl(state.settings.aiBase);
-    const systemPrompt = `تو یک دستیار هوشمند فارسی‌زبان هستی که به کاربر برای مدیریت کارکرد، بهره‌وری، زمان و وظایف کمک می‌کنی.
+    const systemPrompt = `تو یک دستیار هوشمند فارسی‌زبان هستی.
 
-🚨 نکات مهم:
-- تاریخ امروز و ماه در حال بررسی در ابتدای پیام کاربر مشخص شده است. همیشه بر اساس این تاریخ تحلیل کن.
-- تاریخ‌ها را به فرمت روز/ماه/سال بنویس (مثال: 04/07/1405).
-- هرگز تاریخ امروز را حدس نزن؛ از داده ارائه‌شده استفاده کن.
-
-📋 قواعد پاسخ:
-1. پاسخ‌ها مختصر، کاربردی و ساختارمند باشند.
-2. از Markdown استفاده کن: **بولد**، لیست با -، و مهم‌تر از همه، برای داده‌های جدولی از جدول Markdown استفاده کن:
-
-| ستون۱ | ستون۲ | ستون۳ |
-|---|---|---|
-| مقدار | مقدار | مقدار |
-
-3. برای تحلیل کارکرد، حتماً یک جدول Markdown با ستون‌های: تاریخ | روز | کارکرد | اضافه‌کاری | کسری | وضعیت تولید کن.
+تاریخ امروز از سیستم: ${jalaliPretty(new Date())}
+تاریخ‌ها را به فرمت روز/ماه/سال بنویس (مثال: 04/07/1405).
+برای داده‌های جدولی از جدول Markdown استفاده کن.
 
 اطلاعات کارکرد کاربر:
 ${ctx}`;
-
     const res=await fetch(url,{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.settings.aiKey},
@@ -1851,11 +1820,7 @@ ${ctx}`;
     });
     if(!res.ok){
       const errTxt=await res.text();
-      let hint='';
-      if(res.status===401) hint='\n\n🔑 کلید API معتبر نیست.';
-      else if(res.status===404) hint='\n\n🌐 آدرس API اشتباه است. صحیح: https://api.gapgpt.app/v1/chat/completions';
-      else if(res.status===429) hint='\n\n⏱️ تعداد درخواست‌ها زیاد است.';
-      throw new Error(`HTTP ${res.status}${hint}\n${errTxt.slice(0,200)}`);
+      throw new Error(`HTTP ${res.status}: ${errTxt.slice(0,150)}`);
     }
     const data=await res.json();
     const txt=data?.choices?.[0]?.message?.content||data?.message||'پاسخی دریافت نشد.';
@@ -1880,7 +1845,7 @@ function printChat(){
   }).join('');
   const w = window.open('', '_blank');
   if(!w){ toast('لطفاً اجازه دسترسی به پنجره‌های بازشو را بدهید','error'); return; }
-  w.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرینت گفتگو</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css"><style>@page{size:A4;margin:15mm}body{font-family:Vazirmatn,Tahoma,sans-serif;direction:rtl;color:#111;background:#fff;padding:20px;line-height:1.9}.header{text-align:center;border-bottom:3px solid #c9a227;padding-bottom:12px;margin-bottom:22px}.header h1{color:#8a6d3b;margin:0 0 6px 0;font-size:20px}.header p{color:#666;margin:3px 0;font-size:12px}.chat-msg{margin-bottom:16px;padding:12px 14px;border-radius:10px;page-break-inside:avoid}.chat-msg.user{background:#fdf6e3;border-right:4px solid #c9a227}.chat-msg.ai{background:#f8f9fa;border-right:4px solid #3498db}.msg-header{font-weight:800;font-size:12px;color:#8a6d3b;margin-bottom:6px}.chat-msg.ai .msg-header{color:#2980b9}.msg-body{font-size:12.5px;line-height:1.95;word-wrap:break-word}.msg-body strong{color:#8a6d3b}.msg-body table{width:100%;border-collapse:collapse;margin:12px 0;font-size:11.5px}.msg-body table th{background:#c9a227;color:#fff;padding:8px 6px;text-align:center;font-weight:800;border:1px solid #a8861f}.msg-body table td{padding:6px;text-align:center;border:1px solid #ddd}.msg-body table tr:nth-child(even) td{background:#faf8f2}.footer{text-align:center;color:#999;font-size:10px;margin-top:30px;padding-top:12px;border-top:1px solid #eee}</style></head><body><div class="header"><h1>📄 گزارش گفتگو با دستیار هوشمند</h1><p>${state.userName || 'کاربر'} — تاریخ چاپ: ${jalaliPretty(new Date())}</p><p>ماه بررسی‌شده: ${JMONTHS[currentMonth-1]} ${currentYear}</p></div>${messagesHtml}<div class="footer">سامانه هوشمند کارکرد ماهیانه — تولید شده در ${jalaliPretty(new Date())}</div></body></html>`);
+  w.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>پرینت گفتگو</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css"><style>body{font-family:Vazirmatn;padding:20px;direction:rtl}.chat-msg{margin-bottom:16px;padding:12px;border-radius:10px}.chat-msg.user{background:#fdf6e3;border-right:4px solid #c9a227}.chat-msg.ai{background:#f8f9fa;border-right:4px solid #3498db}.msg-body table{width:100%;border-collapse:collapse;margin:10px 0}.msg-body table th{background:#c9a227;color:#fff;padding:8px}.msg-body table td{padding:6px;border:1px solid #ddd;text-align:center}</style></head><body><h1>📄 گزارش گفتگو</h1><p>${state.userName||'کاربر'} — ${jalaliPretty(new Date())}</p>${messagesHtml}</body></html>`);
   w.document.close();
   setTimeout(() => { w.print(); }, 600);
   toast('پنجره پرینت باز شد','success');
@@ -1907,26 +1872,17 @@ function buildAIContext(){
   }
   const pending=state.tasks.filter(t=>!t.done).length;
   const pendingList=state.tasks.filter(t=>!t.done).slice(0,10).map(t=>`${t.date} - ${t.title}`).join('; ');
-  const todayStr = jalaliStr();
-  const p = todayStr.split('/');
-  const todayFormatted = `${p[2]}/${p[1]}/${p[0]}`;
-  const wd = (new Date().getDay() + 1) % 7;
-
-  return `📅 تاریخ امروز (از سیستم): ${JDAYS[wd]} ${todayFormatted}
-📆 ماه در حال بررسی: ${JMONTHS[currentMonth-1]} ${currentYear}
-
-📊 خلاصه ماه:
-- مجموع کارکرد: ${toHM(work)}
+  return `📅 ماه در حال بررسی: ${JMONTHS[currentMonth-1]} ${currentYear}
+📊 خلاصه:
+- کارکرد: ${toHM(work)}
 - اضافه‌کاری: ${toHM(ot)}
 - کسری: ${toHM(def)}
-
 📋 وظایف باقی‌مانده (${pending}): ${pendingList || 'ندارد'}
-
-📝 جزئیات روزانه (JSON):
+جزئیات روزانه:
 ${JSON.stringify(rows, null, 2)}`;
 }
 function analyzeWork(){
-  sendChat('لطفاً کارکرد ماه جاری من را به صورت ساختارمند تحلیل کن. یک جدول Markdown با ستون‌های «تاریخ | روز | کارکرد | اضافه‌کاری | کسری | وضعیت» برای روزهای دارای داده بساز. بعد از جدول، نقاط قوت و ضعف و راهکارهای عملی برای بهبود بهره‌وری را در قالب لیست ارائه بده.');
+  sendChat('لطفاً کارکرد ماه جاری من را تحلیل کن. جدول Markdown با ستون‌های «تاریخ | روز | کارکرد | اضافه‌کاری | کسری | وضعیت» بساز. بعد نقاط قوت و ضعف و راهکارهای عملی برای بهبود را لیست کن.');
 }
 async function testAI(){
   if(!state.settings.aiKey){ toast('ابتدا کلید API را وارد و ذخیره کنید','error'); return; }
@@ -1943,11 +1899,7 @@ async function testAI(){
       })
     });
     if(!res.ok){
-      const errTxt=await res.text();
-      let hint='';
-      if(res.status===401) hint='کلید API نامعتبر است';
-      else if(res.status===404) hint='آدرس API اشتباه است';
-      toast(`❌ خطا ${res.status}: ${hint} — ${errTxt.slice(0,100)}`,'error');
+      toast(`❌ خطا ${res.status}`,'error');
     } else {
       const data=await res.json();
       const reply=data?.choices?.[0]?.message?.content||'؟';
@@ -1957,154 +1909,69 @@ async function testAI(){
 }
 
 /* ============================================================
-   🔔 SMART NOTIFICATIONS
+   NOTIFICATIONS
    ============================================================ */
 async function requestNotificationPermission(){
-  if(!('Notification' in window)){
-    toast('مرورگر شما از نوتیفیکیشن پشتیبانی نمی‌کند','error'); return;
-  }
+  if(!('Notification' in window)){ toast('مرورگر پشتیبانی نمی‌کند','error'); return; }
   if(Notification.permission === 'granted'){
-    state.settings.notif.enabled = true;
-    save(); updateNotifStatus();
-    toast('✅ نوتیفیکیشن قبلاً فعال شده','success'); return;
+    state.settings.notif.enabled = true; save(); updateNotifStatus();
+    toast('✅ نوتیف قبلاً فعال شده','success'); return;
   }
-  if(Notification.permission === 'denied'){
-    toast('شما قبلاً اجازه نوتیف را رد کرده‌اید. از تنظیمات مرورگر اجازه دهید.','error'); return;
-  }
+  if(Notification.permission === 'denied'){ toast('از تنظیمات مرورگر اجازه دهید','error'); return; }
   const perm = await Notification.requestPermission();
   if(perm === 'granted'){
     state.settings.notif.enabled = true; save(); updateNotifStatus();
-    toast('🎉 نوتیفیکیشن با موفقیت فعال شد','success');
-    sendNotif('🎉 سامانه هوشمند کارکرد', 'نوتیفیکیشن فعال شد. از این پس یادآورهای هوشمند دریافت می‌کنید.', 'welcome');
-  } else {
-    toast('اجازه نوتیف داده نشد','error');
-  }
+    toast('🎉 نوتیف فعال شد','success');
+    sendNotif('🎉 سامانه کارکرد', 'نوتیف فعال شد.', 'welcome');
+  } else toast('اجازه داده نشد','error');
 }
-
 function sendNotif(title, body, tag){
   if(!state.settings.notif || !state.settings.notif.enabled) return;
   if(Notification.permission !== 'granted') return;
   try{
-    const n = new Notification(title, {
-      body: body, tag: tag || 'hrm-default',
-      icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23c9a227'/><text y='.9em' x='50%' text-anchor='middle' font-size='70'>⏰</text></svg>",
-      badge: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23c9a227'/><text y='.9em' x='50%' text-anchor='middle' font-size='70'>⏰</text></svg>",
-      requireInteraction: false, silent: false
-    });
-    setTimeout(() => { try{ n.close(); }catch(e){} }, 8000);
-    n.onclick = () => { window.focus(); n.close(); };
-  }catch(e){
-    console.warn('Notification error:', e);
-    toast(`🔔 ${title} — ${body}`, 'success');
-  }
+    const n = new Notification(title, { body, tag: tag||'hrm', requireInteraction:false });
+    setTimeout(()=>{ try{n.close();}catch(e){} }, 8000);
+  }catch(e){ console.warn(e); }
 }
-
 function testNotification(){
-  if(!state.settings.notif || !state.settings.notif.enabled){
-    toast('ابتدا روی «فعال‌سازی نوتیف مرورگر» بزنید','error'); return;
-  }
-  sendNotif('🧪 تست نوتیفیکیشن', 'اگر این پیام را می‌بینید، نوتیف‌ها به‌درستی کار می‌کنند!', 'test');
+  if(!state.settings.notif || !state.settings.notif.enabled){ toast('ابتدا نوتیف را فعال کنید','error'); return; }
+  sendNotif('🧪 تست نوتیف', 'اگر این را می‌بینید، نوتیف کار می‌کند!', 'test');
   toast('نوتیف تست ارسال شد','success');
 }
-
 function updateNotifStatus(){
-  const el = document.getElementById('notifStatus');
-  if(!el) return;
-  if(!('Notification' in window)){ el.textContent = '❌ پشتیبانی نمی‌شود'; el.style.color = 'var(--danger)'; }
-  else if(Notification.permission === 'granted' && state.settings.notif && state.settings.notif.enabled){ el.textContent = '✅ فعال'; el.style.color = 'var(--success)'; }
-  else if(Notification.permission === 'denied'){ el.textContent = '🚫 رد شده'; el.style.color = 'var(--danger)'; }
-  else { el.textContent = '⚪ غیرفعال'; el.style.color = 'var(--muted)'; }
+  const el = document.getElementById('notifStatus'); if(!el) return;
+  if(!('Notification' in window)){ el.textContent='❌ پشتیبانی نمی‌شود'; el.style.color='var(--danger)'; }
+  else if(Notification.permission==='granted' && state.settings.notif?.enabled){ el.textContent='✅ فعال'; el.style.color='var(--success)'; }
+  else if(Notification.permission==='denied'){ el.textContent='🚫 رد شده'; el.style.color='var(--danger)'; }
+  else { el.textContent='⚪ غیرفعال'; el.style.color='var(--muted)'; }
 }
-
 function saveNotifSettings(){
   if(!state.settings.notif) state.settings.notif = {};
-  state.settings.notif.morning = document.getElementById('notifMorning').checked;
-  state.settings.notif.endDay = document.getElementById('notifEndDay').checked;
-  state.settings.notif.entryLate = document.getElementById('notifEntryLate').checked;
-  state.settings.notif.exitLate = document.getElementById('notifExitLate').checked;
-  state.settings.notif.overdueTasks = document.getElementById('notifOverdueTasks').checked;
-  state.settings.notif.deficit = document.getElementById('notifDeficit').checked;
-  state.settings.notif.weekly = document.getElementById('notifWeekly').checked;
-  state.settings.notif.midDay = document.getElementById('notifMidDay').checked;
+  ['Morning','EndDay','EntryLate','ExitLate','OverdueTasks','Deficit','Weekly','MidDay'].forEach(k=>{
+    const id = 'notif'+k;
+    const el = document.getElementById(id);
+    if(el){
+      const key = k.charAt(0).toLowerCase()+k.slice(1);
+      state.settings.notif[key] = el.checked;
+    }
+  });
   save(); toast('تنظیمات نوتیف ذخیره شد','success');
 }
-
 function loadNotifSettings(){
   const n = (state.settings && state.settings.notif) || {};
   const map = {
-    notifMorning: n.morning !== false, notifEndDay: n.endDay !== false,
-    notifEntryLate: n.entryLate !== false, notifExitLate: n.exitLate !== false,
-    notifOverdueTasks: n.overdueTasks !== false, notifDeficit: n.deficit !== false,
-    notifWeekly: n.weekly !== false, notifMidDay: n.midDay !== false
+    notifMorning: n.morning!==false, notifEndDay: n.endDay!==false,
+    notifEntryLate: n.entryLate!==false, notifExitLate: n.exitLate!==false,
+    notifOverdueTasks: n.overdueTasks!==false, notifDeficit: n.deficit!==false,
+    notifWeekly: n.weekly!==false, notifMidDay: n.midDay!==false
   };
   Object.keys(map).forEach(id => { const el = document.getElementById(id); if(el) el.checked = map[id]; });
   updateNotifStatus();
 }
 
-let _lastNotifMinute = -1;
-function checkSmartNotifications(){
-  if(!state.settings.notif || !state.settings.notif.enabled) return;
-  if(Notification.permission !== 'granted') return;
-  const now = new Date();
-  const hm = now.getHours() * 60 + now.getMinutes();
-  const todayJ = jalaliStr();
-  const entry = state.entries[todayJ] || {};
-  const notifCfg = state.settings.notif;
-  if(_lastNotifMinute === hm) return;
-  let sent = false;
-
-  if(notifCfg.morning && hm === 8*60 && !entry.entry){
-    sendNotif('🌅 صبح بخیر!', 'ساعت کاری شروع شد. لطفاً ورودت را ثبت کن.', 'morning'); sent = true;
-  }
-  if(notifCfg.midDay && hm === 12*60+30 && entry.entry && !entry.exit){
-    const c = computeDay(todayJ);
-    sendNotif('☕ گزارش نیم‌روز', `تا الان ${toHM(c.work)} کارکردی. ادامه بده!`, 'midday'); sent = true;
-  }
-  if(notifCfg.entryLate && hm === 9*60+30 && !entry.entry){
-    sendNotif('⚠️ هشدار تأخیر', 'ساعت ورود امروز هنوز ثبت نشده است!', 'entryLate'); sent = true;
-  }
-  if(notifCfg.endDay && hm === 17*60 && entry.entry && !entry.exit){
-    sendNotif('🌆 پایان ساعت کاری', 'ساعت کاری تمام شد. خروجت را ثبت کن.', 'endDay'); sent = true;
-  }
-  if(notifCfg.exitLate && hm === 17*60+30 && entry.entry && !entry.exit){
-    sendNotif('⚠️ هشدار', 'ساعت خروج امروز ثبت نشده!', 'exitLate'); sent = true;
-  }
-  if(notifCfg.overdueTasks && hm === 10*60){
-    const overdue = state.tasks.filter(t => !t.done && t.date < todayJ);
-    if(overdue.length > 0){ sendNotif('📋 وظایف عقب‌افتاده', `${overdue.length} وظیفه از موعد گذشته!`, 'overdue'); sent = true; }
-  }
-  const wd = (new Date().getDay() + 1) % 7;
-  if(notifCfg.deficit && wd === 6 && hm === 10*60){
-    const days = jalaali.jalaaliMonthLength(currentYear, currentMonth);
-    let totDef = 0;
-    for(let d=1; d<=days; d++){
-      const jstr = `${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
-      totDef += computeDay(jstr).def;
-    }
-    if(totDef > 0){ sendNotif('➖ هشدار کسری کار', `در ماه جاری ${toHM(totDef)} کسری کار داری.`, 'deficit'); sent = true; }
-  }
-  if(notifCfg.weekly && wd === 0 && hm === 9*60){
-    let weekWork = 0, weekOT = 0, weekDef = 0;
-    for(let i = 1; i <= 7; i++){
-      const d = new Date(); d.setDate(d.getDate() - i);
-      const jstr = jalaliStr(d);
-      const c = computeDay(jstr);
-      weekWork += c.work; weekOT += c.ot; weekDef += c.def;
-    }
-    sendNotif('📊 خلاصه هفتگی', `هفته گذشته: کارکرد ${toHM(weekWork)} • اضافه‌کاری ${toHM(weekOT)} • کسری ${toHM(weekDef)}`, 'weekly'); sent = true;
-  }
-  if(sent) _lastNotifMinute = hm;
-}
-
-function startNotificationLoop(){
-  setInterval(checkSmartNotifications, 30 * 1000);
-  setTimeout(checkSmartNotifications, 5000);
-}
-
 /* ============================================================
-   🎨 GRAPHICS ENHANCEMENTS
+   GRAPHICS
    ============================================================ */
-
 function initRipple(){
   document.addEventListener('click', function(e){
     const btn = e.target.closest('button, .chip, .theme-chip, .menu-btn');
@@ -2116,16 +1983,13 @@ function initRipple(){
     const ripple = document.createElement('span');
     ripple.className = 'ripple';
     ripple.style.width = ripple.style.height = size + 'px';
-    ripple.style.left = x + 'px';
-    ripple.style.top = y + 'px';
+    ripple.style.left = x + 'px'; ripple.style.top = y + 'px';
     btn.appendChild(ripple);
     setTimeout(() => ripple.remove(), 600);
   });
 }
-
 function initParticles(){
-  const box = document.getElementById('particles');
-  if(!box) return;
+  const box = document.getElementById('particles'); if(!box) return;
   box.innerHTML = '';
   if(!state.settings.particles){ box.classList.add('off'); return; }
   box.classList.remove('off');
@@ -2149,16 +2013,13 @@ function toggleParticles(){
   save(); initParticles();
   toast(state.settings.particles ? '✨ ذرات روشن شد' : 'ذرات خاموش شد', 'success');
 }
-
 function hideSplash(){
-  const s = document.getElementById('splash');
-  if(!s) return;
+  const s = document.getElementById('splash'); if(!s) return;
   setTimeout(() => {
     s.classList.add('hide');
-    setTimeout(() => s.remove(), 800);
+    setTimeout(() => { try{s.remove();}catch(e){} }, 800);
   }, 1600);
 }
-
 function animateNumber(el, target, formatter){
   if(!el) return;
   const duration = 1200;
@@ -2174,18 +2035,15 @@ function animateNumber(el, target, formatter){
   }
   requestAnimationFrame(step);
 }
-
 function drawSparkline(containerId, values, color){
-  const el = document.getElementById(containerId);
-  if(!el) return;
+  const el = document.getElementById(containerId); if(!el) return;
   if(!values || values.length < 2){ el.innerHTML = ''; return; }
   const w = 200, h = 28;
   const max = Math.max(...values, 1);
   const min = Math.min(...values, 0);
   const range = max - min || 1;
   const step = w / (values.length - 1);
-  let path = '';
-  let area = `M 0 ${h} `;
+  let path = ''; let area = `M 0 ${h} `;
   values.forEach((v, i) => {
     const x = i * step;
     const y = h - ((v - min) / range) * (h - 4) - 2;
@@ -2194,11 +2052,10 @@ function drawSparkline(containerId, values, color){
   });
   area += `L ${w} ${h} Z`;
   el.innerHTML = `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
-    <path class="area" d="${area}" ${color ? `style="fill:${color}"` : ''}></path>
-    <path class="line" d="${path}" ${color ? `style="stroke:${color}"` : ''}></path>
+    <path class="area" d="${area}" ${color?`style="fill:${color}"`:''}></path>
+    <path class="line" d="${path}" ${color?`style="stroke:${color}"`:''}></path>
   </svg>`;
 }
-
 function renderKPIsEnhanced(){
   const days = jalaali.jalaaliMonthLength(currentYear, currentMonth);
   let totWork = 0, totOT = 0, totDef = 0;
@@ -2211,19 +2068,16 @@ function renderKPIsEnhanced(){
   animateNumber(document.getElementById('kpiOT'), totOT, v => toHM(v));
   animateNumber(document.getElementById('kpiDef'), totDef, v => toHM(v));
   animateNumber(document.getElementById('kpiTasks'), state.tasks.filter(t => !t.done).length, v => Math.round(v));
-
   const last7 = [];
   for(let i = 6; i >= 0; i--){
     const dt = new Date(); dt.setDate(dt.getDate() - i);
-    const js = jalaliStr(dt);
-    const c = computeDay(js);
+    const c = computeDay(jalaliStr(dt));
     last7.push(c.work / 60);
   }
   drawSparkline('sparkTotal', last7);
   drawSparkline('sparkOT', last7.map(v => Math.max(0, v - 9)), 'var(--success)');
   drawSparkline('sparkDef', last7.map(v => Math.max(0, 9 - v)), 'var(--danger)');
 }
-
 function renderMonthProgress(){
   const daysInMonth = jalaali.jalaaliMonthLength(currentYear, currentMonth);
   const n = nowJalali();
@@ -2234,7 +2088,6 @@ function renderMonthProgress(){
   const mpMonthPct = document.getElementById('mpMonthPct');
   if(mpMonthBar) mpMonthBar.style.width = monthPct.toFixed(1) + '%';
   if(mpMonthPct) mpMonthPct.textContent = monthPct.toFixed(0) + '%';
-
   let totWork = 0;
   for(let d = 1; d <= daysInMonth; d++){
     const jstr = `${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
@@ -2247,7 +2100,6 @@ function renderMonthProgress(){
   if(mpWorkBar) mpWorkBar.style.width = workPct.toFixed(1) + '%';
   if(mpWorkPct) mpWorkPct.textContent = workPct.toFixed(0) + '%';
 }
-
 function renderAvatar(){
   const name = state.userName || 'کاربر مهمان';
   const initial = name.trim().charAt(0) || '؟';
@@ -2263,11 +2115,9 @@ function renderAvatar(){
   const ring = document.getElementById('avatarRing');
   if(ring) ring.style.setProperty('--progress', (pct * 360).toFixed(0) + 'deg');
 }
-
 function showKpiDetail(type){
   const days = jalaali.jalaaliMonthLength(currentYear, currentMonth);
-  const rows = [];
-  let total = 0;
+  const rows = []; let total = 0;
   for(let d = 1; d <= days; d++){
     const jstr = `${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
     const c = computeDay(jstr);
@@ -2277,8 +2127,7 @@ function showKpiDetail(type){
     if(type === 'def'){ val = c.def; label = toHM(c.def); }
     if(type === 'tasks') continue;
     if(val > 0){
-      const wd = dayOfWeekJ(jstr);
-      rows.push(`<tr><td>${JDAYS[wd]}</td><td>${d}</td><td>${label}</td></tr>`);
+      rows.push(`<tr><td>${JDAYS[dayOfWeekJ(jstr)]}</td><td>${d}</td><td>${label}</td></tr>`);
       total += val;
     }
   }
@@ -2286,28 +2135,44 @@ function showKpiDetail(type){
     const pending = state.tasks.filter(t => !t.done);
     document.getElementById('kpiModalTitle').textContent = '📋 وظایف باقی‌مانده';
     document.getElementById('kpiModalBody').innerHTML = pending.length
-      ? `<div style="display:flex;flex-direction:column;gap:8px">${pending.map(t => `
-          <div class="task-item"><div class="task-content">
-            <div class="task-title">${escapeHtml(t.title)}</div>
-            <div class="task-meta">📅 ${t.date}${t.time?' ⏰ '+t.time:''}</div>
-          </div></div>`).join('')}</div>`
+      ? `<div>${pending.map(t => `<div class="task-item"><div class="task-content"><div class="task-title">${escapeHtml(t.title)}</div><div class="task-meta">📅 ${t.date}</div></div></div>`).join('')}</div>`
       : '<div class="empty-state"><div class="icon">🎉</div>همه وظایف انجام شده!</div>';
     openModal('kpiModal'); return;
   }
   const titles = { total:'⏱️ مجموع کارکرد', ot:'➕ اضافه‌کاری', def:'➖ کسری کار' };
-  document.getElementById('kpiModalTitle').textContent = titles[type] + ` — مجموع: ${toHM(total)}`;
+  document.getElementById('kpiModalTitle').textContent = titles[type] + ` — ${toHM(total)}`;
   document.getElementById('kpiModalBody').innerHTML = rows.length
     ? `<div style="max-height:400px;overflow-y:auto"><table style="width:100%;font-size:12px"><thead><tr><th>روز</th><th>تاریخ</th><th>مقدار</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`
-    : '<div class="empty-state"><div class="icon">📭</div>داده‌ای موجود نیست</div>';
+    : '<div class="empty-state"><div class="icon">📭</div>داده‌ای نیست</div>';
   openModal('kpiModal');
 }
 
-function autoDetectTheme(){
-  if(localStorage.getItem('theme_manual') === 'true') return;
-  if(state.settings.theme && state.settings.theme !== 'midnight-gold') return;
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  state.settings.theme = prefersDark ? 'midnight-gold' : 'light';
-  save(); applyTheme();
+/* ============================================================
+   ACCOUNT
+   ============================================================ */
+function updateAccountPanel(){
+  const user = getCurrentUserFromStorage();
+  if(!user) return;
+  const nameEl = document.getElementById('currentUserName');
+  const userEl = document.getElementById('currentUserUsername');
+  if(nameEl) nameEl.textContent = user.name;
+  if(userEl) userEl.textContent = user.username;
+}
+function gotoChangePassword(){ window.location.href = 'change-pwd.html'; }
+async function doLogout(){
+  if(!confirm('از حساب خود خارج می‌شوید؟')) return;
+  const token = getToken();
+  if(token){
+    try {
+      await fetch(API_URL + '/api/logout', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+    } catch(e) { console.warn(e); }
+  }
+  localStorage.removeItem('hrm_token');
+  localStorage.removeItem('hrm_user');
+  window.location.href = 'login.html';
 }
 
 /* ============================================================
@@ -2320,51 +2185,30 @@ const WISDOMS=[
   {t:'زمانی که به کارت عشق بورزی، کارت به تو آزادی می‌بخشد.',a:'کنفوسیوس'},
   {t:'تنها راه انجام کارهای بزرگ، دوست داشتن کاری است که انجام می‌دهی.',a:'استیو جابز'},
   {t:'انضباط، پلی است بین اهداف و دستاوردها.',a:'جیم ران'},
-  {t:'امروز را طوری زندگی کن که فردا حسرتش را نخوری.',a:'ضرب‌المثل'},
   {t:'بهترین زمان برای کاشتن درخت، بیست سال پیش بود؛ دومین بهترین زمان، امروز است.',a:'ضرب‌المثل چینی'},
   {t:'موفقیت، پیشرفت کوچک روزانه است.',a:'رابین شارما'},
-  {t:'آنچه را که می‌توانی امروز انجام ده، به فردا مینداز.',a:'بنجامین فرانکلین'},
-  {t:'زمانی که همه چیز را از دست می‌دهی، به یاد داشته باش که هنوز «زمان» را داری.',a:'ضرب‌المثل'},
-  {t:'نظم و انضباط، آزادی می‌آورد؛ بی‌نظمی، اسارت.',a:'الیور ونتل هلمز'},
-  {t:'آینده متعلق به کسانی است که به زیبایی رویاهایشان باور دارند.',a:'النور روزولت'},
   {t:'مهم نیست چقدر کند می‌روی، مهم این است که متوقف نشوی.',a:'کنفوسیوس'},
   {t:'کیفیت زندگی شما، کیفیت سوالات شماست.',a:'آنتونی رابینز'},
-  {t:'اگر می‌خواهی چیزی را تغییر دهی، اول خودت باید تغییر کنی.',a:'لئو تولستوی'},
+  {t:'آینده متعلق به کسانی است که به زیبایی رویاهایشان باور دارند.',a:'النور روزولت'},
   {t:'پشت هر موفقیتی، مجموعه‌ای از شکست‌های کوچک نهفته است.',a:'ضرب‌المثل'},
-  {t:'کار امروز را به فردا مینداز، اما فردا را هم دریاب.',a:'ضرب‌المثل'},
   {t:'بزرگترین سرمایه‌ی شما، زمانتان است؛ آن را هدر ندهید.',a:'برایان تریسی'},
   {t:'هر صبح فرصتی تازه برای شروع دوباره است.',a:'ضرب‌المثل'},
   {t:'هدف بدون برنامه، فقط یک آرزوست.',a:'آنتوان دو سنت‌اگزوپری'},
   {t:'اگر نمی‌توانی پرواز کنی، بدو؛ اگر نمی‌توانی بدوی، راه برو؛ اما متوقف نشو.',a:'مارتین لوتر کینگ'},
   {t:'موفقیت یعنی از شکست به شکست، بدون از دست دادن اشتیاق.',a:'وینستون چرچیل'},
-  {t:'بهترین انتقام از دنیا، موفق شدن است.',a:'ضرب‌المثل'},
-  {t:'زندگی ۱۰٪ چیزی است که برایت اتفاق می‌افتد و ۹۰٪ واکنش تو به آن.',a:'چارلز سوایندل'},
   {t:'بزرگترین ریسک، ریسک نکردن است.',a:'مارک زاکربرگ'},
-  {t:'موفقیت زمانی به دست می‌آید که آماده‌سازی با فرصت تلاقی کند.',a:'سنکا'},
-  {t:'اگر در جاده‌ای نیستی که به هدف می‌رسد، سرعتت اهمیتی ندارد.',a:'استیون کاوی'},
-  {t:'عمل، پل بین رویا و واقعیت است.',a:'ضرب‌المثل'},
-  {t:'زمان شما محدود است، آن را با زندگی کردن در زندگی دیگران هدر ندهید.',a:'استیو جابز'},
-  {t:'مردم آنچه را که می‌بینند باور می‌کنند، نه آنچه را که می‌شنوند.',a:'ضرب‌المثل'},
-  {t:'هر کاری که انجام می‌دهی، آن را با تمام وجود انجام بده.',a:'استیو جابز'},
   {t:'تنها راه پیش‌بینی آینده، ساختن آن است.',a:'پیتر دراکر'},
-  {t:'با ترس‌هایت روبرو شو و آن‌ها را شکست بده.',a:'ضرب‌المثل'},
+  {t:'خودت را باور کن، نیمی از راه را رفته‌ای.',a:'تئودور روزولت'},
   {t:'رمز موفقیت، شروع کردن است.',a:'مارک تواین'},
   {t:'در وسط هر مشکلی، فرصتی نهفته است.',a:'آلبرت اینشتین'},
-  {t:'هیچ‌وقت برای شروع دیر نیست.',a:'ضرب‌المثل'},
-  {t:'خودت را باور کن، نیمی از راه را رفته‌ای.',a:'تئودور روزولت'},
-  {t:'دانش قدرت است، اما عمل، ثروت.',a:'ضرب‌المثل'},
-  {t:'بهترین راه برای پیش‌بینی آینده، خلق کردن آن است.',a:'آلن کی'},
-  {t:'اگر می‌خواهی در زندگی موفق شوی، باید یاد بگیری چگونه شکست بخوری.',a:'ضرب‌المثل'},
-  {t:'اهداف کوچک، انگیزه‌های بزرگ می‌سازند.',a:'ضرب‌المثل'},
-  {t:'همیشه بهترین نسخه از خودت باش، نه نسخه‌ای که دیگران می‌خواهند.',a:'ضرب‌المثل'},
-  {t:'سختی‌ها هستند که انسان را می‌سازند، نه راحتی‌ها.',a:'ضرب‌المثل'},
-  {t:'اگر می‌خواهی چیزی را به دست آوری که تا به حال نداشتی، باید کاری کنی که تا به حال نکرده‌ای.',a:'ضرب‌المثل'},
-  {t:'پیروزی متعلق به کسانی است که ادامه می‌دهند.',a:'ضرب‌المثل'},
-  {t:'هیچ‌وقت تسلیم نشو، چون ممکن است همان لحظه، معجزه اتفاق بیفتد.',a:'ضرب‌المثل'},
-  {t:'مسیر موفقیت، همیشه ساده نیست، اما ارزشش را دارد.',a:'ضرب‌المثل'},
-  {t:'بزرگ‌ترین دشمن موفقیت، ترس از شکست است.',a:'ضرب‌المثل'},
+  {t:'بهترین سرمایه‌گذاری، سرمایه‌گذاری روی خودت است.',a:'بنجامین فرانکلین'},
+  {t:'هر کاری که انجام می‌دهی، آن را با تمام وجود انجام بده.',a:'استیو جابز'},
   {t:'با برنامه‌ریزی، رویاها به واقعیت تبدیل می‌شوند.',a:'ضرب‌المثل'},
-  {t:'بهترین سرمایه‌گذاری، سرمایه‌گذاری روی خودت است.',a:'بنجامین فرانکلین'}
+  {t:'اگر می‌خواهی چیزی را به دست آوری که تا به حال نداشتی، باید کاری کنی که تا به حال نکرده‌ای.',a:'ضرب‌المثل'},
+  {t:'دانش قدرت است، اما عمل، ثروت.',a:'ضرب‌المثل'},
+  {t:'پیروزی متعلق به کسانی است که ادامه می‌دهند.',a:'ضرب‌المثل'},
+  {t:'سختی‌ها هستند که انسان را می‌سازند، نه راحتی‌ها.',a:'ضرب‌المثل'},
+  {t:'همیشه بهترین نسخه از خودت باش، نه نسخه‌ای که دیگران می‌خواهند.',a:'ضرب‌المثل'}
 ];
 function showWisdom(){
   if(sessionStorage.getItem('wisdom_shown')) return;
@@ -2374,48 +2218,6 @@ function showWisdom(){
   document.getElementById('wisdomPopup').classList.add('open');
   sessionStorage.setItem('wisdom_shown','1');
 }
-/* ============================================================
-   🔐 ACCOUNT FUNCTIONS — تغییر رمز و خروج
-   ============================================================ */
-function updateAccountPanel(){
-  let user = null;
-  try {
-    user = JSON.parse(localStorage.getItem('hrm_user') || 'null');
-  } catch(e) {}
-  
-  if(!user) return;
-  
-  const nameEl = document.getElementById('currentUserName');
-  const userEl = document.getElementById('currentUserUsername');
-  if(nameEl) nameEl.textContent = user.name;
-  if(userEl) userEl.textContent = user.username;
-}
-
-function gotoChangePassword(){
-  window.location.href = 'change-pwd.html';
-}
-
-async function doLogout(){
-  if(!confirm('از حساب خود خارج می‌شوید؟')) return;
-  
-  const token = localStorage.getItem('hrm_token');
-  
-  if(token){
-    try {
-      await fetch('https://mypanel-api.bamdad-roozegar.workers.dev/api/logout', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-    } catch(e) {
-      console.warn('Logout API failed:', e);
-    }
-  }
-  
-  localStorage.removeItem('hrm_token');
-  localStorage.removeItem('hrm_user');
-  window.location.href = 'login.html';
-}
-
 function closeWisdom(){ document.getElementById('wisdomPopup').classList.remove('open'); }
 
 /* ============================================================
@@ -2455,18 +2257,20 @@ function unlock(){
     toast('رمز اشتباه است','error');
   }
 }
-let _booted=false;
+
+let _booted = false;
 function boot(){
-  if(_booted) return; _booted=true;
-  
-  // 🔥 مهم: اول Splash رو محو کن
+  if(_booted) return;
+  _booted = true;
+
+  // اول Splash رو محو کن
   hideSplash();
-  
-  // بارگذاری از localStorage (سریع)
+
+  // بارگذاری از localStorage
   load();
-  
+
   autoRecordOnLaunch();
-  applyTheme(); 
+  applyTheme();
   applyBg();
   renderAll();
   renderChatFromState();
@@ -2474,10 +2278,10 @@ function boot(){
   initRipple();
   initParticles();
   showWisdom();
-  
-  // بعد سینک با D1 در پس‌زمینه
+
+  // سینک D1 در پس‌زمینه
   syncFromD1();
-  
+
   if(liveTimer) clearInterval(liveTimer);
   liveTimer = setInterval(() => {
     renderTopbar();
@@ -2487,49 +2291,14 @@ function boot(){
     renderAvatar();
     renderWorkTable();
   }, 1000);
-  
+
   setTimeout(taskReminder, 3000);
   setInterval(taskReminder, 1000*60*60*6);
 }
 
-// سینک با D1 در پس‌زمینه
-async function syncFromD1(){
-  const token = getToken();
-  if(!token) return;
-  
-  try {
-    const res = await apiRequest('/api/entries');
-    if(!res || !res.ok) return;
-    
-    const data = await res.json();
-    if(!data.ok || !Array.isArray(data.entries)) return;
-    
-    const newEntries = {};
-    data.entries.forEach(e => {
-      newEntries[e.date] = {
-        entry: e.entry || '',
-        exit: e.exit || '',
-        desc: e.desc || '',
-        type: e.type || 'normal'
-      };
-    });
-    
-    state.entries = { ...state.entries, ...newEntries };
-    
-    console.log('✅ Loaded', data.entries.length, 'entries from D1');
-    
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch(e) {}
-    
-    renderAll();
-    
-  } catch(e) {
-    console.warn('⚠️ D1 sync failed:', e.message);
-  }
-}
 function taskReminder(){
-  const pending=state.tasks.filter(t=>!t.done); if(!pending.length) return;
+  const pending=state.tasks.filter(t=>!t.done);
+  if(!pending.length) return;
   const today=jalaliStr();
   const last=localStorage.getItem('last_task_reminder');
   if(last===today) return;
