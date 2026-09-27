@@ -1084,8 +1084,12 @@ function renderTopbar(){
   if(clockEl) clockEl.textContent = String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');
   if(dateEl) dateEl.textContent = jalaliPretty(d);
   
-  // 🔐 نمایش نام کاربر واقعی از لاگین
-  const user = getCurrentUser();
+  // نمایش نام کاربر از localStorage
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem('hrm_user') || 'null');
+  } catch(e) {}
+  
   if(user){
     const subEl = document.getElementById('sidebarSub');
     if(subEl) subEl.textContent = user.name;
@@ -1416,8 +1420,13 @@ function renderSettings(){
    🔐 ACCOUNT FUNCTIONS — تغییر رمز و خروج
    ============================================================ */
 function updateAccountPanel(){
-  const user = getCurrentUser();
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem('hrm_user') || 'null');
+  } catch(e) {}
+  
   if(!user) return;
+  
   const nameEl = document.getElementById('currentUserName');
   const userEl = document.getElementById('currentUserUsername');
   if(nameEl) nameEl.textContent = user.name;
@@ -1428,10 +1437,26 @@ function gotoChangePassword(){
   window.location.href = 'change-pwd.html';
 }
 
-function doLogout(){
+async function doLogout(){
   if(!confirm('از حساب خود خارج می‌شوید؟')) return;
-  localStorage.removeItem('hrm_current_user');
-  sessionStorage.removeItem('hrm_current_user');
+  
+  const token = localStorage.getItem('hrm_token');
+  
+  // اطلاع به سرور (اختیاری — برای پاک کردن توکن از D1)
+  if(token){
+    try {
+      await fetch('https://mypanel-api.bamdad-roozegar.workers.dev/api/logout', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+    } catch(e) {
+      console.warn('Logout API failed:', e);
+    }
+  }
+  
+  // پاک کردن localStorage
+  localStorage.removeItem('hrm_token');
+  localStorage.removeItem('hrm_user');
   window.location.href = 'login.html';
 }
 
