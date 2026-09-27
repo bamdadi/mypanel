@@ -976,19 +976,131 @@ let state=JSON.parse(JSON.stringify(DEFAULT_STATE));
 let currentYear, currentMonth;
 let taskFilter='all';
 const STORAGE_KEY='hrm_system_v4';
+  // 🔗 API Configuration
+const API_URL = 'https://mypanel-api.bamdad-roozegar.workers.dev';
 const JMONTHS=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
 const JDAYS=['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
+/* ============================================================
+   🔗 API Helpers
+   ============================================================ */
+function getToken(){
+  return localStorage.getItem('hrm_token');
+}
 
-function save(){ try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); }catch(e){ console.warn('Save error',e); } }
-function load(){
+async function apiRequest(path, options = {}){
+  const token = getToken();
+  if(!token){
+    window.location.href = 'login.html';
+    return null;
+  }
+  
+  const res = await fetch(API_URL + path, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token,
+      ...(options.headers || {})
+    }
+  });
+  
+  if(res.status === 401){
+    localStorage.removeItem('hrm_token');
+    localStorage.removeItem('hrm_user');
+    window.location.href = 'login.html';
+    return null;
+  }
+  
+  return res;
+}
+
+async function save(){
+  // ۱. ذخیره در localStorage (پشتیبان محلی)
+  try{ 
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); 
+  } catch(e){ 
+    console.warn('Local save error', e); 
+  }
+  
+  // ۲. ارسال به D1
+  const token = getToken();
+  if(!token) return;
+  
+  try {
+    const entries = [];
+    Object.keys(state.entries || {}).forEach(date => {
+      const e = state.entries[date];
+      if(e && (e.entry || e.exit || e.desc)){
+        entries.push({
+          date: date,
+          entry: e.entry || null,
+          exit: e.exit || null,
+          desc: e.desc || null,
+          type: e.type || 'normal'
+        });
+      }
+    });
+    
+    if(entries.length === 0) return;
+    
+    const res = await apiRequest('/api/entries', {
+      method: 'POST',
+      body: JSON.stringify({ entries })
+    });
+    
+    if(res && res.ok){
+      console.log('✅ Synced', entries.length, 'entries to D1');
+    }
+  } catch(e) {
+    console.warn('⚠️ D1 sync failed (offline?):', e.message);
+  }
+}
+
+async function load(){
+  // ۱. اول از localStorage
   try{
-    const raw=localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY);
     if(raw){
-      const d=JSON.parse(raw);
-      state={...DEFAULT_STATE,...d,settings:{...DEFAULT_STATE.settings,...(d.settings||{})}};
+      const d = JSON.parse(raw);
+      state = {...DEFAULT_STATE, ...d, settings:{...DEFAULT_STATE.settings, ...(d.settings||{})}};
       if(!state.settings.notif) state.settings.notif = {...DEFAULT_STATE.settings.notif};
     }
-  }catch(e){ console.warn(e); }
+  } catch(e){ 
+    console.warn('Local load error', e); 
+  }
+  
+  // ۲. آپدیت از D1
+  const token = getToken();
+  if(!token) return;
+  
+  try {
+    const res = await apiRequest('/api/entries');
+    if(!res || !res.ok) return;
+    
+    const data = await res.json();
+    if(!data.ok || !Array.isArray(data.entries)) return;
+    
+    const newEntries = {};
+    data.entries.forEach(e => {
+      newEntries[e.date] = {
+        entry: e.entry || '',
+        exit: e.exit || '',
+        desc: e.desc || '',
+        type: e.type || 'normal'
+      };
+    });
+    
+    // ادغام: D1 اولویت داره
+    state.entries = { ...state.entries, ...newEntries };
+    
+    console.log('✅ Loaded', data.entries.length, 'entries from D1');
+    
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch(e) {}
+    
+  } catch(e) {
+    console.warn('⚠️ D1 load failed (offline?):', e.message);
+  }
 }
 
 /* ============================================================
@@ -2376,10 +2488,13 @@ function unlock(){
   }
 }
 let _booted=false;
-function boot(){
+let _booted=false;
+async function boot(){
   if(_booted) return; _booted=true;
-    // 🔥 پاک کردن نام کاربر قدیمی
-  state.userName = '';
+  
+  // بارگذاری از D1 (و localStorage)
+  await load();
+  
   autoRecordOnLaunch();
   applyTheme(); applyBg();
   renderAll();
@@ -2388,10 +2503,7 @@ function boot(){
   initRipple();
   initParticles();
   showWisdom();
-  loadNotifSettings();
-  startNotificationLoop();
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', autoDetectTheme);
-  hideSplash();
+  
   if(liveTimer) clearInterval(liveTimer);
   liveTimer = setInterval(() => {
     renderTopbar();
@@ -2401,6 +2513,7 @@ function boot(){
     renderAvatar();
     renderWorkTable();
   }, 1000);
+  
   setTimeout(taskReminder, 3000);
   setInterval(taskReminder, 1000*60*60*6);
 }
