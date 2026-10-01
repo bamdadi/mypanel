@@ -484,6 +484,39 @@ tr.official-holiday td{color:#ff8a80}
   font-weight:700;background:rgba(245,158,11,.18);color:var(--warn);
   margin-right:6px;
 }
+  /* 📥 کارت گزارش */
+.report-card{
+  background:linear-gradient(135deg,var(--card2),var(--card));
+  border:1px solid var(--border);border-radius:14px;padding:14px 16px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  transition:.25s;position:relative;overflow:hidden;
+}
+.report-card:hover{border-color:var(--accent);box-shadow:0 8px 24px rgba(14,165,233,.15)}
+.report-card.unread::before{
+  content:"";position:absolute;top:0;right:0;width:4px;height:100%;
+  background:linear-gradient(180deg,var(--accent),transparent);
+}
+.report-card-avatar{
+  width:46px;height:46px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--accent3));
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:800;font-size:18px;
+}
+.report-card-info{flex:1;min-width:180px}
+.report-card-name{font-weight:800;font-size:14px}
+.report-card-meta{font-size:12px;color:var(--muted);margin-top:3px}
+.report-card-badge{
+  display:inline-block;padding:3px 10px;border-radius:12px;font-size:10px;
+  font-weight:800;margin-right:6px;
+}
+.report-card-badge.new{background:rgba(14,165,233,.2);color:var(--accent)}
+.report-card-badge.read{background:rgba(46,204,113,.15);color:var(--success)}
+.report-card-actions{display:flex;gap:6px;flex-wrap:wrap}
+@media (max-width:640px){
+  .report-card{flex-direction:column;align-items:stretch;text-align:center}
+  .report-card-avatar{margin:0 auto}
+  .report-card-actions{justify-content:center}
+}
 @media (max-width:640px){
   .user-card{flex-direction:column;align-items:stretch;text-align:center}
   .user-card-avatar{margin:0 auto}
@@ -804,6 +837,21 @@ tr.official-holiday td{color:#ff8a80}
   </div>
 </div>
       <!-- 👥 مدیریت کاربران -->
+      <!-- 📥 گزارش‌های دریافتی -->
+<div class="section">
+  <div class="section-title">📥 گزارش‌های دریافتی از پرسنل</div>
+  
+  <div class="row" style="margin-bottom:14px">
+    <button class="btn no-flex" onclick="loadReports()">🔄 بروزرسانی لیست</button>
+    <span id="reportsCount" style="font-size:12px;color:var(--muted);align-self:center"></span>
+    <div style="flex:1"></div>
+    <div class="chip active" onclick="filterReports('all', this)">همه</div>
+    <div class="chip" onclick="filterReports('unread', this)">🔵 خوانده‌نشده</div>
+    <div class="chip" onclick="filterReports('read', this)">✅ خوانده‌شده</div>
+  </div>
+  
+  <div id="reportsList" style="display:flex;flex-direction:column;gap:10px"></div>
+</div>
 <div class="section">
   <div class="section-title">👥 مدیریت کاربران</div>
   
@@ -1414,7 +1462,8 @@ function renderSettings(){
   });
   updateAccountPanel();
     // 👥 بارگذاری لیست کاربران
-  loadUsers();
+ loadUsers();
+  loadReports();
 }
 /* ============================================================
    🔐 ACCOUNT FUNCTIONS — تغییر رمز و خروج
@@ -2451,6 +2500,328 @@ async function apiRequest(path, options = {}){
   return res;
 }
 
+  /* ============================================================
+   📥 REPORTS — گزارش‌های دریافتی
+   ============================================================ */
+
+let reportsFilter = 'all';
+let reportsList = [];
+
+/* بارگذاری گزارش‌ها از سرور */
+async function loadReports(){
+  const listEl = document.getElementById('reportsList');
+  const countEl = document.getElementById('reportsCount');
+  if(!listEl) return;
+
+  listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted)">در حال بارگذاری...</div>';
+
+  try {
+    const res = await apiRequest('/api/reports');
+    if(!res) return;
+
+    const data = await res.json();
+
+    if(!data.ok){
+      listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--danger)">' + (data.error || 'خطا') + '</div>';
+      return;
+    }
+
+    reportsList = data.reports || [];
+    renderReports();
+
+  } catch(e) {
+    listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--danger)">خطای شبکه: ' + e.message + '</div>';
+  }
+}
+
+/* فیلتر کردن گزارش‌ها */
+function filterReports(f, el){
+  reportsFilter = f;
+  document.querySelectorAll('#panel-settings .chip').forEach(c => {
+    if(c.textContent.includes('خوانده') || c.textContent.trim() === 'همه') {
+      c.classList.remove('active');
+    }
+  });
+  if(el) el.classList.add('active');
+  renderReports();
+}
+
+/* رندر گزارش‌ها */
+function renderReports(){
+  const listEl = document.getElementById('reportsList');
+  const countEl = document.getElementById('reportsCount');
+  if(!listEl) return;
+
+  let items = [...reportsList];
+
+  if(reportsFilter === 'unread') items = items.filter(r => r.is_read === 0);
+  if(reportsFilter === 'read') items = items.filter(r => r.is_read === 1);
+
+  const totalUnread = reportsList.filter(r => r.is_read === 0).length;
+  if(countEl) countEl.textContent = `(${items.length} گزارش — ${totalUnread} خوانده‌نشده)`;
+
+  if(!items.length){
+    listEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted)">📭 هیچ گزارشی دریافت نشده</div>';
+    return;
+  }
+
+  listEl.innerHTML = items.map(r => {
+    const initial = (r.name || '؟').trim().charAt(0) || '؟';
+    const sentDate = r.sent_at ? jalaliStr(new Date(r.sent_at)) : '—';
+    const sentTime = r.sent_at ? new Date(r.sent_at).toLocaleTimeString('fa-IR') : '';
+    const isUnread = r.is_read === 0;
+
+    return `
+      <div class="report-card ${isUnread ? 'unread' : ''}">
+        <div class="report-card-avatar">${escapeHtml(initial)}</div>
+        <div class="report-card-info">
+          <div class="report-card-name">${escapeHtml(r.name)}</div>
+          <div class="report-card-meta">📅 ${r.month} — ارسال: ${sentDate} ${sentTime}</div>
+          <div style="margin-top:6px">
+            <span class="report-card-badge ${isUnread ? 'new' : 'read'}">
+              ${isUnread ? '🔵 جدید' : '✅ خوانده‌شده'}
+            </span>
+          </div>
+        </div>
+        <div class="report-card-actions">
+          <button class="btn btn-info btn-sm" onclick="openReport(${r.id})">👁️ مشاهده</button>
+          <button class="btn btn-danger btn-icon btn-sm" onclick="deleteReport(${r.id}, '${escapeHtml(r.name)}')">🗑️</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* مشاهده جزئیات گزارش */
+async function openReport(id){
+  const report = reportsList.find(r => r.id === id);
+  if(!report) return;
+
+  // علامت‌گذاری به‌عنوان خوانده‌شده
+  if(report.is_read === 0){
+    markReportAsRead(id);
+  }
+
+  // محاسبه آمار
+  const entries = report.data.entries || [];
+  let work = 0, ot = 0, def = 0;
+
+  entries.forEach(e => {
+    // محاسبه ساده برای نمایش
+    const em = e.entry ? parseInt(e.entry.split(':')[0]) * 60 + parseInt(e.entry.split(':')[1]) : null;
+    const xm = e.exit ? parseInt(e.exit.split(':')[0]) * 60 + parseInt(e.exit.split(':')[1]) : null;
+
+    if(em !== null && xm !== null){
+      const w = Math.max(0, xm - em);
+      work += w;
+
+      const WORK_START = 8 * 60;
+      const WORK_END = 17 * 60;
+      const FULL = WORK_END - WORK_START;
+
+      let extra = 0;
+      if(em < WORK_START) extra += Math.min(xm, WORK_START) - em;
+      if(xm > WORK_END) extra += xm - Math.max(em, WORK_END);
+      ot += Math.max(0, extra);
+
+      const inside = Math.max(0, Math.min(xm, WORK_END) - Math.max(em, WORK_START));
+      def += Math.max(0, FULL - inside);
+    }
+  });
+
+  // ساخت جدول
+  const rowsHtml = entries.map(e => {
+    const datePart = e.date.split('/');
+    const dateFormatted = `${datePart[2]}/${datePart[1]}/${datePart[0]}`;
+
+    const em = e.entry ? parseInt(e.entry.split(':')[0]) * 60 + parseInt(e.entry.split(':')[1]) : null;
+    const xm = e.exit ? parseInt(e.exit.split(':')[0]) * 60 + parseInt(e.exit.split(':')[1]) : null;
+
+    let dayWork = 0, dayOT = 0, dayDef = 0;
+    if(em !== null && xm !== null){
+      dayWork = Math.max(0, xm - em);
+      const WORK_START = 8 * 60, WORK_END = 17 * 60, FULL = WORK_END - WORK_START;
+      let extra = 0;
+      if(em < WORK_START) extra += Math.min(xm, WORK_START) - em;
+      if(xm > WORK_END) extra += xm - Math.max(em, WORK_END);
+      dayOT = Math.max(0, extra);
+      const inside = Math.max(0, Math.min(xm, WORK_END) - Math.max(em, WORK_START));
+      dayDef = Math.max(0, FULL - inside);
+    }
+
+    const fmt = (min) => {
+      if(!min) return '—';
+      const h = Math.floor(min / 60);
+      const m = min % 60;
+      return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+    };
+
+    return `<tr>
+      <td>${dateFormatted}</td>
+      <td>${e.entry || '—'}</td>
+      <td>${e.exit || '—'}</td>
+      <td style="color:var(--accent);font-weight:700">${fmt(dayWork)}</td>
+      <td style="color:var(--success)">${dayOT > 0 ? fmt(dayOT) : '—'}</td>
+      <td style="color:var(--danger)">${dayDef > 0 ? '-' + fmt(dayDef) : '—'}</td>
+      <td style="font-size:11px;text-align:right">${escapeHtml(e.desc || '')}</td>
+    </tr>`;
+  }).join('');
+
+  // HTML مودال
+  const html = `
+    <div class="ts-header">
+      <h2>📄 تایم‌شیت ${escapeHtml(report.name)}</h2>
+      <p>${report.month} — تاریخ ارسال: ${report.sent_at ? jalaliStr(new Date(report.sent_at)) : '—'}</p>
+    </div>
+
+    <div class="ts-kpis">
+      <div class="ts-kpi"><div class="ts-kpi-label">مجموع کارکرد</div><div class="ts-kpi-value">${toHMLocal(work)}</div></div>
+      <div class="ts-kpi success"><div class="ts-kpi-label">اضافه‌کاری</div><div class="ts-kpi-value">${toHMLocal(ot)}</div></div>
+      <div class="ts-kpi danger"><div class="ts-kpi-label">کسری کار</div><div class="ts-kpi-value">${def > 0 ? '-' + toHMLocal(def) : '0:00'}</div></div>
+      <div class="ts-kpi info"><div class="ts-kpi-label">روزهای ثبت‌شده</div><div class="ts-kpi-value">${entries.length}</div></div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn btn-info btn-sm" onclick="printReport(${id})">🖨️ پرینت</button>
+      <button class="btn btn-success btn-sm" onclick="exportReportExcel(${id})">📗 اکسل</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>تاریخ</th><th>ورود</th><th>خروج</th>
+            <th>کارکرد</th><th>اضافه‌کاری</th><th>کسری</th><th>شرح</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+        <tfoot>
+          <tr class="sum-row">
+            <td colspan="3">جمع کل</td>
+            <td>${toHMLocal(work)}</td>
+            <td>${toHMLocal(ot)}</td>
+            <td>${def > 0 ? '-' + toHMLocal(def) : '—'}</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  `;
+
+  const bodyEl = document.getElementById('empModalBody');
+  if(bodyEl){
+    bodyEl.innerHTML = html;
+    openModal('empModal');
+  }
+}
+
+/* helper */
+function toHMLocal(min){
+  if(!min) return '0:00';
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
+/* علامت‌گذاری خوانده‌شده */
+async function markReportAsRead(id){
+  try {
+    const res = await apiRequest('/api/reports/' + id + '/read', { method: 'POST' });
+    if(res && res.ok){
+      const r = reportsList.find(x => x.id === id);
+      if(r) r.is_read = 1;
+      const totalUnread = reportsList.filter(r => r.is_read === 0).length;
+      const countEl = document.getElementById('reportsCount');
+      if(countEl) countEl.textContent = `(${reportsList.length} گزارش — ${totalUnread} خوانده‌نشده)`;
+    }
+  } catch(e){ console.warn(e); }
+}
+
+/* حذف گزارش */
+async function deleteReport(id, name){
+  if(!confirm(`حذف گزارش «${name}»؟`)) return;
+  try {
+    const res = await apiRequest('/api/reports/' + id, { method: 'DELETE' });
+    if(!res) return;
+    const data = await res.json();
+    if(data.ok){
+      toast('گزارش حذف شد', 'success');
+      loadReports();
+    } else {
+      toast(data.error || 'خطا', 'error');
+    }
+  } catch(e){ toast('خطای شبکه: ' + e.message, 'error'); }
+}
+
+/* پرینت گزارش */
+function printReport(id){
+  const report = reportsList.find(r => r.id === id);
+  if(!report) return;
+
+  const entries = report.data.entries || [];
+  const rowsHtml = entries.map(e => {
+    const datePart = e.date.split('/');
+    const dateFormatted = `${datePart[2]}/${datePart[1]}/${datePart[0]}`;
+    return `<tr>
+      <td>${dateFormatted}</td>
+      <td>${e.entry || '—'}</td>
+      <td>${e.exit || '—'}</td>
+      <td style="text-align:right">${escapeHtml(e.desc || '')}</td>
+    </tr>`;
+  }).join('');
+
+  const w = window.open('', '_blank');
+  if(!w){ toast('لطفاً اجازه پنجره بازشو را بدهید','error'); return; }
+  w.document.write(`
+    <!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8">
+    <title>تایم‌شیت ${escapeHtml(report.name)}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+    <style>
+      @page{size:A4;margin:14mm}
+      body{font-family:Vazirmatn;direction:rtl;padding:18px;color:#111}
+      .head{text-align:center;border-bottom:3px solid #0284c7;padding-bottom:14px;margin-bottom:18px}
+      .head h1{color:#0284c7;margin:0 0 6px 0;font-size:20px}
+      .head p{color:#666;margin:4px 0;font-size:12px}
+      table{width:100%;border-collapse:collapse;font-size:11px}
+      thead tr{background:#0284c7;color:#fff}
+      th,td{border:1px solid #ddd;padding:6px;text-align:center}
+    </style></head><body>
+      <div class="head">
+        <h1>تایم‌شیت ${escapeHtml(report.name)}</h1>
+        <p>${report.month} — ارسال: ${jalaliStr(new Date(report.sent_at))}</p>
+      </div>
+      <table>
+        <thead><tr><th>تاریخ</th><th>ورود</th><th>خروج</th><th>شرح</th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </body></html>
+  `);
+  w.document.close();
+  setTimeout(() => w.print(), 500);
+}
+
+/* خروجی اکسل گزارش */
+function exportReportExcel(id){
+  const report = reportsList.find(r => r.id === id);
+  if(!report) return;
+  const entries = report.data.entries || [];
+  const aoa = [
+    ['تایم‌شیت ' + report.name],
+    ['ماه: ' + report.month, '', 'ارسال: ' + (report.sent_at ? jalaliStr(new Date(report.sent_at)) : '')],
+    [],
+    ['تاریخ', 'ورود', 'خروج', 'شرح']
+  ];
+  entries.forEach(e => {
+    const datePart = e.date.split('/');
+    aoa.push([`${datePart[2]}/${datePart[1]}/${datePart[0]}`, e.entry || '', e.exit || '', e.desc || '']);
+  });
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [{wch:14},{wch:10},{wch:10},{wch:40}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'تایم‌شیت');
+  XLSX.writeFile(wb, `report-${report.username}-${report.month.replace(/\//g,'-')}.xlsx`);
+  toast('اکسل آماده شد', 'success');
+}
 /* بارگذاری لیست کاربران از API */
 async function loadUsers(){
   const listEl = document.getElementById('usersList');
