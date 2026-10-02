@@ -1273,10 +1273,14 @@ function saveDescInput(jstr, v){
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
 }
 function saveDescBlur(jstr, v){
-  if(!state.entries[jstr]) state.entries[jstr]={};
+  if(!state.entries[jstr]) state.entries[jstr] = {};
   state.entries[jstr].desc = v;
-  save(); renderKPIs();
-  toast('شرح ذخیره شد','success');
+  if(v && v.trim()){
+    state.entries[jstr].manualEntry = true;
+  }
+  save(); 
+  renderKPIs();
+  toast('شرح ذخیره شد', 'success');
 }
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
@@ -1359,15 +1363,11 @@ function saveTime(jstr,field){
     state.entries[jstr][field] = v;
     // اگه کاربر خودش ساعت زد، دیگه اتوماتیک نکن
     state.entries[jstr].manualEntry = true;
+    state.entries[jstr].userCleared = false;
   } else {
     delete state.entries[jstr][field];
     // 🔥 علامت بذار که کاربر پاک کرده
     state.entries[jstr].userCleared = true;
-  }
-  
-  // اگه هر دو فیلد خالی شدن و کاربر پاک کرده
-  if(!state.entries[jstr].entry && !state.entries[jstr].exit && state.entries[jstr].userCleared){
-    // فیلدها رو نگه دار ولی ثبت خودکار نکن
   }
   
   save(); 
