@@ -1141,7 +1141,6 @@ function renderTopbar(){
 }
 
 async function renderDashboard(){
-  // چک کن اگه کارمندان لود نشدن
   if(!allEmployees.length && !employeesLoading){
     await loadEmployeesFromAPI();
   }
@@ -1150,34 +1149,20 @@ async function renderDashboard(){
   const countEl = document.getElementById('kpiCount');
   if(countEl) countEl.textContent = allEmployees.length;
 
-  // محاسبه مجموع همه کارمندان (از API)
+  // مجموع همه کارمندان (از lastMonth)
   let totalWork = 0, totalOT = 0, totalDef = 0;
-  const monthlyData = [];
-
-  if(allEmployees.length){
-    // برای هر کارمند، آمار آخرین ماه رو بگیر
-    for(const emp of allEmployees){
-      if(!emp.months || !emp.months.length) continue;
-      const lastMonth = emp.months[0];
-      try {
-        const res = await apiRequest(`/api/employees/${emp.id}/entries?month=${lastMonth}`);
-        if(!res) continue;
-        const data = await res.json();
-        if(!data.ok || !data.entries) continue;
-
-        const stats = computeEntriesStats(data.entries);
-        totalWork += stats.work;
-        totalOT += stats.ot;
-        totalDef += stats.def;
-      } catch(e){ console.warn(e); }
-    }
-  }
+  allEmployees.forEach(emp => {
+    const stats = emp.lastMonth || {work: 0, ot: 0, def: 0};
+    totalWork += stats.work;
+    totalOT += stats.ot;
+    totalDef += stats.def;
+  });
 
   animateNumber(document.getElementById('kpiTotalWork'), totalWork, v => toHM(v));
   animateNumber(document.getElementById('kpiTotalOT'), totalOT, v => toHM(v));
   animateNumber(document.getElementById('kpiTotalDef'), totalDef, v => toHM(v));
 
-  // Sparkline ساده (بدون داده)
+  // Sparkline
   drawSparkline('sparkTotalWork', [0, 0, 0, 0, 0, 0, 0]);
   drawSparkline('sparkTotalOT', [0, 0, 0, 0, 0, 0, 0], 'var(--success)');
   drawSparkline('sparkTotalDef', [0, 0, 0, 0, 0, 0, 0], 'var(--danger)');
@@ -1197,7 +1182,6 @@ async function renderDashboard(){
 
   renderDashboardEmpListFromAPI();
 }
-
 /* محاسبه آمار از entries */
 function computeEntriesStats(entries){
   let work = 0, ot = 0, def = 0;
@@ -1245,12 +1229,23 @@ function renderDashboardEmpListFromAPI(){
   }
   el.innerHTML = allEmployees.map(emp=>{
     const initial = (emp.name||'؟').charAt(0);
+    const stats = emp.lastMonth || {work: 0, ot: 0, def: 0, month: '—'};
+    const monthLabel = stats.month ? (()=>{
+      const p = stats.month.split('/');
+      return `${JMONTHS[parseInt(p[1])-1]} ${p[0]}`;
+    })() : '—';
+    
     return `
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="openEmpFromAPI(${emp.id})">
         <div class="emp-mini-avatar">${initial}</div>
         <div style="flex:1;min-width:0">
           <div style="font-weight:700">${escapeHtml(emp.name)}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:3px">@${escapeHtml(emp.username)} — ${emp.months.length} ماه داده</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">${monthLabel}</div>
+        </div>
+        <div style="display:flex;gap:8px;font-size:11px;text-align:center">
+          <div><div style="color:var(--muted)">کارکرد</div><div style="color:var(--accent);font-weight:800">${toHM(stats.work)}</div></div>
+          <div><div style="color:var(--muted)">OT</div><div style="color:var(--success);font-weight:800">${toHM(stats.ot)}</div></div>
+          <div><div style="color:var(--muted)">کسری</div><div style="color:var(--danger);font-weight:800">${stats.def>0?'-'+toHM(stats.def):'—'}</div></div>
         </div>
       </div>
     `;
@@ -1363,12 +1358,12 @@ async function loadEmployeesFromAPI(){
   if(employeesLoading) return;
   employeesLoading = true;
   try {
-    const res = await apiRequest('/api/employees');
+    const res = await apiRequest('/api/employees/stats');
     if(!res){ employeesLoading = false; return; }
     const data = await res.json();
     if(data.ok && Array.isArray(data.employees)){
       allEmployees = data.employees;
-      console.log('✅ Loaded', allEmployees.length, 'employees');
+      console.log('✅ Loaded', allEmployees.length, 'employees with stats');
     }
   } catch(e) {
     console.warn('⚠️ Load employees failed:', e);
@@ -1379,18 +1374,45 @@ async function loadEmployeesFromAPI(){
 /* 🎨 کارت کارمند (از API) */
 function renderEmpCardFromAPI(emp){
   const initial = (emp.name||'؟').charAt(0);
+  
+  // اگه KPI داره، نشون بده
+  const stats = emp.lastMonth ? emp.lastMonth : {work: 0, ot: 0, def: 0, month: '—'};
+  const monthLabel = stats.month ? (()=>{
+    const p = stats.month.split('/');
+    return `${JMONTHS[parseInt(p[1])-1]} ${p[0]}`;
+  })() : '—';
+  
+  // درصد پیشرفت
+  const pct = stats.work ? Math.min(1, stats.work / FULL_DAY / 22) : 0;
+  
   return `
     <div class="emp-card" onclick="openEmpFromAPI(${emp.id})">
       <div class="emp-head">
         <div class="emp-avatar-wrap">
-          <div class="emp-avatar-ring" style="--progress:0deg"></div>
+          <div class="emp-avatar-ring" style="--progress:${(pct*360).toFixed(0)}deg"></div>
           <div class="emp-avatar">${initial}</div>
         </div>
         <div class="emp-info">
           <div class="emp-name">${escapeHtml(emp.name)}</div>
-          <div class="emp-meta">@${escapeHtml(emp.username)} — ${emp.months.length} ماه داده</div>
+          <div class="emp-meta">@${escapeHtml(emp.username)} — ${monthLabel}</div>
         </div>
       </div>
+      
+      <div class="emp-stats">
+        <div class="stat work">
+          <div class="stat-label">کارکرد</div>
+          <div class="stat-value">${toHM(stats.work)}</div>
+        </div>
+        <div class="stat ot">
+          <div class="stat-label">اضافه‌کاری</div>
+          <div class="stat-value">${stats.ot > 0 ? toHM(stats.ot) : '—'}</div>
+        </div>
+        <div class="stat def">
+          <div class="stat-label">کسری</div>
+          <div class="stat-value">${stats.def > 0 ? '-' + toHM(stats.def) : '—'}</div>
+        </div>
+      </div>
+      
       <div class="emp-actions" onclick="event.stopPropagation()">
         <button class="btn btn-info btn-sm" onclick="openEmpFromAPI(${emp.id})">👁️ مشاهده</button>
       </div>
@@ -1400,16 +1422,28 @@ function renderEmpCardFromAPI(emp){
 
 /* 📊 جدول کارمندان (از API) */
 function renderEmpTableFromAPI(list){
+  let sumW = 0, sumOT = 0, sumDef = 0;
+  
   const rows = list.map(emp=>{
     const initial = (emp.name||'؟').charAt(0);
-    const monthsCount = emp.months ? emp.months.length : 0;
-    const lastMonth = emp.months && emp.months[0] ? emp.months[0] : '—';
+    const stats = emp.lastMonth || {work: 0, ot: 0, def: 0, month: '—'};
+    const monthLabel = stats.month ? (()=>{
+      const p = stats.month.split('/');
+      return `${JMONTHS[parseInt(p[1])-1]} ${p[0]}`;
+    })() : '—';
+    
+    sumW += stats.work;
+    sumOT += stats.ot;
+    sumDef += stats.def;
+    
     return `
       <tr onclick="openEmpFromAPI(${emp.id})">
         <td><div class="emp-cell"><div class="emp-mini-avatar">${initial}</div><span>${escapeHtml(emp.name)}</span></div></td>
         <td>@${escapeHtml(emp.username)}</td>
-        <td>${monthsCount}</td>
-        <td>${lastMonth}</td>
+        <td>${monthLabel}</td>
+        <td class="work-val">${stats.work > 0 ? toHM(stats.work) : '—'}</td>
+        <td class="ot-val">${stats.ot > 0 ? toHM(stats.ot) : '—'}</td>
+        <td class="def-val">${stats.def > 0 ? '-' + toHM(stats.def) : '—'}</td>
         <td onclick="event.stopPropagation()">
           <button class="btn btn-info btn-sm" onclick="openEmpFromAPI(${emp.id})">مشاهده</button>
         </td>
@@ -1424,17 +1458,27 @@ function renderEmpTableFromAPI(list){
           <tr>
             <th style="text-align:right">پرسنل</th>
             <th>نام کاربری</th>
-            <th>تعداد ماه</th>
             <th>آخرین ماه</th>
+            <th>کارکرد</th>
+            <th>اضافه‌کاری</th>
+            <th>کسری</th>
             <th>عملیات</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
+        <tfoot>
+          <tr class="sum-row">
+            <td colspan="3">جمع کل (${list.length} نفر)</td>
+            <td>${toHM(sumW)}</td>
+            <td>${toHM(sumOT)}</td>
+            <td>${sumDef>0?'-'+toHM(sumDef):'—'}</td>
+            <td></td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   `;
 }
-
 /* 👁️ باز کردن کارمند (از API) */
 async function openEmpFromAPI(id){
   const emp = allEmployees.find(e=>e.id===id);
@@ -1701,41 +1745,32 @@ async function renderAnalytics(){
   const distEl = document.getElementById('workDistribution');
   if(!topEl || !attEl || !distEl) return;
 
-  if(!allEmployees.length){
-    if(!employeesLoading){
-      await loadEmployeesFromAPI();
-    }
-    if(!allEmployees.length){
-      const html = `<div class="empty"><span class="empty-icon">📊</span><div class="empty-title">داده‌ای برای تحلیل</div><div class="empty-text">هنوز کارمندی کارکردی ثبت نکرده</div></div>`;
-      topEl.innerHTML = html; attEl.innerHTML = html; distEl.innerHTML = html;
-      return;
-    }
+  if(!allEmployees.length && !employeesLoading){
+    await loadEmployeesFromAPI();
   }
 
-  // برای هر کارمند، آمار آخرین ماه
-  const empStats = [];
-  for(const emp of allEmployees){
-    if(!emp.months || !emp.months.length) continue;
-    const lastMonth = emp.months[0];
-    try {
-      const res = await apiRequest(`/api/employees/${emp.id}/entries?month=${lastMonth}`);
-      if(!res) continue;
-      const data = await res.json();
-      if(!data.ok || !data.entries) continue;
-      const stats = computeEntriesStats(data.entries);
-      empStats.push({emp, stats, month: lastMonth});
-    } catch(e){ console.warn(e); }
+  if(!allEmployees.length){
+    const html = `<div class="empty"><span class="empty-icon">📊</span><div class="empty-title">داده‌ای برای تحلیل</div><div class="empty-text">هنوز کارمندی کارکردی ثبت نکرده</div></div>`;
+    topEl.innerHTML = html; attEl.innerHTML = html; distEl.innerHTML = html;
+    return;
   }
+
+  // برای هر کارمند از lastMonth استفاده کن
+  const empStats = allEmployees
+    .filter(e => e.lastMonth)
+    .map(e => ({emp: e, stats: e.lastMonth}));
 
   // Top performers
   const sorted = [...empStats].sort((a,b)=> b.stats.work - a.stats.work);
   topEl.innerHTML = sorted.slice(0, 3).map((x, i)=>{
     const medal = ['🥇','🥈','🥉'][i];
+    const p = x.stats.month.split('/');
+    const monthLabel = `${JMONTHS[parseInt(p[1])-1]} ${p[0]}`;
     return `<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--card2);border-radius:12px;margin-bottom:8px">
       <div style="font-size:24px">${medal}</div>
       <div style="flex:1">
         <div style="font-weight:700">${escapeHtml(x.emp.name)}</div>
-        <div style="font-size:11px;color:var(--muted)">${x.month}</div>
+        <div style="font-size:11px;color:var(--muted)">${monthLabel}</div>
       </div>
       <div style="text-align:left;color:var(--accent);font-weight:800">${toHM(x.stats.work)}</div>
     </div>`;
@@ -1744,15 +1779,18 @@ async function renderAnalytics(){
   // Need attention
   const deficitList = sorted.filter(x=>x.stats.def > 0).sort((a,b)=> b.stats.def - a.stats.def).slice(0,3);
   attEl.innerHTML = deficitList.length
-    ? deficitList.map(x=>`
-        <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--card2);border-radius:12px;margin-bottom:8px">
+    ? deficitList.map(x=>{
+        const p = x.stats.month.split('/');
+        const monthLabel = `${JMONTHS[parseInt(p[1])-1]} ${p[0]}`;
+        return `<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--card2);border-radius:12px;margin-bottom:8px">
           <div style="font-size:20px">⚠️</div>
           <div style="flex:1">
             <div style="font-weight:700">${escapeHtml(x.emp.name)}</div>
-            <div style="font-size:11px;color:var(--muted)">${x.month}</div>
+            <div style="font-size:11px;color:var(--muted)">${monthLabel}</div>
           </div>
           <div style="text-align:left;color:var(--danger);font-weight:800">-${toHM(x.stats.def)}</div>
-        </div>`).join('')
+        </div>`;
+      }).join('')
     : '<div class="empty-text">هیچ پرسنلی کسری ندارد ✅</div>';
 
   // Work distribution
