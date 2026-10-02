@@ -2434,55 +2434,88 @@ function toast(msg, type){
    EXPORT: Summary (Excel/PDF)
    ============================================================ */
 function exportSummaryExcel(){
-  if(!mgrState.employees.length) return toast('پرسنلی وجود ندارد', 'error');
-  const rows = mgrState.employees.map(emp=>{
-    const s = empMonthStats(emp, currentMonthFilter);
+  if(!allEmployees.length){
+    toast('پرسنلی وجود ندارد', 'error');
+    return;
+  }
+  
+  const rows = allEmployees.map(emp=>{
+    const stats = emp.lastMonth || {work: 0, ot: 0, def: 0, month: '—'};
+    const monthLabel = stats.month ? (()=>{
+      const p = stats.month.split('/');
+      return `${JMONTHS[parseInt(p[1])-1]} ${p[0]}`;
+    })() : '—';
     return [
-      emp.userName,
-      s ? s.label : '—',
-      countEmpDays(emp),
-      s ? toHM(s.work) : '—',
-      s ? toHM(s.ot) : '—',
-      s && s.def > 0 ? '-' + toHM(s.def) : '—'
+      emp.name,
+      '@' + emp.username,
+      monthLabel,
+      emp.months ? emp.months.length : 0,
+      stats.work > 0 ? toHM(stats.work) : '—',
+      stats.ot > 0 ? toHM(stats.ot) : '—',
+      stats.def > 0 ? '-' + toHM(stats.def) : '—'
     ];
   });
-  const t = totalStats();
+  
+  // مجموع کل
+  let totalWork = 0, totalOT = 0, totalDef = 0;
+  allEmployees.forEach(emp=>{
+    const stats = emp.lastMonth || {work: 0, ot: 0, def: 0};
+    totalWork += stats.work;
+    totalOT += stats.ot;
+    totalDef += stats.def;
+  });
+  
   const aoa = [
     ['گزارش جمعی کارکرد پرسنل'],
     ['کارفرما: ' + (mgrState.employerName || '—'), '', 'تاریخ گزارش:', jalaliStr(new Date())],
     [],
-    ['نام پرسنل', 'ماه', 'روزهای ثبت‌شده', 'مجموع کارکرد', 'اضافه‌کاری', 'کسری']
+    ['نام پرسنل', 'نام کاربری', 'آخرین ماه', 'تعداد ماه', 'کارکرد', 'اضافه‌کاری', 'کسری']
   ];
   rows.forEach(r => aoa.push(r));
   aoa.push([]);
-  aoa.push(['جمع کل (' + mgrState.employees.length + ' نفر)', '', '', toHM(t.totalWork), toHM(t.totalOT), t.totalDef > 0 ? '-' + toHM(t.totalDef) : '0:00']);
-
+  aoa.push(['جمع کل (' + allEmployees.length + ' نفر)', '', '', '', toHM(totalWork), toHM(totalOT), totalDef > 0 ? '-' + toHM(totalDef) : '0:00']);
+  
   const ws = XLSX.utils.aoa_to_sheet(aoa);
-  ws['!cols'] = [{wch:24},{wch:18},{wch:14},{wch:14},{wch:12},{wch:12}];
+  ws['!cols'] = [{wch:24},{wch:18},{wch:16},{wch:12},{wch:14},{wch:12},{wch:12}];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'گزارش جمعی');
   XLSX.writeFile(wb, `summary-${jalaliStr().replace(/\//g,'-')}.xlsx`);
   toast('اکسل جمعی آماده شد', 'success');
 }
-
 function exportSummaryPDF(){
-  if(!mgrState.employees.length) return toast('پرسنلی وجود ندارد', 'error');
-  const t = totalStats();
-  const rows = mgrState.employees.map((emp, i) => {
-    const s = empMonthStats(emp, currentMonthFilter) || {work:0, ot:0, def:0, label:'—'};
+  if(!allEmployees.length){
+    toast('پرسنلی وجود ندارد', 'error');
+    return;
+  }
+  
+  let totalWork = 0, totalOT = 0, totalDef = 0;
+  allEmployees.forEach(emp=>{
+    const stats = emp.lastMonth || {work: 0, ot: 0, def: 0};
+    totalWork += stats.work;
+    totalOT += stats.ot;
+    totalDef += stats.def;
+  });
+  
+  const rows = allEmployees.map((emp, i) => {
+    const stats = emp.lastMonth || {work: 0, ot: 0, def: 0, month: '—'};
+    const monthLabel = stats.month ? (()=>{
+      const p = stats.month.split('/');
+      return `${JMONTHS[parseInt(p[1])-1]} ${p[0]}`;
+    })() : '—';
+    
     return `
       <tr style="background:${i%2?'#faf8f2':'#fff'}">
         <td style="padding:8px;border:1px solid #ddd;text-align:center">${i+1}</td>
-        <td style="padding:8px;border:1px solid #ddd;text-align:right">${escapeHtml(emp.userName)}</td>
-        <td style="padding:8px;border:1px solid #ddd;text-align:center">${s.label}</td>
-        <td style="padding:8px;border:1px solid #ddd;text-align:center">${countEmpDays(emp)}</td>
-        <td style="padding:8px;border:1px solid #ddd;text-align:center;font-weight:700;color:#0284c7">${toHM(s.work)}</td>
-        <td style="padding:8px;border:1px solid #ddd;text-align:center;color:#10b981">${toHM(s.ot)}</td>
-        <td style="padding:8px;border:1px solid #ddd;text-align:center;color:#ef4444">${s.def>0?'-'+toHM(s.def):'0:00'}</td>
+        <td style="padding:8px;border:1px solid #ddd;text-align:right">${escapeHtml(emp.name)}</td>
+        <td style="padding:8px;border:1px solid #ddd;text-align:center;font-family:monospace" dir="ltr">@${escapeHtml(emp.username)}</td>
+        <td style="padding:8px;border:1px solid #ddd;text-align:center">${monthLabel}</td>
+        <td style="padding:8px;border:1px solid #ddd;text-align:center;font-weight:700;color:#0284c7">${toHM(stats.work)}</td>
+        <td style="padding:8px;border:1px solid #ddd;text-align:center;color:#10b981">${toHM(stats.ot)}</td>
+        <td style="padding:8px;border:1px solid #ddd;text-align:center;color:#ef4444">${stats.def>0?'-'+toHM(stats.def):'0:00'}</td>
       </tr>
     `;
   }).join('');
-
+  
   const w = window.open('', '_blank');
   if(!w){ toast('لطفاً اجازه پنجره بازشو را بدهید', 'error'); return; }
   w.document.write(`
@@ -2512,25 +2545,25 @@ function exportSummaryPDF(){
     </style></head><body>
       <div class="head">
         <h1>گزارش جمعی کارکرد پرسنل</h1>
-        <p>کارفرما: ${escapeHtml(mgrState.employerName || '—')} — تعداد پرسنل: ${mgrState.employees.length} نفر</p>
-        <p>تاریخ گزارش: ${jalaliPretty(new Date())}${currentMonthFilter ? ' — ماه: ' + currentMonthFilter : ''}</p>
+        <p>کارفرما: ${escapeHtml(mgrState.employerName || '—')} — تعداد پرسنل: ${allEmployees.length} نفر</p>
+        <p>تاریخ گزارش: ${jalaliPretty(new Date())}</p>
       </div>
       <div class="kpis">
-        <div class="kpi"><div class="kpi-l">مجموع کارکرد</div><div class="kpi-v">${toHM(t.totalWork)}</div></div>
-        <div class="kpi g"><div class="kpi-l">اضافه‌کاری</div><div class="kpi-v">${toHM(t.totalOT)}</div></div>
-        <div class="kpi r"><div class="kpi-l">کسری</div><div class="kpi-v">${t.totalDef>0?'-'+toHM(t.totalDef):'0:00'}</div></div>
+        <div class="kpi"><div class="kpi-l">مجموع کارکرد</div><div class="kpi-v">${toHM(totalWork)}</div></div>
+        <div class="kpi g"><div class="kpi-l">اضافه‌کاری</div><div class="kpi-v">${toHM(totalOT)}</div></div>
+        <div class="kpi r"><div class="kpi-l">کسری</div><div class="kpi-v">${totalDef>0?'-'+toHM(totalDef):'0:00'}</div></div>
       </div>
       <table>
         <thead><tr>
-          <th>#</th><th>نام پرسنل</th><th>ماه</th><th>روزها</th>
+          <th>#</th><th>نام پرسنل</th><th>نام کاربری</th><th>آخرین ماه</th>
           <th>کارکرد</th><th>اضافه‌کاری</th><th>کسری</th>
         </tr></thead>
         <tbody>${rows}</tbody>
         <tfoot><tr>
           <td colspan="4" style="text-align:center">جمع کل</td>
-          <td style="text-align:center">${toHM(t.totalWork)}</td>
-          <td style="text-align:center">${toHM(t.totalOT)}</td>
-          <td style="text-align:center">${t.totalDef>0?'-'+toHM(t.totalDef):'0:00'}</td>
+          <td style="text-align:center">${toHM(totalWork)}</td>
+          <td style="text-align:center">${toHM(totalOT)}</td>
+          <td style="text-align:center">${totalDef>0?'-'+toHM(totalDef):'0:00'}</td>
         </tr></tfoot>
       </table>
       <div class="sign">
@@ -2741,46 +2774,126 @@ function printEmp(id){
   setTimeout(()=>{ w.print(); }, 700);
 }
 
-function printAll(){
-  if(!mgrState.employees.length) return toast('پرسنلی وجود ندارد', 'error');
+async function printAll(){
+  if(!allEmployees.length){
+    toast('پرسنلی وجود ندارد', 'error');
+    return;
+  }
+  
+  toast('در حال آماده‌سازی گزارش‌ها...', 'success');
+  
+  // برای هر کارمند، entries رو از API بگیر
+  const pages = [];
+  
+  for(const emp of allEmployees){
+    if(!emp.months || !emp.months.length){
+      // کارمند بدون داده - یه صفحه ساده
+      pages.push(`
+        <div class="page">
+          <div class="head">
+            <h1>تایم‌شیت ${escapeHtml(emp.name)}</h1>
+            <p>@${escapeHtml(emp.username)} — بدون داده</p>
+          </div>
+          <p style="text-align:center;color:#999;padding:40px">هیچ کارکردی ثبت نشده است</p>
+        </div>
+      `);
+      continue;
+    }
+    
+    const lastMonth = emp.months[0];
+    try {
+      const res = await apiRequest(`/api/employees/${emp.id}/entries?month=${lastMonth}`);
+      if(!res) continue;
+      const data = await res.json();
+      if(!data.ok || !data.entries){
+        pages.push(`
+          <div class="page">
+            <div class="head">
+              <h1>تایم‌شیت ${escapeHtml(emp.name)}</h1>
+              <p>@${escapeHtml(emp.username)}</p>
+            </div>
+            <p style="text-align:center;color:#999;padding:40px">خطا در دریافت داده</p>
+          </div>
+        `);
+        continue;
+      }
+      
+      const entries = data.entries;
+      const rowsHtml = entries.map(e => {
+        const datePart = e.date.split('/');
+        const dateFormatted = `${datePart[2]}/${datePart[1]}/${datePart[0]}`;
+        
+        const em = e.entry ? parseInt(e.entry.split(':')[0]) * 60 + parseInt(e.entry.split(':')[1]) : null;
+        const xm = e.exit ? parseInt(e.exit.split(':')[0]) * 60 + parseInt(e.exit.split(':')[1]) : null;
+        
+        let dayWork = 0, dayOT = 0, dayDef = 0;
+        if(em !== null && xm !== null){
+          dayWork = Math.max(0, xm - em);
+          const WORK_START = 8*60, WORK_END = 17*60, FULL = WORK_END - WORK_START;
+          
+          const g = jalaaliToGregorian(parseInt(datePart[0]), parseInt(datePart[1]), parseInt(datePart[2]));
+          const d = new Date(g.gy, g.gm - 1, g.gd);
+          const wd = (d.getDay() + 1) % 7;
+          const weekend = wd >= 5;
+          
+          if(weekend){
+            dayOT = dayWork;
+          } else {
+            let extra = 0;
+            if(em < WORK_START) extra += Math.min(xm, WORK_START) - em;
+            if(xm > WORK_END) extra += xm - Math.max(em, WORK_END);
+            dayOT = Math.max(0, extra);
+            const inside = Math.max(0, Math.min(xm, WORK_END) - Math.max(em, WORK_START));
+            dayDef = Math.max(0, FULL - inside);
+          }
+        }
+        
+        const fmt = (min) => {
+          if(!min) return '—';
+          const h = Math.floor(min / 60);
+          const m = min % 60;
+          return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+        };
+        
+        return `<tr>
+          <td>${dateFormatted}</td>
+          <td>${e.entry || '—'}</td>
+          <td>${e.exit || '—'}</td>
+          <td>${dayWork > 0 ? fmt(dayWork) : '—'}</td>
+          <td style="color:#059669">${dayOT > 0 ? fmt(dayOT) : '—'}</td>
+          <td style="color:#dc2626">${dayDef > 0 ? '-' + fmt(dayDef) : '—'}</td>
+          <td style="text-align:right;font-size:10px">${escapeHtml(e.desc || '')}</td>
+        </tr>`;
+      }).join('');
+      
+      const monthLabel = (()=>{
+        const p = lastMonth.split('/');
+        return `${JMONTHS[parseInt(p[1])-1]} ${p[0]}`;
+      })();
+      
+      pages.push(`
+        <div class="page">
+          <div class="head">
+            <h1>تایم‌شیت ${escapeHtml(emp.name)}</h1>
+            <p>@${escapeHtml(emp.username)} — ${monthLabel}</p>
+          </div>
+          <table>
+            <thead><tr>
+              <th>تاریخ</th><th>ورود</th><th>خروج</th>
+              <th>کارکرد</th><th>اضافه‌کاری</th><th>کسری</th><th>شرح</th>
+            </tr></thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>
+      `);
+      
+    } catch(e) {
+      console.warn('Error loading employee', emp.id, e);
+    }
+  }
+  
   const w = window.open('', '_blank');
   if(!w){ toast('لطفاً اجازه پنجره بازشو را بدهید', 'error'); return; }
-
-  const pages = mgrState.employees.map(emp=>{
-    const data = buildEmpExport(emp);
-    return `
-      <div class="page">
-        <div class="head">
-          <h1>تایم‌شیت ${escapeHtml(emp.userName)}</h1>
-          <p>${data.stats.label} — ${jalaliPretty(new Date())}</p>
-        </div>
-        <table>
-          <thead><tr>
-            <th>روز</th><th>تاریخ</th><th>ورود</th><th>خروج</th>
-            <th>کارکرد</th><th>اضافه‌کاری</th><th>کسری</th><th>شرح</th>
-          </tr></thead>
-          <tbody>
-            ${data.rows.map(r=>`<tr>
-              <td>${r.day}</td><td>${r.date}</td>
-              <td>${r.entry||'—'}</td><td>${r.exit||'—'}</td>
-              <td>${r.work||'—'}</td>
-              <td>${r.ot||'—'}</td>
-              <td>${r.def||'—'}</td>
-              <td style="text-align:right;font-size:10px">${escapeHtml(r.desc)}</td>
-            </tr>`).join('')}
-            <tr style="background:#0284c7;color:#fff;font-weight:800">
-              <td colspan="4">جمع کل</td>
-              <td>${toHM(data.stats.work)}</td>
-              <td>${toHM(data.stats.ot)}</td>
-              <td>${data.stats.def>0?'-'+toHM(data.stats.def):'0:00'}</td>
-              <td></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    `;
-  }).join('');
-
   w.document.write(`
     <!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8">
     <title>گزارش جمعی پرسنل</title>
@@ -2797,12 +2910,11 @@ function printAll(){
       thead tr{background:#0284c7;color:#fff}
       th,td{border:1px solid #ddd;padding:5px;text-align:center}
       tbody tr:nth-child(even){background:#fafbfc}
-    </style></head><body>${pages}</body></html>
+    </style></head><body>${pages.join('')}</body></html>
   `);
   w.document.close();
   setTimeout(()=>{ w.print(); }, 900);
 }
-
 function downloadEmpJSON(id){
   const emp = mgrState.employees.find(e=>e.id===id);
   if(!emp) return;
