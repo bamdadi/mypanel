@@ -1216,21 +1216,20 @@ async function renderDashboard(){
 /* محاسبه آمار از entries */
 function computeEntriesStats(entries){
   let work = 0, ot = 0, def = 0;
-  const WORK_START = 8*60, WORK_END = 17*60, FULL = WORK_END - WORK_START;
-
+  
   entries.forEach(e => {
     const d = jalaliToDate(e.date);
     const wd = (d.getDay() + 1) % 7;
     const weekend = wd >= 5;
-
+    
     const em = e.entry ? parseInt(e.entry.split(':')[0]) * 60 + parseInt(e.entry.split(':')[1]) : null;
     const xm = e.exit ? parseInt(e.exit.split(':')[0]) * 60 + parseInt(e.exit.split(':')[1]) : null;
-
+    
     if(em === null || xm === null) return;
-
+    
     const w = Math.max(0, xm - em);
     work += w;
-
+    
     if(weekend){
       ot += w;
     } else {
@@ -1238,14 +1237,14 @@ function computeEntriesStats(entries){
       if(em < WORK_START) extra += Math.min(xm, WORK_START) - em;
       if(xm > WORK_END) extra += xm - Math.max(em, WORK_END);
       ot += Math.max(0, extra);
+      
       const inside = Math.max(0, Math.min(xm, WORK_END) - Math.max(em, WORK_START));
       def += Math.max(0, FULL - inside);
     }
   });
-
+  
   return { work, ot, def };
 }
-
 /* لیست خلاصه پرسنل در داشبورد */
 function renderDashboardEmpListFromAPI(){
   const el = document.getElementById('dashboardEmpList');
@@ -1540,43 +1539,19 @@ async function openEmpFromAPI(id){
 
 /* 📄 رندر مودال کارمند */
 function renderEmpModalFromAPI(emp, month, entries){
-  // محاسبه آمار
-  let work = 0, ot = 0, def = 0;
-  const WORK_START = 8*60, WORK_END = 17*60, FULL = WORK_END - WORK_START;
-
-  entries.forEach(e => {
-    const dateStr = e.date;
-    const d = jalaliToDate(dateStr);
-    const wd = (d.getDay() + 1) % 7;
-    const weekend = wd >= 5;
-
-    const em = e.entry ? parseInt(e.entry.split(':')[0]) * 60 + parseInt(e.entry.split(':')[1]) : null;
-    const xm = e.exit ? parseInt(e.exit.split(':')[0]) * 60 + parseInt(e.exit.split(':')[1]) : null;
-
-    if(em === null || xm === null) return;
-
-    if(weekend){
-      const w = Math.max(0, xm - em);
-      work += w; ot += w;
-    } else {
-      const w = Math.max(0, xm - em);
-      work += w;
-      let extra = 0;
-      if(em < WORK_START) extra += Math.min(xm, WORK_START) - em;
-      if(xm > WORK_END) extra += xm - Math.max(em, WORK_END);
-      ot += Math.max(0, extra);
-      const inside = Math.max(0, Math.min(xm, WORK_END) - Math.max(em, WORK_START));
-      def += Math.max(0, FULL - inside);
-    }
-  });
-
+  // محاسبه با فرمول صحیح
+  const stats = computeEntriesStats(entries);
+  const work = stats.work;
+  const ot = stats.ot;
+  const def = stats.def;
+  
   const fmt = (min) => {
     if(!min) return '—';
     const h = Math.floor(min / 60);
     const m = min % 60;
     return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
   };
-
+  
   const rowsHtml = entries.map(e => {
     const datePart = e.date.split('/');
     const dateFormatted = `${datePart[2]}/${datePart[1]}/${datePart[0]}`;
@@ -1584,10 +1559,10 @@ function renderEmpModalFromAPI(emp, month, entries){
     const wd = (d.getDay() + 1) % 7;
     const dayName = JDAYS[wd];
     const weekend = wd >= 5;
-
+    
     const em = e.entry ? parseInt(e.entry.split(':')[0]) * 60 + parseInt(e.entry.split(':')[1]) : null;
     const xm = e.exit ? parseInt(e.exit.split(':')[0]) * 60 + parseInt(e.exit.split(':')[1]) : null;
-
+    
     let dayWork = 0, dayOT = 0, dayDef = 0;
     if(em !== null && xm !== null){
       dayWork = Math.max(0, xm - em);
@@ -1599,10 +1574,10 @@ function renderEmpModalFromAPI(emp, month, entries){
         if(xm > WORK_END) extra += xm - Math.max(em, WORK_END);
         dayOT = Math.max(0, extra);
         const inside = Math.max(0, Math.min(xm, WORK_END) - Math.max(em, WORK_START));
-        dayDef = Math.max(0, FULL - inside);
+        dayDef = Math.max(0, FULL_DAY - inside);
       }
     }
-
+    
     return `<tr class="${weekend?'holiday-row':''}">
       <td>${dayName}</td>
       <td>${dateFormatted}</td>
@@ -1614,25 +1589,24 @@ function renderEmpModalFromAPI(emp, month, entries){
       <td style="font-size:11px;text-align:right">${escapeHtml(e.desc || '')}</td>
     </tr>`;
   }).join('');
-
-  // منوی ماه
+  
   const monthOptions = (emp.months || []).map(ym => {
     const p = ym.split('/');
     const label = `${JMONTHS[parseInt(p[1])-1]} ${p[0]}`;
     return `<option value="${ym}" ${ym===month?'selected':''}>${label}</option>`;
   }).join('');
-
+  
   const monthLabel = (()=>{
     const p = month.split('/');
     return `${JMONTHS[parseInt(p[1])-1]} ${p[0]}`;
   })();
-
+  
   document.getElementById('empModalBody').innerHTML = `
     <div class="ts-header">
       <h2>📄 تایم‌شیت ${escapeHtml(emp.name)}</h2>
-      <p>@${escapeHtml(emp.username)} — تعداد ماه‌ها: ${emp.months.length}</p>
+      <p>@${escapeHtml(emp.username)} — تعداد ماه‌ها: ${(emp.months || []).length}</p>
     </div>
-
+    
     <div class="month-picker-bar">
       <label>
         🗓️ ماه:
@@ -1642,14 +1616,14 @@ function renderEmpModalFromAPI(emp, month, entries){
       </label>
       <span class="month-badge">${monthLabel}</span>
     </div>
-
+    
     <div class="ts-kpis">
       <div class="ts-kpi"><div class="ts-kpi-label">مجموع کارکرد</div><div class="ts-kpi-value">${fmt(work)}</div></div>
       <div class="ts-kpi success"><div class="ts-kpi-label">اضافه‌کاری</div><div class="ts-kpi-value">${fmt(ot)}</div></div>
       <div class="ts-kpi danger"><div class="ts-kpi-label">کسری کار</div><div class="ts-kpi-value">${def>0?'-'+fmt(def):'0:00'}</div></div>
       <div class="ts-kpi info"><div class="ts-kpi-label">روزهای ثبت‌شده</div><div class="ts-kpi-value">${entries.length}</div></div>
     </div>
-
+    
     <div class="table-wrap">
       <table>
         <thead>
@@ -1672,7 +1646,6 @@ function renderEmpModalFromAPI(emp, month, entries){
     </div>
   `;
 }
-
 /* 🔄 تغییر ماه در مودال */
 async function changeEmpMonthFromAPI(id, month){
   const emp = allEmployees.find(e=>e.id===id);
