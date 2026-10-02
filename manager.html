@@ -1239,7 +1239,7 @@ function computeEntriesStats(entries){
       ot += Math.max(0, extra);
       
       const inside = Math.max(0, Math.min(xm, WORK_END) - Math.max(em, WORK_START));
-      def += Math.max(0, FULL - inside);
+      def += Math.max(0, FULL_DAY - inside);  // ← FULL_DAY نه FULL
     }
   });
   
@@ -1539,7 +1539,6 @@ async function openEmpFromAPI(id){
 
 /* 📄 رندر مودال کارمند */
 function renderEmpModalFromAPI(emp, month, entries){
-  // محاسبه با فرمول صحیح
   const stats = computeEntriesStats(entries);
   const work = stats.work;
   const ot = stats.ot;
