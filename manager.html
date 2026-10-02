@@ -2314,13 +2314,29 @@ function removeEmp(id){
   toast('حذف شد', 'success');
 }
 
-function clearAll(){
-  if(!mgrState.employees.length) return;
-  if(!confirm('حذف همه پرسنل از پنل؟')) return;
-  if(!confirm('تایید نهایی: همه پرسنل حذف شوند؟')) return;
-  mgrState.employees = [];
-  saveMgr(); refreshMonthFilter(); renderAll();
-  toast('همه پرسنل حذف شدند', 'success');
+async function clearAll(){
+  if(!confirm('⚠️ همه داده‌های کارمندان، کارکردها و گزارش‌ها پاک می‌شوند.\n\nادمین دست‌نخورده می‌مونه.\n\nمطمئنید؟')) return;
+  if(!confirm('تایید نهایی: این کار برگشت‌پذیر نیست!')) return;
+
+  try {
+    const res = await apiRequest('/api/admin/clear-all', { method: 'DELETE' });
+    if(!res) return;
+    const data = await res.json();
+    
+    if(data.ok){
+      toast(`✅ همه داده‌ها پاک شد (${data.deletedUsers} کاربر حذف شد)`, 'success');
+      // ریست کردن حافظه محلی
+      allEmployees = [];
+      mgrState.employees = [];
+      saveMgr();
+      refreshMonthFilter();
+      renderAll();
+    } else {
+      toast(data.error || 'خطا', 'error');
+    }
+  } catch(e) {
+    toast('خطای شبکه: ' + e.message, 'error');
+  }
 }
 
 /* ============================================================
