@@ -723,24 +723,22 @@ tr.official-holiday td{color:#ff8a80}
     </div>
 
     <!-- 📥 Panel: Upload -->
-    <div class="panel" id="panel-upload">
-      <div class="section">
-        <div class="section-title">📥 دریافت گزارش‌های پرسنل</div>
-        <div class="upload-area" id="uploadArea">
-          <span class="upload-icon">📤</span>
-          <div class="upload-text">فایل‌های JSON کارکنان را اینجا رها کنید</div>
-          <div class="upload-hint">یا کلیک کنید و یک یا چند فایل را انتخاب کنید</div>
-          <div class="upload-badge">Drag & Drop پشتیبانی می‌شود</div>
-          <input type="file" id="fileInput" accept=".json" multiple style="display:none">
-          <div class="progress-bar" id="progressBar"><div class="progress-bar-fill" id="progressFill"></div></div>
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="section-title">🗂️ فایل‌های دریافتی اخیر</div>
-        <div id="recentFiles"></div>
-      </div>
+   <div class="panel" id="panel-upload">
+  <div class="section">
+    <div class="section-title">📥 گزارش‌های دریافتی از پرسنل</div>
+    
+    <div class="row" style="margin-bottom:14px">
+      <button class="btn no-flex" onclick="loadReports()">🔄 بروزرسانی لیست</button>
+      <span id="reportsCount" style="font-size:12px;color:var(--muted);align-self:center"></span>
+      <div style="flex:1"></div>
+      <div class="chip active" onclick="filterReports('all', this)">همه</div>
+      <div class="chip" onclick="filterReports('unread', this)">🔵 خوانده‌نشده</div>
+      <div class="chip" onclick="filterReports('read', this)">✅ خوانده‌شده</div>
     </div>
+    
+    <div id="reportsList" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+</div>
 
     <!-- 👥 Panel: Employees -->
     <div class="panel" id="panel-employees">
@@ -837,21 +835,6 @@ tr.official-holiday td{color:#ff8a80}
   </div>
 </div>
       <!-- 👥 مدیریت کاربران -->
-      <!-- 📥 گزارش‌های دریافتی -->
-<div class="section">
-  <div class="section-title">📥 گزارش‌های دریافتی از پرسنل</div>
-  
-  <div class="row" style="margin-bottom:14px">
-    <button class="btn no-flex" onclick="loadReports()">🔄 بروزرسانی لیست</button>
-    <span id="reportsCount" style="font-size:12px;color:var(--muted);align-self:center"></span>
-    <div style="flex:1"></div>
-    <div class="chip active" onclick="filterReports('all', this)">همه</div>
-    <div class="chip" onclick="filterReports('unread', this)">🔵 خوانده‌نشده</div>
-    <div class="chip" onclick="filterReports('read', this)">✅ خوانده‌شده</div>
-  </div>
-  
-  <div id="reportsList" style="display:flex;flex-direction:column;gap:10px"></div>
-</div>
 <div class="section">
   <div class="section-title">👥 مدیریت کاربران</div>
   
@@ -1463,7 +1446,6 @@ function renderSettings(){
   updateAccountPanel();
     // 👥 بارگذاری لیست کاربران
  loadUsers();
-  loadReports();
 }
 /* ============================================================
    🔐 ACCOUNT FUNCTIONS — تغییر رمز و خروج
@@ -1859,7 +1841,11 @@ function switchPanel(name){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   const el = document.getElementById('panel-' + name);
   if(el) el.classList.add('active');
-  // Close sidebar on mobile
+  
+  if(name === 'upload'){
+    loadReports();
+  }
+  
   if(window.innerWidth <= 900){
     document.getElementById('sidebar').classList.remove('open');
     sidebarOpen = false;
