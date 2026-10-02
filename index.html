@@ -1352,19 +1352,35 @@ function editTime(jstr,field){
 }
 function quickTime(id,v){ document.getElementById(id).value=v; }
 function saveTime(jstr,field){
-  const v=document.getElementById('editTimeInput').value;
-  if(!state.entries[jstr]) state.entries[jstr]={};
-  if(v) state.entries[jstr][field]=v;
-  else delete state.entries[jstr][field];
-  save(); closeModal('timeEditModal'); renderAll();
-  toast('ذخیره شد','success');
+  const v = document.getElementById('editTimeInput').value;
+  if(!state.entries[jstr]) state.entries[jstr] = {};
+  
+  if(v){
+    state.entries[jstr][field] = v;
+    // اگه کاربر خودش ساعت زد، دیگه اتوماتیک نکن
+    state.entries[jstr].manualEntry = true;
+  } else {
+    delete state.entries[jstr][field];
+    // 🔥 علامت بذار که کاربر پاک کرده
+    state.entries[jstr].userCleared = true;
+  }
+  
+  // اگه هر دو فیلد خالی شدن و کاربر پاک کرده
+  if(!state.entries[jstr].entry && !state.entries[jstr].exit && state.entries[jstr].userCleared){
+    // فیلدها رو نگه دار ولی ثبت خودکار نکن
+  }
+  
+  save(); 
+  closeModal('timeEditModal'); 
+  renderAll();
+  toast('ذخیره شد', 'success');
 }
 function autoRecordOnLaunch(){
   const jstr = jalaliStr();
   
   // 🔥 چک کن که امروز تعطیل نباشه
   const wd = dayOfWeekJ(jstr);
-  const weekend = wd >= 5; // پنجشنبه یا جمعه
+  const weekend = wd >= 5;
   const isHoliday = !!state.holidays[jstr];
   const isOfficialHoliday = !!state.officialHolidays[jstr];
   const isLeave = !!state.leaves[jstr];
@@ -1375,8 +1391,20 @@ function autoRecordOnLaunch(){
     return;
   }
   
-  // روز عادی → اگه هنوز ورود ثبت نشده، ثبت کن
+  // اگه کاربر قبلاً پاک کرده → دیگه ثبت نکن
   const e = state.entries[jstr] || {};
+  if(e.userCleared){
+    console.log('🚫 کاربر قبلاً پاک کرده — ثبت خودکار انجام نشد');
+    return;
+  }
+  
+  // اگه کاربر خودش ساعت زده → دیگه اتوماتیک نکن
+  if(e.manualEntry){
+    console.log('🚫 کاربر خودش ساعت زده — ثبت خودکار انجام نشد');
+    return;
+  }
+  
+  // روز عادی → اگه هنوز ورود ثبت نشده، ثبت کن
   if(!e.entry){
     if(!state.entries[jstr]) state.entries[jstr] = {};
     state.entries[jstr].entry = nowHM();
