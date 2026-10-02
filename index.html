@@ -1360,13 +1360,29 @@ function saveTime(jstr,field){
   toast('ذخیره شد','success');
 }
 function autoRecordOnLaunch(){
-  const jstr=jalaliStr();
-  const e=state.entries[jstr]||{};
+  const jstr = jalaliStr();
+  
+  // 🔥 چک کن که امروز تعطیل نباشه
+  const wd = dayOfWeekJ(jstr);
+  const weekend = wd >= 5; // پنجشنبه یا جمعه
+  const isHoliday = !!state.holidays[jstr];
+  const isOfficialHoliday = !!state.officialHolidays[jstr];
+  const isLeave = !!state.leaves[jstr];
+  
+  // اگه تعطیل بود → هیچی ثبت نکن
+  if(weekend || isHoliday || isOfficialHoliday || isLeave){
+    console.log('🚫 امروز تعطیله — ثبت خودکار انجام نشد');
+    return;
+  }
+  
+  // روز عادی → اگه هنوز ورود ثبت نشده، ثبت کن
+  const e = state.entries[jstr] || {};
   if(!e.entry){
-    if(!state.entries[jstr]) state.entries[jstr]={};
-    state.entries[jstr].entry=nowHM();
-    state.entries[jstr].autoEntry=true;
+    if(!state.entries[jstr]) state.entries[jstr] = {};
+    state.entries[jstr].entry = nowHM();
+    state.entries[jstr].autoEntry = true;
     save();
+    console.log('✅ ورود خودکار ثبت شد:', state.entries[jstr].entry);
   }
 }
 function calcTodayExit(){
