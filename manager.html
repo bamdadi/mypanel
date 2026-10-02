@@ -3066,26 +3066,53 @@ const sentTime = r.sent_at ? toIranTime(r.sent_at).toLocaleTimeString('fa-IR') :
   }).join('');
 }
 /* 🌏 تبدیل تاریخ UTC به وقت ایران */
+/* 🌏 تبدیل تاریخ UTC به وقت ایران */
 function toIranTime(dateInput){
+  if(!dateInput) return new Date();
+  
   let date;
+  
   if(typeof dateInput === 'string'){
-    // اگه ISO هست
+    // اگه فرمت "YYYY-MM-DD HH:MM:SS" هست (بدون Z و بدون T)، به ISO تبدیل کن
+    if(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(dateInput)){
+      dateInput = dateInput.replace(' ', 'T') + 'Z';
+    }
+    // اگه فقط "YYYY-MM-DD" هست، به ISO اضافه کن
+    else if(/^\d{4}-\d{2}-\d{2}$/.test(dateInput)){
+      dateInput = dateInput + 'T00:00:00Z';
+    }
     date = new Date(dateInput);
   } else {
     date = new Date(dateInput);
   }
   
-  // اگه date دارای Z نبود، یه Z اضافه کن
+  // اگه بازم invalid بود، برگردون به زمان الان
   if(isNaN(date.getTime())){
-    date = new Date(dateInput + 'Z');
+    console.warn('تاریخ نامعتبر:', dateInput);
+    return new Date();
   }
   
-  // تبدیل به وقت ایران (+3:30 = 210 دقیقه)
-  const iranOffset = 3.5 * 60; // دقیقه
-  const utcTime = date.getTime() + (date.getTimezoneOffset() * 60000);
-  const iranTime = new Date(utcTime + (iranOffset * 60000));
+  // استفاده از Intl برای تبدیل به وقت ایران
+  const iranTimeStr = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Tehran',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }).format(date);
   
-  return iranTime;
+  // ساخت یه Date جدید از رشته وقت ایران
+  // فرمت خروجی: "MM/DD/YYYY, HH:MM:SS"
+  const parts = iranTimeStr.match(/(\d+)\/(\d+)\/(\d+),\s+(\d+):(\d+):(\d+)/);
+  if(parts){
+    const [_, month, day, year, hour, minute, second] = parts;
+    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hour), parseInt(minute), parseInt(second));
+  }
+  
+  return date;
 }
 /* مشاهده جزئیات گزارش */
 async function openReport(id){
