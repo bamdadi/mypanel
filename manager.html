@@ -1000,7 +1000,7 @@ function nowHM(){ const d=new Date(); return String(d.getHours()).padStart(2,'0'
 const STORAGE_KEY='hrm_manager_v2';
 const JMONTHS=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
 const JDAYS=['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
-const WORK_START=8*60, WORK_END=17*60, FULL_DAY=WORK_END-WORK_START;
+let WORK_START = 8*60, WORK_END = 17*60, FULL_DAY = WORK_END - WORK_START;
 
 /* ============================================================
    STATE
@@ -1217,7 +1217,8 @@ async function renderDashboard(){
 function computeEntriesStats(entries){
   let work = 0, ot = 0, def = 0;
   
-  entries.forEach(e => {
+  (entries || []).forEach(e => {
+    // روز هفته
     const d = jalaliToDate(e.date);
     const wd = (d.getDay() + 1) % 7;
     const weekend = wd >= 5;
@@ -1239,7 +1240,7 @@ function computeEntriesStats(entries){
       ot += Math.max(0, extra);
       
       const inside = Math.max(0, Math.min(xm, WORK_END) - Math.max(em, WORK_START));
-      def += Math.max(0, FULL_DAY - inside);  // ← FULL_DAY نه FULL
+      def += Math.max(0, FULL_DAY - inside);
     }
   });
   
@@ -1391,10 +1392,52 @@ async function loadEmployeesFromAPI(){
     const res = await apiRequest('/api/employees/stats');
     if(!res){ employeesLoading = false; return; }
     const data = await res.json();
-    if(data.ok && Array.isArray(data.employees)){
-      allEmployees = data.employees;
-      console.log('✅ Loaded', allEmployees.length, 'employees with stats');
+    if(!data.ok || !Array.isArray(data.employees)){
+      employeesLoading = false;
+      return;
     }
+
+    // ⏰ به‌روزرسانی ساعت کاری
+    if(data.workStart && data.workEnd){
+      const ws = parseInt(data.workStart.split(':')[0]) * 60 + parseInt(data.workStart.split(':')[1]);
+      const we = parseInt(data.workEnd.split(':')[0]) * 60 + parseInt(data.workEnd.split(':')[1]);
+      WORK_START = ws;
+      WORK_END = we;
+      FULL_DAY = WORK_END - WORK_START;
+      console.log('⏰ ساعت کاری:', data.workStart, 'تا', data.workEnd);
+    }
+
+    // 📊 محاسبه KPI در Frontend برای هر کارمند
+    allEmployees = data.employees.map(emp => {
+      // محاسبه total
+      const totalStats = computeEntriesStats(emp.entries || []);
+      
+      // محاسبه lastMonth
+      let lastMonthStats = null;
+      if(emp.months && emp.months.length){
+        const lastMonth = emp.months[0];
+        const lastMonthEntries = (emp.entries || []).filter(e => e.date.startsWith(lastMonth));
+        const stats = computeEntriesStats(lastMonthEntries);
+        lastMonthStats = {
+          month: lastMonth,
+          work: stats.work,
+          ot: stats.ot,
+          def: stats.def
+        };
+      }
+      
+      return {
+        id: emp.id,
+        username: emp.username,
+        name: emp.name,
+        months: emp.months || [],
+        entries: emp.entries || [],
+        total: totalStats,
+        lastMonth: lastMonthStats
+      };
+    });
+
+    console.log('✅ Loaded', allEmployees.length, 'employees with stats');
   } catch(e) {
     console.warn('⚠️ Load employees failed:', e);
   }
