@@ -1102,7 +1102,6 @@ function totalStats(){
 function renderAll(){
   renderTopbar();
   renderDashboard();
-  renderRecentFiles();
   renderEmployees();
   renderAnalytics();
   renderSettings();
@@ -1141,41 +1140,122 @@ function renderTopbar(){
   }
 }
 
-function renderDashboard(){
+async function renderDashboard(){
+  // چک کن اگه کارمندان لود نشدن
+  if(!allEmployees.length && !employeesLoading){
+    await loadEmployeesFromAPI();
+  }
+
   // KPI count
   const countEl = document.getElementById('kpiCount');
-  if(countEl) countEl.textContent = mgrState.employees.length;
+  if(countEl) countEl.textContent = allEmployees.length;
 
-  const t = totalStats();
-  animateNumber(document.getElementById('kpiTotalWork'), t.totalWork, v => toHM(v));
-  animateNumber(document.getElementById('kpiTotalOT'), t.totalOT, v => toHM(v));
-  animateNumber(document.getElementById('kpiTotalDef'), t.totalDef, v => toHM(v));
+  // محاسبه مجموع همه کارمندان (از API)
+  let totalWork = 0, totalOT = 0, totalDef = 0;
+  const monthlyData = [];
 
-  // Sparkline per month
-  const monthlyData = getMonthlyAggregate();
-  drawSparkline('sparkTotalWork', monthlyData.map(d=>d.work/60));
-  drawSparkline('sparkTotalOT', monthlyData.map(d=>d.ot/60), 'var(--success)');
-  drawSparkline('sparkTotalDef', monthlyData.map(d=>d.def/60), 'var(--danger)');
+  if(allEmployees.length){
+    // برای هر کارمند، آمار آخرین ماه رو بگیر
+    for(const emp of allEmployees){
+      if(!emp.months || !emp.months.length) continue;
+      const lastMonth = emp.months[0];
+      try {
+        const res = await apiRequest(`/api/employees/${emp.id}/entries?month=${lastMonth}`);
+        if(!res) continue;
+        const data = await res.json();
+        if(!data.ok || !data.entries) continue;
+
+        const stats = computeEntriesStats(data.entries);
+        totalWork += stats.work;
+        totalOT += stats.ot;
+        totalDef += stats.def;
+      } catch(e){ console.warn(e); }
+    }
+  }
+
+  animateNumber(document.getElementById('kpiTotalWork'), totalWork, v => toHM(v));
+  animateNumber(document.getElementById('kpiTotalOT'), totalOT, v => toHM(v));
+  animateNumber(document.getElementById('kpiTotalDef'), totalDef, v => toHM(v));
+
+  // Sparkline ساده (بدون داده)
+  drawSparkline('sparkTotalWork', [0, 0, 0, 0, 0, 0, 0]);
+  drawSparkline('sparkTotalOT', [0, 0, 0, 0, 0, 0, 0], 'var(--success)');
+  drawSparkline('sparkTotalDef', [0, 0, 0, 0, 0, 0, 0], 'var(--danger)');
 
   // Progress bars
-  const total = mgrState.employees.length || 1;
-  const withDeficit = mgrState.employees.filter(e=>{ const s=empMonthStats(e,currentMonthFilter); return s && s.def>0; }).length;
-  const withOT = mgrState.employees.filter(e=>{ const s=empMonthStats(e,currentMonthFilter); return s && s.ot>0; }).length;
-  const pctDef = (withDeficit / total) * 100;
-  const pctOT = (withOT / total) * 100;
+  const total = allEmployees.length || 1;
+  const pctDef = totalDef > 0 ? 50 : 0;
+  const pctOT = totalOT > 0 ? 50 : 0;
   const bd = document.getElementById('barDeficit');
   const pd = document.getElementById('pctDeficit');
-  if(bd) bd.style.width = pctDef.toFixed(0)+'%';
-  if(pd) pd.textContent = pctDef.toFixed(0)+'%';
+  if(bd) bd.style.width = pctDef + '%';
+  if(pd) pd.textContent = pctDef + '%';
   const bo = document.getElementById('barOT');
   const po = document.getElementById('pctOT');
-  if(bo) bo.style.width = pctOT.toFixed(0)+'%';
-  if(po) po.textContent = pctOT.toFixed(0)+'%';
+  if(bo) bo.style.width = pctOT + '%';
+  if(po) po.textContent = pctOT + '%';
 
-  // Employee list summary
-  renderDashboardEmpList();
+  renderDashboardEmpListFromAPI();
 }
 
+/* محاسبه آمار از entries */
+function computeEntriesStats(entries){
+  let work = 0, ot = 0, def = 0;
+  const WORK_START = 8*60, WORK_END = 17*60, FULL = WORK_END - WORK_START;
+
+  entries.forEach(e => {
+    const d = jalaliToDate(e.date);
+    const wd = (d.getDay() + 1) % 7;
+    const weekend = wd >= 5;
+
+    const em = e.entry ? parseInt(e.entry.split(':')[0]) * 60 + parseInt(e.entry.split(':')[1]) : null;
+    const xm = e.exit ? parseInt(e.exit.split(':')[0]) * 60 + parseInt(e.exit.split(':')[1]) : null;
+
+    if(em === null || xm === null) return;
+
+    const w = Math.max(0, xm - em);
+    work += w;
+
+    if(weekend){
+      ot += w;
+    } else {
+      let extra = 0;
+      if(em < WORK_START) extra += Math.min(xm, WORK_START) - em;
+      if(xm > WORK_END) extra += xm - Math.max(em, WORK_END);
+      ot += Math.max(0, extra);
+      const inside = Math.max(0, Math.min(xm, WORK_END) - Math.max(em, WORK_START));
+      def += Math.max(0, FULL - inside);
+    }
+  });
+
+  return { work, ot, def };
+}
+
+/* لیست خلاصه پرسنل در داشبورد */
+function renderDashboardEmpListFromAPI(){
+  const el = document.getElementById('dashboardEmpList');
+  if(!el) return;
+  if(!allEmployees.length){
+    el.innerHTML = `<div class="empty">
+      <span class="empty-icon">📭</span>
+      <div class="empty-title">هیچ کارمندی نیست</div>
+      <div class="empty-text">هنوز کارمندی کارکردی ثبت نکرده</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = allEmployees.map(emp=>{
+    const initial = (emp.name||'؟').charAt(0);
+    return `
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="openEmpFromAPI(${emp.id})">
+        <div class="emp-mini-avatar">${initial}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700">${escapeHtml(emp.name)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">@${escapeHtml(emp.username)} — ${emp.months.length} ماه داده</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
 function getMonthlyAggregate(){
   // Aggregate per last 6 months
   const months = {};
@@ -1250,21 +1330,287 @@ function renderRecentFiles(){
   }).join('');
 }
 
-function renderEmployees(){
+async function renderEmployees(){
   const content = document.getElementById('employeesContent');
   if(!content) return;
-  if(!mgrState.employees.length){
-    content.innerHTML = `<div class="empty"><span class="empty-icon">👥</span><div class="empty-title">هیچ پرسنلی ثبت نشده</div><div class="empty-text">ابتدا از بخش «دریافت گزارش‌ها» فایل‌های JSON کارکنان را بارگذاری کنید</div></div>`;
+
+  // اگه هنوز لود نشده، لود کن
+  if(!allEmployees.length && !employeesLoading){
+    await loadEmployeesFromAPI();
+  }
+
+  if(!allEmployees.length){
+    content.innerHTML = `<div class="empty">
+      <span class="empty-icon">👥</span>
+      <div class="empty-title">هیچ کارمندی ثبت نشده</div>
+      <div class="empty-text">هنوز هیچ کارمندی کارکردی ثبت نکرده است</div>
+    </div>`;
     return;
   }
 
   const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
-  let list = mgrState.employees.filter(e => !q || (e.userName||'').toLowerCase().includes(q));
+  let list = allEmployees.filter(e => !q || (e.name||'').toLowerCase().includes(q) || (e.username||'').toLowerCase().includes(q));
 
   if(viewMode === 'cards'){
-    content.innerHTML = '<div class="emp-grid">' + list.map(emp=>renderEmpCard(emp)).join('') + '</div>';
+    content.innerHTML = '<div class="emp-grid">' + list.map(emp=>renderEmpCardFromAPI(emp)).join('') + '</div>';
   } else {
-    content.innerHTML = renderEmpTable(list);
+    content.innerHTML = renderEmpTableFromAPI(list);
+  }
+}
+
+/* 📥 بارگذاری لیست کارمندان از API */
+async function loadEmployeesFromAPI(){
+  if(employeesLoading) return;
+  employeesLoading = true;
+  try {
+    const res = await apiRequest('/api/employees');
+    if(!res){ employeesLoading = false; return; }
+    const data = await res.json();
+    if(data.ok && Array.isArray(data.employees)){
+      allEmployees = data.employees;
+      console.log('✅ Loaded', allEmployees.length, 'employees');
+    }
+  } catch(e) {
+    console.warn('⚠️ Load employees failed:', e);
+  }
+  employeesLoading = false;
+}
+
+/* 🎨 کارت کارمند (از API) */
+function renderEmpCardFromAPI(emp){
+  const initial = (emp.name||'؟').charAt(0);
+  return `
+    <div class="emp-card" onclick="openEmpFromAPI(${emp.id})">
+      <div class="emp-head">
+        <div class="emp-avatar-wrap">
+          <div class="emp-avatar-ring" style="--progress:0deg"></div>
+          <div class="emp-avatar">${initial}</div>
+        </div>
+        <div class="emp-info">
+          <div class="emp-name">${escapeHtml(emp.name)}</div>
+          <div class="emp-meta">@${escapeHtml(emp.username)} — ${emp.months.length} ماه داده</div>
+        </div>
+      </div>
+      <div class="emp-actions" onclick="event.stopPropagation()">
+        <button class="btn btn-info btn-sm" onclick="openEmpFromAPI(${emp.id})">👁️ مشاهده</button>
+      </div>
+    </div>
+  `;
+}
+
+/* 📊 جدول کارمندان (از API) */
+function renderEmpTableFromAPI(list){
+  const rows = list.map(emp=>{
+    const initial = (emp.name||'؟').charAt(0);
+    const monthsCount = emp.months ? emp.months.length : 0;
+    const lastMonth = emp.months && emp.months[0] ? emp.months[0] : '—';
+    return `
+      <tr onclick="openEmpFromAPI(${emp.id})">
+        <td><div class="emp-cell"><div class="emp-mini-avatar">${initial}</div><span>${escapeHtml(emp.name)}</span></div></td>
+        <td>@${escapeHtml(emp.username)}</td>
+        <td>${monthsCount}</td>
+        <td>${lastMonth}</td>
+        <td onclick="event.stopPropagation()">
+          <button class="btn btn-info btn-sm" onclick="openEmpFromAPI(${emp.id})">مشاهده</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  return `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="text-align:right">پرسنل</th>
+            <th>نام کاربری</th>
+            <th>تعداد ماه</th>
+            <th>آخرین ماه</th>
+            <th>عملیات</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+/* 👁️ باز کردن کارمند (از API) */
+async function openEmpFromAPI(id){
+  const emp = allEmployees.find(e=>e.id===id);
+  if(!emp) return;
+
+  // ماه پیش‌فرض
+  const defaultMonth = emp.months && emp.months.length ? emp.months[0] : null;
+
+  if(!defaultMonth){
+    toast('این کارمند هنوز کارکردی ثبت نکرده', 'error');
+    return;
+  }
+
+  // بارگذاری entries
+  try {
+    const res = await apiRequest(`/api/employees/${id}/entries?month=${defaultMonth}`);
+    if(!res) return;
+    const data = await res.json();
+    if(!data.ok){ toast(data.error || 'خطا', 'error'); return; }
+
+    // ساخت مودال
+    renderEmpModalFromAPI(emp, defaultMonth, data.entries || []);
+    openModal('empModal');
+  } catch(e) {
+    toast('خطای شبکه: ' + e.message, 'error');
+  }
+}
+
+/* 📄 رندر مودال کارمند */
+function renderEmpModalFromAPI(emp, month, entries){
+  // محاسبه آمار
+  let work = 0, ot = 0, def = 0;
+  const WORK_START = 8*60, WORK_END = 17*60, FULL = WORK_END - WORK_START;
+
+  entries.forEach(e => {
+    const dateStr = e.date;
+    const d = jalaliToDate(dateStr);
+    const wd = (d.getDay() + 1) % 7;
+    const weekend = wd >= 5;
+
+    const em = e.entry ? parseInt(e.entry.split(':')[0]) * 60 + parseInt(e.entry.split(':')[1]) : null;
+    const xm = e.exit ? parseInt(e.exit.split(':')[0]) * 60 + parseInt(e.exit.split(':')[1]) : null;
+
+    if(em === null || xm === null) return;
+
+    if(weekend){
+      const w = Math.max(0, xm - em);
+      work += w; ot += w;
+    } else {
+      const w = Math.max(0, xm - em);
+      work += w;
+      let extra = 0;
+      if(em < WORK_START) extra += Math.min(xm, WORK_START) - em;
+      if(xm > WORK_END) extra += xm - Math.max(em, WORK_END);
+      ot += Math.max(0, extra);
+      const inside = Math.max(0, Math.min(xm, WORK_END) - Math.max(em, WORK_START));
+      def += Math.max(0, FULL - inside);
+    }
+  });
+
+  const fmt = (min) => {
+    if(!min) return '—';
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  };
+
+  const rowsHtml = entries.map(e => {
+    const datePart = e.date.split('/');
+    const dateFormatted = `${datePart[2]}/${datePart[1]}/${datePart[0]}`;
+    const d = jalaliToDate(e.date);
+    const wd = (d.getDay() + 1) % 7;
+    const dayName = JDAYS[wd];
+    const weekend = wd >= 5;
+
+    const em = e.entry ? parseInt(e.entry.split(':')[0]) * 60 + parseInt(e.entry.split(':')[1]) : null;
+    const xm = e.exit ? parseInt(e.exit.split(':')[0]) * 60 + parseInt(e.exit.split(':')[1]) : null;
+
+    let dayWork = 0, dayOT = 0, dayDef = 0;
+    if(em !== null && xm !== null){
+      dayWork = Math.max(0, xm - em);
+      if(weekend){
+        dayOT = dayWork;
+      } else {
+        let extra = 0;
+        if(em < WORK_START) extra += Math.min(xm, WORK_START) - em;
+        if(xm > WORK_END) extra += xm - Math.max(em, WORK_END);
+        dayOT = Math.max(0, extra);
+        const inside = Math.max(0, Math.min(xm, WORK_END) - Math.max(em, WORK_START));
+        dayDef = Math.max(0, FULL - inside);
+      }
+    }
+
+    return `<tr class="${weekend?'holiday-row':''}">
+      <td>${dayName}</td>
+      <td>${dateFormatted}</td>
+      <td>${e.entry || '—'}</td>
+      <td>${e.exit || '—'}</td>
+      <td style="color:var(--accent);font-weight:700">${dayWork>0?fmt(dayWork):'—'}</td>
+      <td style="color:var(--success)">${dayOT>0?fmt(dayOT):'—'}</td>
+      <td style="color:var(--danger)">${dayDef>0?'-'+fmt(dayDef):'—'}</td>
+      <td style="font-size:11px;text-align:right">${escapeHtml(e.desc || '')}</td>
+    </tr>`;
+  }).join('');
+
+  // منوی ماه
+  const monthOptions = (emp.months || []).map(ym => {
+    const p = ym.split('/');
+    const label = `${JMONTHS[parseInt(p[1])-1]} ${p[0]}`;
+    return `<option value="${ym}" ${ym===month?'selected':''}>${label}</option>`;
+  }).join('');
+
+  const monthLabel = (()=>{
+    const p = month.split('/');
+    return `${JMONTHS[parseInt(p[1])-1]} ${p[0]}`;
+  })();
+
+  document.getElementById('empModalBody').innerHTML = `
+    <div class="ts-header">
+      <h2>📄 تایم‌شیت ${escapeHtml(emp.name)}</h2>
+      <p>@${escapeHtml(emp.username)} — تعداد ماه‌ها: ${emp.months.length}</p>
+    </div>
+
+    <div class="month-picker-bar">
+      <label>
+        🗓️ ماه:
+        <select onchange="changeEmpMonthFromAPI(${emp.id}, this.value)">
+          ${monthOptions}
+        </select>
+      </label>
+      <span class="month-badge">${monthLabel}</span>
+    </div>
+
+    <div class="ts-kpis">
+      <div class="ts-kpi"><div class="ts-kpi-label">مجموع کارکرد</div><div class="ts-kpi-value">${fmt(work)}</div></div>
+      <div class="ts-kpi success"><div class="ts-kpi-label">اضافه‌کاری</div><div class="ts-kpi-value">${fmt(ot)}</div></div>
+      <div class="ts-kpi danger"><div class="ts-kpi-label">کسری کار</div><div class="ts-kpi-value">${def>0?'-'+fmt(def):'0:00'}</div></div>
+      <div class="ts-kpi info"><div class="ts-kpi-label">روزهای ثبت‌شده</div><div class="ts-kpi-value">${entries.length}</div></div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>روز</th><th>تاریخ</th><th>ورود</th><th>خروج</th>
+            <th>کارکرد</th><th>اضافه‌کاری</th><th>کسری</th><th>شرح</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+        <tfoot>
+          <tr class="sum-row">
+            <td colspan="4">جمع کل</td>
+            <td>${fmt(work)}</td>
+            <td>${fmt(ot)}</td>
+            <td>${def>0?'-'+fmt(def):'—'}</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  `;
+}
+
+/* 🔄 تغییر ماه در مودال */
+async function changeEmpMonthFromAPI(id, month){
+  const emp = allEmployees.find(e=>e.id===id);
+  if(!emp) return;
+
+  try {
+    const res = await apiRequest(`/api/employees/${id}/entries?month=${month}`);
+    if(!res) return;
+    const data = await res.json();
+    if(!data.ok){ toast(data.error || 'خطا', 'error'); return; }
+    renderEmpModalFromAPI(emp, month, data.entries || []);
+  } catch(e) {
+    toast('خطای شبکه: ' + e.message, 'error');
   }
 }
 
@@ -1349,53 +1695,70 @@ function renderEmpTable(list){
   `;
 }
 
-function renderAnalytics(){
+async function renderAnalytics(){
   const topEl = document.getElementById('topPerformers');
   const attEl = document.getElementById('needAttention');
   const distEl = document.getElementById('workDistribution');
   if(!topEl || !attEl || !distEl) return;
 
-  if(!mgrState.employees.length){
-    const html = `<div class="empty"><span class="empty-icon">📊</span><div class="empty-title">داده‌ای برای تحلیل</div><div class="empty-text">ابتدا گزارش‌های پرسنل را بارگذاری کنید</div></div>`;
-    topEl.innerHTML = html; attEl.innerHTML = html; distEl.innerHTML = html;
-    return;
+  if(!allEmployees.length){
+    if(!employeesLoading){
+      await loadEmployeesFromAPI();
+    }
+    if(!allEmployees.length){
+      const html = `<div class="empty"><span class="empty-icon">📊</span><div class="empty-title">داده‌ای برای تحلیل</div><div class="empty-text">هنوز کارمندی کارکردی ثبت نکرده</div></div>`;
+      topEl.innerHTML = html; attEl.innerHTML = html; distEl.innerHTML = html;
+      return;
+    }
   }
 
-  // Top performers: by work hours (descending)
-  const sorted = [...mgrState.employees].map(e=>({emp:e, s:empMonthStats(e,currentMonthFilter)}))
-    .filter(x=>x.s)
-    .sort((a,b)=> b.s.work - a.s.work);
+  // برای هر کارمند، آمار آخرین ماه
+  const empStats = [];
+  for(const emp of allEmployees){
+    if(!emp.months || !emp.months.length) continue;
+    const lastMonth = emp.months[0];
+    try {
+      const res = await apiRequest(`/api/employees/${emp.id}/entries?month=${lastMonth}`);
+      if(!res) continue;
+      const data = await res.json();
+      if(!data.ok || !data.entries) continue;
+      const stats = computeEntriesStats(data.entries);
+      empStats.push({emp, stats, month: lastMonth});
+    } catch(e){ console.warn(e); }
+  }
 
+  // Top performers
+  const sorted = [...empStats].sort((a,b)=> b.stats.work - a.stats.work);
   topEl.innerHTML = sorted.slice(0, 3).map((x, i)=>{
     const medal = ['🥇','🥈','🥉'][i];
     return `<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--card2);border-radius:12px;margin-bottom:8px">
       <div style="font-size:24px">${medal}</div>
       <div style="flex:1">
-        <div style="font-weight:700">${escapeHtml(x.emp.userName)}</div>
-        <div style="font-size:11px;color:var(--muted)">${x.s.label}</div>
+        <div style="font-weight:700">${escapeHtml(x.emp.name)}</div>
+        <div style="font-size:11px;color:var(--muted)">${x.month}</div>
       </div>
-      <div style="text-align:left;color:var(--accent);font-weight:800">${toHM(x.s.work)}</div>
+      <div style="text-align:left;color:var(--accent);font-weight:800">${toHM(x.stats.work)}</div>
     </div>`;
   }).join('') || '<div class="empty-text">داده‌ای موجود نیست</div>';
 
-  // Need attention: highest deficit
-  const deficitList = sorted.filter(x=>x.s.def > 0).sort((a,b)=> b.s.def - a.s.def).slice(0,3);
+  // Need attention
+  const deficitList = sorted.filter(x=>x.stats.def > 0).sort((a,b)=> b.stats.def - a.stats.def).slice(0,3);
   attEl.innerHTML = deficitList.length
     ? deficitList.map(x=>`
         <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--card2);border-radius:12px;margin-bottom:8px">
           <div style="font-size:20px">⚠️</div>
           <div style="flex:1">
-            <div style="font-weight:700">${escapeHtml(x.emp.userName)}</div>
-            <div style="font-size:11px;color:var(--muted)">${x.s.label}</div>
+            <div style="font-weight:700">${escapeHtml(x.emp.name)}</div>
+            <div style="font-size:11px;color:var(--muted)">${x.month}</div>
           </div>
-          <div style="text-align:left;color:var(--danger);font-weight:800">-${toHM(x.s.def)}</div>
+          <div style="text-align:left;color:var(--danger);font-weight:800">-${toHM(x.stats.def)}</div>
         </div>`).join('')
     : '<div class="empty-text">هیچ پرسنلی کسری ندارد ✅</div>';
 
   // Work distribution
   const buckets = {low:0, mid:0, high:0};
   sorted.forEach(x=>{
-    const h = x.s.work / 60;
+    const h = x.stats.work / 60;
     if(h < 100) buckets.low++;
     else if(h < 180) buckets.mid++;
     else buckets.high++;
@@ -1840,6 +2203,14 @@ function switchPanel(name){
   
   if(name === 'upload'){
     loadReports();
+  }
+  
+  if(name === 'employees' || name === 'analytics' || name === 'dashboard'){
+    if(!allEmployees.length && !employeesLoading){
+      loadEmployeesFromAPI().then(() => {
+        renderAll();
+      });
+    }
   }
   
   if(window.innerWidth <= 900){
@@ -2417,14 +2788,15 @@ function bootManager(){
   initRipple();
   initParticles();
   refreshMonthFilter();
-  renderAll();
+  
+  loadEmployeesFromAPI().then(() => {
+    renderAll();
+  });
 
   hideSplash();
 
-  // Clock
   setInterval(renderTopbar, 1000);
-
-  // Close sidebar on outside click (mobile)
+  
   document.addEventListener('click', (e)=>{
     if(window.innerWidth > 900) return;
     const sb = document.getElementById('sidebar');
@@ -2487,6 +2859,10 @@ async function apiRequest(path, options = {}){
    ============================================================ */
 
 let reportsFilter = 'all';
+  
+/* 📊 لیست کارمندان از API */
+let allEmployees = [];        // [{id, username, name, months}]
+let employeesLoading = false;
 let reportsList = [];
 
 /* بارگذاری گزارش‌ها از سرور */
