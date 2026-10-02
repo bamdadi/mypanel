@@ -3040,8 +3040,9 @@ function renderReports(){
 
   listEl.innerHTML = items.map(r => {
     const initial = (r.name || '؟').trim().charAt(0) || '؟';
-    const sentDate = r.sent_at ? jalaliStr(new Date(r.sent_at)) : '—';
-    const sentTime = r.sent_at ? new Date(r.sent_at).toLocaleTimeString('fa-IR') : '';
+    // 🌏 تبدیل UTC به وقت ایران (+3:30)
+const sentDate = r.sent_at ? jalaliStr(toIranTime(r.sent_at)) : '—';
+const sentTime = r.sent_at ? toIranTime(r.sent_at).toLocaleTimeString('fa-IR') : '';
     const isUnread = r.is_read === 0;
 
     return `
@@ -3064,7 +3065,28 @@ function renderReports(){
     `;
   }).join('');
 }
-
+/* 🌏 تبدیل تاریخ UTC به وقت ایران */
+function toIranTime(dateInput){
+  let date;
+  if(typeof dateInput === 'string'){
+    // اگه ISO هست
+    date = new Date(dateInput);
+  } else {
+    date = new Date(dateInput);
+  }
+  
+  // اگه date دارای Z نبود، یه Z اضافه کن
+  if(isNaN(date.getTime())){
+    date = new Date(dateInput + 'Z');
+  }
+  
+  // تبدیل به وقت ایران (+3:30 = 210 دقیقه)
+  const iranOffset = 3.5 * 60; // دقیقه
+  const utcTime = date.getTime() + (date.getTimezoneOffset() * 60000);
+  const iranTime = new Date(utcTime + (iranOffset * 60000));
+  
+  return iranTime;
+}
 /* مشاهده جزئیات گزارش */
 async function openReport(id){
   const report = reportsList.find(r => r.id === id);
@@ -3144,7 +3166,7 @@ async function openReport(id){
   const html = `
     <div class="ts-header">
       <h2>📄 تایم‌شیت ${escapeHtml(report.name)}</h2>
-      <p>${report.month} — تاریخ ارسال: ${report.sent_at ? jalaliStr(new Date(report.sent_at)) : '—'}</p>
+      <p>${report.month} — تاریخ ارسال: ${report.sent_at ? jalaliStr(toIranTime(report.sent_at)) : '—'}</p>
     </div>
 
     <div class="ts-kpis">
@@ -3261,7 +3283,7 @@ function printReport(id){
     </style></head><body>
       <div class="head">
         <h1>تایم‌شیت ${escapeHtml(report.name)}</h1>
-        <p>${report.month} — ارسال: ${jalaliStr(new Date(report.sent_at))}</p>
+        <p>${report.month} — ارسال: ${jalaliStr(toIranTime(report.sent_at))}</p>
       </div>
       <table>
         <thead><tr><th>تاریخ</th><th>ورود</th><th>خروج</th><th>شرح</th></tr></thead>
@@ -3280,7 +3302,7 @@ function exportReportExcel(id){
   const entries = report.data.entries || [];
   const aoa = [
     ['تایم‌شیت ' + report.name],
-    ['ماه: ' + report.month, '', 'ارسال: ' + (report.sent_at ? jalaliStr(new Date(report.sent_at)) : '')],
+    ['ماه: ' + report.month, '', 'ارسال: ' + (report.sent_at ? jalaliStr(toIranTime(report.sent_at)) : '')],
     [],
     ['تاریخ', 'ورود', 'خروج', 'شرح']
   ];
