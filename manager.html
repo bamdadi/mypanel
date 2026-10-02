@@ -1440,12 +1440,8 @@ function renderSettings(){
   document.querySelectorAll('.theme-chip').forEach(el => {
     el.classList.toggle('active', el.dataset.themeVal === mgrState.settings.theme);
   });
-  document.querySelectorAll('.theme-chip').forEach(el => {
-    el.classList.toggle('active', el.dataset.themeVal === mgrState.settings.theme);
-  });
   updateAccountPanel();
-    // 👥 بارگذاری لیست کاربران
- loadUsers();
+  loadUsers();
 }
 /* ============================================================
    🔐 ACCOUNT FUNCTIONS — تغییر رمز و خروج
@@ -2523,7 +2519,7 @@ async function loadReports(){
 /* فیلتر کردن گزارش‌ها */
 function filterReports(f, el){
   reportsFilter = f;
-  document.querySelectorAll('#panel-settings .chip').forEach(c => {
+  document.querySelectorAll('#panel-upload .chip').forEach(c => {
     if(c.textContent.includes('خوانده') || c.textContent.trim() === 'همه') {
       c.classList.remove('active');
     }
