@@ -643,18 +643,21 @@ tr.official-holiday td{color:#ff8a80}
 
     <!-- Topbar -->
     <div class="topbar">
-      <div class="topbar-info">
-        <div class="topbar-avatar">👔</div>
-        <div>
-          <div class="topbar-name" id="topbarName">پنل مدیریت کارفرما</div>
-          <div class="topbar-role" id="topbarRole">در انتظار دریافت گزارش‌ها…</div>
-        </div>
-      </div>
-      <div class="clock-box">
-        <div class="clock-time" id="topClock">--:--:--</div>
-        <div class="clock-date" id="topDate">---</div>
-      </div>
+  <div class="topbar-info">
+    <div class="topbar-avatar">👔</div>
+    <div>
+      <div class="topbar-name" id="topbarName">پنل مدیریت کارفرما</div>
+      <div class="topbar-role" id="topbarRole">در انتظار دریافت گزارش‌ها…</div>
     </div>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <div class="clock-box">
+      <div class="clock-time" id="topClock">--:--:--</div>
+      <div class="clock-date" id="topDate">---</div>
+    </div>
+    <button class="btn btn-danger btn-sm" onclick="doLogout()" title="خروج از حساب">🚪 خروج</button>
+  </div>
+</div>
 
     <!-- 📊 Panel: Dashboard -->
     <div class="panel active" id="panel-dashboard">
@@ -815,6 +818,35 @@ tr.official-holiday td{color:#ff8a80}
           <button class="btn" onclick="saveEmployerName()">ذخیره</button>
         </div>
       </div>
+      <!-- ⏰ ساعت کاری -->
+<div class="section">
+  <div class="section-title">⏰ ساعت کاری</div>
+  
+  <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px;line-height:1.9">
+    ساعت کاری موظفی را تعیین کنید. این ساعت‌ها در پنل همه کارمندان اعمال می‌شود و مبنای محاسبه اضافه‌کاری و کسری کار قرار می‌گیرد.
+  </p>
+  
+  <div class="row">
+    <label style="flex:1">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px">ساعت شروع کار:</div>
+      <input type="time" id="workStartInput" style="font-size:16px;text-align:center">
+    </label>
+    <label style="flex:1">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px">ساعت پایان کار:</div>
+      <input type="time" id="workEndInput" style="font-size:16px;text-align:center">
+    </label>
+  </div>
+  
+  <div class="row" style="margin-top:10px">
+    <button class="btn btn-success no-flex" onclick="saveWorkHours()">💾 ذخیره ساعت کاری</button>
+    <button class="btn btn-ghost no-flex" onclick="loadWorkHours()">🔄 بازیابی</button>
+    <span id="workHoursStatus" style="font-size:12px;color:var(--muted);align-self:center"></span>
+  </div>
+  
+  <div style="background:rgba(14,165,233,.08);border-right:3px solid var(--accent);padding:10px 14px;border-radius:8px;margin-top:14px;font-size:12px;color:var(--muted);line-height:1.9">
+    💡 <strong style="color:var(--accent)">پیش‌فرض:</strong> ۸:۰۰ صبح الی ۱۷:۰۰ عصر
+  </div>
+</div>
 <div class="section">
   <div class="section-title">👤 حساب کاربری</div>
   <div class="row">
@@ -1842,6 +1874,68 @@ function renderSettings(){
   });
   updateAccountPanel();
   loadUsers();
+    updateAccountPanel();
+  loadUsers();
+  loadWorkHours();  // ← این خط
+}
+}
+  /* ============================================================
+   ⏰ ساعت کاری
+   ============================================================ */
+async function loadWorkHours(){
+  const startEl = document.getElementById('workStartInput');
+  const endEl = document.getElementById('workEndInput');
+  const statusEl = document.getElementById('workHoursStatus');
+  
+  if(statusEl) statusEl.textContent = 'در حال بارگذاری...';
+  
+  try {
+    const res = await fetch(API_URL + '/api/settings/work-hours');
+    const data = await res.json();
+    if(data.ok){
+      if(startEl) startEl.value = data.workStart;
+      if(endEl) endEl.value = data.workEnd;
+      if(statusEl) statusEl.textContent = `✅ فعال: ${data.workStart} تا ${data.workEnd}`;
+      if(statusEl) statusEl.style.color = 'var(--success)';
+    }
+  } catch(e) {
+    if(statusEl){ statusEl.textContent = '❌ خطا: ' + e.message; statusEl.style.color = 'var(--danger)'; }
+  }
+}
+
+async function saveWorkHours(){
+  const startEl = document.getElementById('workStartInput');
+  const endEl = document.getElementById('workEndInput');
+  const statusEl = document.getElementById('workHoursStatus');
+  
+  const workStart = startEl ? startEl.value : '';
+  const workEnd = endEl ? endEl.value : '';
+  
+  if(!workStart || !workEnd){
+    toast('ساعت شروع و پایان الزامی است', 'error');
+    return;
+  }
+  
+  if(!confirm(`ساعت کاری به ${workStart} تا ${workEnd} تغییر کند؟\n\nاین تغییر در پنل همه کارمندان اعمال می‌شود.`)) return;
+  
+  try {
+    const res = await apiRequest('/api/settings/work-hours', {
+      method: 'POST',
+      body: JSON.stringify({ workStart, workEnd })
+    });
+    
+    if(!res) return;
+    const data = await res.json();
+    
+    if(data.ok){
+      toast(`✅ ساعت کاری تغییر کرد: ${workStart} تا ${workEnd}`, 'success');
+      if(statusEl){ statusEl.textContent = `✅ فعال: ${workStart} تا ${workEnd}`; statusEl.style.color = 'var(--success)'; }
+    } else {
+      toast(data.error || 'خطا', 'error');
+    }
+  } catch(e) {
+    toast('خطای شبکه: ' + e.message, 'error');
+  }
 }
 /* ============================================================
    🔐 ACCOUNT FUNCTIONS — تغییر رمز و خروج
