@@ -543,24 +543,27 @@ tr.sum-row td{
 <div class="app" id="appRoot">
 
   <div class="topbar">
-    <div class="user-info">
-      <div class="avatar-wrap">
-        <div class="avatar-ring" id="avatarRing" style="--progress:0deg"></div>
-        <div class="avatar" id="avatarInitial">؟</div>
-      </div>
-      <div>
-        <div class="user-name" id="topUserName">کاربر مهمان</div>
-        <div class="user-role">
-          <span class="live-dot"></span>
-          <span id="liveStatus">در حال رصد</span>
-        </div>
+  <div class="user-info">
+    <div class="avatar-wrap">
+      <div class="avatar-ring" id="avatarRing" style="--progress:0deg"></div>
+      <div class="avatar" id="avatarInitial">؟</div>
+    </div>
+    <div>
+      <div class="user-name" id="topUserName">کاربر مهمان</div>
+      <div class="user-role">
+        <span class="live-dot"></span>
+        <span id="liveStatus">در حال رصد</span>
       </div>
     </div>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
     <div class="clock-box">
       <div class="clock-time" id="topClock">--:--:--</div>
       <div class="clock-date" id="topDate">---</div>
     </div>
+    <button class="btn btn-danger btn-sm" onclick="doLogout()" title="خروج از حساب">🚪 خروج</button>
   </div>
+</div>
 
   <div class="kpis">
     <div class="kpi" data-tip="مجموع ساعات کارکرد این ماه" onclick="showKpiDetail('total')">
@@ -995,7 +998,28 @@ let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
 let currentYear, currentMonth;
 let taskFilter = 'all';
 const STORAGE_KEY = 'hrm_system_v4';
-const WORK_START = 8*60, WORK_END = 17*60, FULL_DAY = WORK_END - WORK_START;
+// ⏰ ساعت کاری (مقادیر پیش‌فرض — از API آپدیت می‌شن)
+let WORK_START = 8*60;
+let WORK_END = 17*60;
+let FULL_DAY = WORK_END - WORK_START;
+
+/* بارگذاری ساعت کاری از API */
+async function loadWorkHoursFromAPI(){
+  try {
+    const res = await fetch(API_URL + '/api/settings/work-hours');
+    const data = await res.json();
+    if(data.ok){
+      WORK_START = toMin(data.workStart) || 8*60;
+      WORK_END = toMin(data.workEnd) || 17*60;
+      FULL_DAY = WORK_END - WORK_START;
+      console.log('✅ ساعت کاری:', data.workStart, 'تا', data.workEnd);
+      return { workStart: data.workStart, workEnd: data.workEnd };
+    }
+  } catch(e) {
+    console.warn('⚠️ بارگذاری ساعت کاری ناموفق:', e);
+  }
+  return null;
+}
 
 function save(){
   // ذخیره در localStorage
@@ -2338,9 +2362,10 @@ function unlock(){
 }
 
 let _booted = false;
-function boot(){
-  if(_booted) return;
-  _booted = true;
+async function boot(){
+  if(_booted) return; _booted=true;
+    // ⏰ بارگذاری ساعت کاری از API
+  await loadWorkHoursFromAPI();
 
   // اول Splash رو محو کن
   hideSplash();
